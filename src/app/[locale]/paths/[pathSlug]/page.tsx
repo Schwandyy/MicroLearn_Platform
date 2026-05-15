@@ -12,7 +12,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { pickLocalized } from "@/lib/i18n-content";
-import { ArrowRight, Check, Clock, Lightbulb, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  Check,
+  Clock,
+  Lightbulb,
+  Sparkles,
+} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import type { Locale } from "@/lib/utils";
 import {
   isPathOutOfReach,
@@ -50,8 +58,9 @@ export default async function PathDetailPage({
   const completedIds = new Set<string>();
   let userLevel: typeof path.level | null = null;
   let recommendedAlt: { slug: string; title_de: string; title_en: string } | null = null;
+  let certificate: { publicSlug: string } | null = null;
   if (session?.user?.id) {
-    const [progress, profile] = await Promise.all([
+    const [progress, profile, cert] = await Promise.all([
       prisma.userProgress.findMany({
         where: { userId: session.user.id, completedAt: { not: null } },
         select: { lessonId: true },
@@ -60,9 +69,14 @@ export default async function PathDetailPage({
         where: { userId: session.user.id },
         select: { currentLevel: true },
       }),
+      prisma.certificate.findUnique({
+        where: { userId_pathId: { userId: session.user.id, pathId: path.id } },
+        select: { publicSlug: true },
+      }),
     ]);
     progress.forEach((p) => p.lessonId && completedIds.add(p.lessonId));
     userLevel = profile?.currentLevel ?? null;
+    certificate = cert;
     if (userLevel && isPathOutOfReach(path.level, userLevel)) {
       const all = await prisma.learningPath.findMany({
         where: { isPublished: true, slug: { not: path.slug } },
@@ -79,6 +93,17 @@ export default async function PathDetailPage({
     }
   }
   const isOutOfReach = !!userLevel && isPathOutOfReach(path.level, userLevel);
+
+  // Pfad-Fortschritt berechnen
+  const allPathLessons = path.courses.flatMap((c) => c.lessons);
+  const totalLessons = allPathLessons.length;
+  const doneLessons = allPathLessons.filter((l) =>
+    completedIds.has(l.id),
+  ).length;
+  const percent =
+    totalLessons === 0
+      ? 0
+      : Math.round((doneLessons / totalLessons) * 100);
 
   return (
     <div className="container py-10 md:py-14">
@@ -130,6 +155,35 @@ export default async function PathDetailPage({
             </Button>
           )}
         </div>
+      )}
+
+      {session?.user?.id && totalLessons > 0 && (
+        <Card className="mt-8 border-primary/30 bg-primary/5">
+          <CardContent className="grid gap-3 p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className="text-sm font-semibold uppercase tracking-wide text-primary">
+                {t("progressTitle")}
+              </div>
+              {certificate && (
+                <Button asChild size="sm" variant="ghost">
+                  <Link href={`/certificates/${certificate.publicSlug}`}>
+                    <Award className="mr-1.5 h-4 w-4 text-amber-500" />
+                    {t("viewCertificate")}
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <Progress value={percent} className="h-3" />
+            <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm text-muted-foreground">
+              <span>{t("progressDone", { done: doneLessons, total: totalLessons })}</span>
+              <span className="font-semibold text-foreground">
+                {certificate
+                  ? t("certEarned")
+                  : t("progressPercent", { percent })}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="mt-10 space-y-6">

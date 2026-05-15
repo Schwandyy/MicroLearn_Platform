@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/routing";
 import {
   Flame,
@@ -104,9 +105,63 @@ export default async function DashboardPage({
     favoriteBoardIds.includes(b.id),
   );
   const tA = await getTranslations("assessment");
+  const tP = await getTranslations("paths");
 
   const name = user?.name ?? user?.username ?? "👋";
   const activePaths = user?.progress.filter((p) => p.path) ?? [];
+
+  // Pro aktivem Pfad: done/total Counts berechnen (eine Query)
+  const activePathIds = Array.from(
+    new Set(
+      activePaths
+        .map((p) => p.path?.id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  const pathTotals = activePathIds.length
+    ? await prisma.lesson.groupBy({
+        by: ["courseId"],
+        where: {
+          isPublished: true,
+          course: {
+            pathId: { in: activePathIds },
+            isPublished: true,
+          },
+        },
+        _count: { _all: true },
+      })
+    : [];
+  const pathDoneMap = new Map<string, number>();
+  const pathTotalMap = new Map<string, number>();
+  if (activePathIds.length) {
+    const coursesWithPath = await prisma.course.findMany({
+      where: { id: { in: pathTotals.map((p) => p.courseId) } },
+      select: { id: true, pathId: true },
+    });
+    const courseToPath = new Map(
+      coursesWithPath.map((c) => [c.id, c.pathId]),
+    );
+    for (const row of pathTotals) {
+      const pathId = courseToPath.get(row.courseId);
+      if (!pathId) continue;
+      pathTotalMap.set(
+        pathId,
+        (pathTotalMap.get(pathId) ?? 0) + row._count._all,
+      );
+    }
+    const doneRows = await prisma.userProgress.groupBy({
+      by: ["pathId"],
+      where: {
+        userId: session.user.id,
+        completedAt: { not: null },
+        pathId: { in: activePathIds },
+      },
+      _count: { _all: true },
+    });
+    for (const r of doneRows) {
+      if (r.pathId) pathDoneMap.set(r.pathId, r._count._all);
+    }
+  }
   const isBeginnerMode = activePaths.length === 0 && totalXp === 0;
 
   // Hero-Pfad: aktiver Pfad (Progress) sonst empfohlener (Level-Match)
@@ -247,20 +302,38 @@ export default async function DashboardPage({
           </div>
           {activePaths.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {activePaths.map((p) =>
-                p.path ? (
+              {activePaths.map((p) => {
+                if (!p.path) return null;
+                const done = pathDoneMap.get(p.path.id) ?? 0;
+                const total = pathTotalMap.get(p.path.id) ?? 0;
+                const percent =
+                  total === 0 ? 0 : Math.round((done / total) * 100);
+                return (
                   <Card key={p.id}>
-                    <CardHeader>
-                      <CardTitle>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">
                         {locale === "de" ? p.path.title_de : p.path.title_en}
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="line-clamp-2">
                         {locale === "de"
                           ? p.path.summary_de
                           : p.path.summary_en}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="grid gap-3">
+                      {total > 0 && (
+                        <div className="space-y-1.5">
+                          <Progress value={percent} className="h-2" />
+                          <div className="flex items-baseline justify-between text-xs text-muted-foreground">
+                            <span>
+                              {tP("progressDone", { done, total })}
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              {percent}%
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       <Button asChild size="sm">
                         <Link href={`/paths/${p.path.slug}`}>
                           {t("continueLearning")}
@@ -268,8 +341,8 @@ export default async function DashboardPage({
                       </Button>
                     </CardContent>
                   </Card>
-                ) : null,
-              )}
+                );
+              })}
             </div>
           ) : null}
         </section>

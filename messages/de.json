@@ -234,7 +234,13 @@
     "outOfReachBannerTitle": "Dieser Pfad ist anspruchsvoller als dein aktuelles Level.",
     "outOfReachBannerWithSuggestion": "Wir empfehlen dir, zuerst „{pathTitle}\" durchzuspielen — dort lernst du die Grundlagen, die du hier brauchst.",
     "outOfReachBannerGeneric": "Du kannst trotzdem reinschauen — aber leichtere Pfade legen das Fundament dafür.",
-    "outOfReachBannerCta": "Zum empfohlenen Pfad"
+    "outOfReachBannerCta": "Zum empfohlenen Pfad",
+    "progressTitle": "Dein Fortschritt",
+    "progressDone": "{done} von {total} Lektionen geschafft",
+    "progressPercent": "{percent} % bis zum Zertifikat",
+    "certEarned": "Zertifikat verdient",
+    "viewCertificate": "Zertifikat ansehen",
+    "progressEmpty": "Starte mit der ersten Lektion."
   },
   "lesson": {
     "duration": "{min} Min",

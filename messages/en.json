@@ -234,7 +234,13 @@
     "outOfReachBannerTitle": "This path is more advanced than your current level.",
     "outOfReachBannerWithSuggestion": "We recommend starting with \"{pathTitle}\" first — it lays the groundwork you'll need here.",
     "outOfReachBannerGeneric": "You can still explore — but the easier paths build the foundation for this one.",
-    "outOfReachBannerCta": "Open recommended path"
+    "outOfReachBannerCta": "Open recommended path",
+    "progressTitle": "Your progress",
+    "progressDone": "{done} of {total} lessons done",
+    "progressPercent": "{percent}% to your certificate",
+    "certEarned": "Certificate earned",
+    "viewCertificate": "View certificate",
+    "progressEmpty": "Start with the first lesson."
   },
   "lesson": {
     "duration": "{min} min",
