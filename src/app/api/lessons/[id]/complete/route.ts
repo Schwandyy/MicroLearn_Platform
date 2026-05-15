@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { grantXP, bumpStreak, XP } from "@/server/lib/xp";
+import { issueCertificateIfPathDone } from "@/server/lib/certificates";
 
 export async function POST(
   _req: Request,
@@ -57,5 +58,9 @@ export async function POST(
 
   const streak = await bumpStreak(session.user.id);
 
-  return NextResponse.json({ xpGained: xp, streak });
+  const certificate = course?.pathId
+    ? await issueCertificateIfPathDone(session.user.id, course.pathId)
+    : null;
+
+  return NextResponse.json({ xpGained: xp, streak, certificate });
 }

@@ -404,5 +404,19 @@
     "deleteConfirm": "Wirklich löschen?",
     "private": "Privat — nur du siehst dein Projekt.",
     "publicHint": "Öffentlich heißt: alle eingeloggten Lerner können es sehen."
+  },
+  "certificates": {
+    "title": "Mein Zertifikat",
+    "awarded": "wird verliehen an",
+    "for": "für den Abschluss von",
+    "issued": "Ausgestellt am",
+    "verify": "Verifizierung",
+    "verifyHint": "Diese URL belegt die Echtheit des Zertifikats.",
+    "print": "Drucken / PDF speichern",
+    "myCertificates": "Meine Zertifikate",
+    "noCertificates": "Schließe einen Lernpfad ab, um dein erstes Zertifikat zu erhalten.",
+    "view": "Ansehen",
+    "share": "Teilen",
+    "linkCopied": "Link kopiert"
   }
 }

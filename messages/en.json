@@ -404,5 +404,19 @@
     "deleteConfirm": "Really delete?",
     "private": "Private — only you can see your project.",
     "publicHint": "Public means: all signed-in learners can see it."
+  },
+  "certificates": {
+    "title": "My certificate",
+    "awarded": "is awarded to",
+    "for": "for completing",
+    "issued": "Issued on",
+    "verify": "Verification",
+    "verifyHint": "This URL proves the authenticity of the certificate.",
+    "print": "Print / save as PDF",
+    "myCertificates": "My certificates",
+    "noCertificates": "Complete a learning path to earn your first certificate.",
+    "view": "View",
+    "share": "Share",
+    "linkCopied": "Link copied"
   }
 }

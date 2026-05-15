@@ -105,6 +105,13 @@ export function StepPlayer({
         toast({ title: "Error", variant: "destructive" });
         return;
       }
+      const data: { certificate?: { publicSlug: string } | null } = await res
+        .json()
+        .catch(() => ({}));
+      if (data.certificate?.publicSlug) {
+        router.push(`/certificates/${data.certificate.publicSlug}`);
+        return;
+      }
       router.push("/dashboard");
     });
   };

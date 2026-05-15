@@ -19,6 +19,7 @@ import {
   Sparkles,
   Clock,
   Wand2,
+  Award,
 } from "lucide-react";
 import { levelToNumber } from "@/lib/assessment";
 import { pickRecommendedPath } from "@/lib/path-recommendation";
@@ -38,7 +39,7 @@ export default async function DashboardPage({
     callbackPath: `/${locale}/dashboard`,
   });
 
-  const [user, xpAgg, streak, paths, allBoards, lastAssessment] =
+  const [user, xpAgg, streak, paths, allBoards, lastAssessment, certificates] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id: session.user.id },
@@ -62,7 +63,14 @@ export default async function DashboardPage({
         where: { userId: session.user.id },
         orderBy: { takenAt: "desc" },
       }),
+      prisma.certificate.findMany({
+        where: { userId: session.user.id },
+        include: { path: true },
+        orderBy: { issuedAt: "desc" },
+        take: 3,
+      }),
     ]);
+  const tCert = await getTranslations("certificates");
 
   const totalXp = xpAgg._sum.amount ?? 0;
   const levelNum = user?.profile?.currentLevel
@@ -292,6 +300,43 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
       </section>
+
+      {certificates.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <Award className="h-5 w-5 text-amber-500" />
+              {tCert("myCertificates")}
+            </h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/certificates">
+                {t("browseAll")} <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {certificates.map((c) => (
+              <Card key={c.id} className="border-amber-200 dark:border-amber-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="line-clamp-2 text-base">
+                    {locale === "de" ? c.path.title_de : c.path.title_en}
+                  </CardTitle>
+                  <CardDescription>
+                    {c.issuedAt.toLocaleDateString(locale)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/certificates/${c.publicSlug}`}>
+                      {tCert("view")}
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {favoriteBoards.length > 0 && (
         <section className="mt-10">
