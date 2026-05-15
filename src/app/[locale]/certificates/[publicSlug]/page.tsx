@@ -59,7 +59,7 @@ export default async function PublicCertificatePage({
             <p className="text-sm text-muted-foreground">{t("for")}</p>
 
             <p className="font-serif text-2xl font-semibold text-amber-700 dark:text-amber-300 md:text-3xl">
-              „{pathTitle}"
+              &laquo; {pathTitle} &raquo;
             </p>
 
             <div className="mx-auto mt-6 h-px w-32 bg-amber-300 dark:bg-amber-700" />
