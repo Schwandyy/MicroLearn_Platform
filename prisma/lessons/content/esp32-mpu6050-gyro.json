@@ -117,7 +117,9 @@
             "label_en": "The I²C line is transmitting a glitch signal."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Die Erde zieht alles mit etwa 9,8 m/s² nach unten - das ist die Schwerkraft. Auch der ruhende Sensor spürt sie auf der Z-Achse. Erst im freien Fall wäre der Wert nahe 0.",
+        "explanation_en": "Earth pulls everything down with about 9.8 m/s² - that's gravity. The resting sensor feels it on its Z axis. Only in free fall would the reading be close to 0."
       }
     },
     {

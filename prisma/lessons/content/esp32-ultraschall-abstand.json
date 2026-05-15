@@ -129,7 +129,9 @@
             "label_en": "Because the ESP32 runs at 3.3 V instead of 5 V."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Der Sensor sendet einen Ton ab und misst, bis er als Echo zurückkommt. Der Schall fliegt also hin UND zurück - das ist die doppelte Strecke. Geteilt durch 2 ergibt den echten Abstand.",
+        "explanation_en": "The sensor emits a pulse and measures when the echo returns. The sound travels there AND back - that's double the distance. Dividing by 2 gives the real distance."
       }
     },
     {

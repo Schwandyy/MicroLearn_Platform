@@ -123,7 +123,9 @@
             "label_en": "To make the counter increment."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Alle Zeichenbefehle malen erst auf einen unsichtbaren Zettel (den RAM-Puffer). display.display() ist der Befehl Zettel hochhalten - erst dann siehst du das Bild.",
+        "explanation_en": "All drawing commands paint on an invisible sheet first (the RAM buffer). display.display() is the show the sheet now command - only then does the image appear."
       }
     },
     {

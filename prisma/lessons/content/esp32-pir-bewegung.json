@@ -109,7 +109,9 @@
             "label_en": "Because 5V is too much voltage for the sensor."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Der PIR misst Wärmeunterschiede. Beim Einschalten muss er erst lernen, wie warm der Raum gerade ist. Diese Eichphase dauert ca. 30 Sekunden - bis dahin gibt es Fehlalarme.",
+        "explanation_en": "The PIR measures heat differences. After power-on it first has to learn how warm the room currently is. This calibration phase takes about 30 seconds - false alarms until then."
       }
     },
     {

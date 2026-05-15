@@ -123,7 +123,9 @@
             "label_en": "The web server uses port 80 and browsers block port 80."
           }
         ],
-        "correctKey": "a"
+        "correctKey": "a",
+        "explanation_de": "IP-Adressen wie 192.168.x.x sind private Hausnummern: sie gelten nur in deinem Heim-WLAN, ähnlich wie eine Wohnungsnummer im Haus. Vom Internet aus erreicht man sie nicht - dafür bräuchtest du eine öffentliche Adresse oder einen Tunnel-Dienst.",
+        "explanation_en": "Addresses like 192.168.x.x are private house numbers: they work only inside your home network, similar to an apartment number inside a building. From the wider internet they're unreachable - you'd need a public address or a tunnel."
       }
     },
     {

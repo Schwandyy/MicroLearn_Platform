@@ -13,10 +13,23 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    }
   ],
   "learningGoal": "Lerner verbindet ESP32 mit WLAN (SSID/Passwort), verbindet sich mit dem öffentlichen HiveMQ-Test-Broker, publiziert alle 1 Sekunde einen incrementierten Zähler im Topic „microlearn/<eigeneId>/counter\" und kann das im Webclient live sehen.",
   "newConcepts": "WLAN-Verbindung mit WiFi.begin/WiFi.status, MQTT-Broker (Publisher/Subscriber/Topic), QoS 0, Client-ID Pflicht (eindeutig), öffentlicher Test-Broker broker.hivemq.com, Web-Client zum Subscribe (HiveMQ Web Client).",
-  "stepOutline": ["INTRO", "PARTS", "SETUP", "EXPLAIN", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "SETUP",
+    "EXPLAIN",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 mit Arduino-Framework. Libraries: „PubSubClient\" + native WiFi. WiFi.begin(ssid, password); MQTT: broker = \"broker.hivemq.com\", port = 1883, client.setServer(broker, 1883). reconnect()-Funktion mit eindeutiger Client-ID („microlearn-\" + chipId). Im Loop: client.loop(); alle 1000 ms client.publish(topic, String(counter++).c_str()). Hinweis: PLACEHOLDER für SSID/Password als Konstanten oben mit Kommentar „Hier deine WLAN-Daten\". SETUP-Step zeigt: Library installieren + HiveMQ-WebClient öffnen + auf Topic subscribed haben."
 }

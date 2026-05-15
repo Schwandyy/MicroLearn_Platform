@@ -13,13 +13,38 @@
   "safetyNotes_de": "Motoren ziehen viel mehr Strom als eine LED. Niemals direkt am ESP32-Pin betreiben — der Pin brennt durch. Immer Transistor/Treiber + externe Stromquelle nutzen. Freilaufdiode parallel zum Motor schützt vor Spannungsspitzen.",
   "safetyNotes_en": "Motors draw much more current than an LED. Never drive directly from an ESP32 pin — the pin burns out. Always use a transistor/driver + external power source. A flyback diode across the motor protects against voltage spikes.",
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "dc-motor-3v", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 6 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "dc-motor-3v",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 6
+    }
   ],
   "learningGoal": "Lerner versteht Strombedarf von Motoren vs. GPIO-Limits (~12 mA), nutzt PWM zur Drehzahlregelung über einen N-Kanal-MOSFET (oder L298N-Modul wenn vorhanden), und baut eine externe Stromversorgung korrekt mit gemeinsamer Masse auf.",
   "newConcepts": "Transistor als Schalter, MOSFET (Gate/Drain/Source), externe Versorgung mit gemeinsamem GND, Freilaufdiode gegen induktive Spannungsspitzen, PWM für Drehzahlregelung statt Helligkeit.",
-  "stepOutline": ["INTRO", "PARTS", "SAFETY", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "SAFETY",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 mit Arduino-Framework. PWM-Pin GPIO 25 → Gate des IRLZ44N (Logic-Level MOSFET). Motor zwischen +Vext (3,7 V Akku oder 4×AA) und Drain. Source an GND (gemeinsam mit ESP32). 1N4007-Freilaufdiode parallel zum Motor (Kathode an +). ledcSetup + ledcWrite(channel, duty). Im Loop: sanft hochfahren 0→255 in 3s, halten 2s, runter 255→0."
 }

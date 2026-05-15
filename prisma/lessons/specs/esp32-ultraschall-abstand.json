@@ -13,13 +13,38 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "ultrasonic-hc-sr04", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 4 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "ultrasonic-hc-sr04",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 4
+    }
   ],
   "learningGoal": "Lerner nutzt pulseIn() um Echo-Zeit zu messen, rechnet Zeit × Schallgeschwindigkeit / 2 = Entfernung, und gibt die Werte sauber im Serial Monitor aus.",
   "newConcepts": "Trigger-/Echo-Pin-Konzept, pulseIn() (blockierende Pulsmessung in µs), Schallgeschwindigkeit (343 m/s = 0.0343 cm/µs), Division durch 2 wegen Hin- und Rückweg.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 mit Arduino-Framework. VCC an 5V, GND an GND, Trig an GPIO 5, Echo an GPIO 18. Echo-Pin ist 5V — beim ESP32 mit Spannungsteiler oder direkt (die meisten Boards vertragen es kurz). Im Code: digitalWrite(trig, LOW); delayMicroseconds(2); digitalWrite(trig, HIGH); delayMicroseconds(10); digitalWrite(trig, LOW); duration = pulseIn(echo, HIGH); distance_cm = duration * 0.0343 / 2; Serial.print alle 500 ms."
 }

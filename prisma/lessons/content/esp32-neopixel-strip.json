@@ -128,7 +128,9 @@
             "label_en": "show() increases the brightness of the LEDs."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "setPixelColor() merkt sich die Farben nur im Speicher - wie ein Maler, der auf seiner Palette mischt. Erst show() bringt die fertige Mischung gleichzeitig auf alle LEDs.",
+        "explanation_en": "setPixelColor() only stores colors in memory - like a painter mixing on a palette. show() pushes the finished colors out to every LED on the strip at once."
       }
     },
     {

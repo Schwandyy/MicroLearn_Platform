@@ -117,7 +117,9 @@
             "label_en": "Arrays in C++ always end at index 3."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Beim Vorwärtszählen leuchtet zuletzt LED 4. Würde die Rückwärtsschleife auch bei 4 starten, leuchtet sie zweimal kurz hintereinander - das Lauflicht stottert. Start bei Index 3 macht den Übergang flüssig.",
+        "explanation_en": "Going forward, LED 4 lights last. If the backward loop also started at 4 it would flash twice in a row - the chase would stutter. Starting at index 3 keeps the motion smooth."
       }
     },
     {

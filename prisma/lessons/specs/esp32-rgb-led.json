@@ -13,11 +13,31 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "led-rgb-5mm", "qty": 1 },
-    { "kind": "component", "slug": "resistor-220ohm", "qty": 3 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 5 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "led-rgb-5mm",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "resistor-220ohm",
+      "qty": 3
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 5
+    }
   ],
   "learningGoal": "Lerner versteht, dass eine RGB-LED drei einzelne PWM-Kanäle braucht (rot/grün/blau) und kann eigene Farben über RGB-Werte 0-255 mischen. Am Ende läuft ein automatischer Farbwechsel-Loop.",
   "newConcepts": "RGB-LED-Aufbau (4 Beine: R, GND/VCC, G, B), Common-Cathode vs Common-Anode, ledcWrite() pro Farbkanal, additive Farbmischung (R+G=Gelb, G+B=Türkis, R+B=Magenta), Vorwiderstand pro Farbkanal.",

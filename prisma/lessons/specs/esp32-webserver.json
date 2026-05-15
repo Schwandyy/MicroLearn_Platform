@@ -13,14 +13,43 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "led-red-5mm", "qty": 1 },
-    { "kind": "component", "slug": "resistor-220ohm", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 2 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "led-red-5mm",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "resistor-220ohm",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 2
+    }
   ],
   "learningGoal": "Lerner startet einen WebServer auf Port 80, definiert zwei Routen (/on, /off) zum Schalten einer LED, generiert eine minimale HTML-Seite mit zwei Buttons.",
   "newConcepts": "HTTP-Server-Konzept (Request/Response), WebServer-Library auf ESP32, Route-Handler (server.on(\"/\", handler)), HTML-Templates im C++-String, IP-Adresse im Serial Monitor finden (WiFi.localIP()).",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32. Library „WebServer\" (eingebaut). LED über 220 Ω an GPIO 25. WiFi.begin → IP per Serial.println(WiFi.localIP()). WebServer server(80); server.on(\"/\", handleRoot); server.on(\"/on\", []{ digitalWrite(25, HIGH); server.send(200, \"text/html\", page); }); server.on(\"/off\", …); page = String mit <html>+2 Buttons als Links auf /on, /off. Im Loop: server.handleClient(). Erklären: nur im gleichen WLAN erreichbar."
 }

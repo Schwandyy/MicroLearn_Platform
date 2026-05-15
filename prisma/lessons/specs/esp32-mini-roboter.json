@@ -13,16 +13,53 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "servo-sg90", "qty": 1 },
-    { "kind": "component", "slug": "ultrasonic-hc-sr04", "qty": 1 },
-    { "kind": "component", "slug": "led-red-5mm", "qty": 1 },
-    { "kind": "component", "slug": "resistor-220ohm", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 10 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "servo-sg90",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "ultrasonic-hc-sr04",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "led-red-5mm",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "resistor-220ohm",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 10
+    }
   ],
   "learningGoal": "Lerner kombiniert mehrere Bauteile (Servo, Ultraschall, LED), strukturiert den Code mit Funktionen (sweep, measure, blink), und gibt den minimalen Abstand + den Winkel im Serial Monitor aus.",
   "newConcepts": "Modulare Funktionen statt allem im loop(), state machine (Winkel + Richtung), map() zur Umrechnung Entfernung → Blink-Tempo, Code-Organisation für komplexere Projekte.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32. Servo Signal an GPIO 13, VCC 5V, GND. Ultraschall Trig=GPIO 5, Echo=GPIO 18. LED über 220 Ω an GPIO 12. Funktionen: float measureDistance(), void blinkLED(int delayMs). Im Loop: für angle = 0..180 in 10er-Schritten: servo.write(angle); delay(50); d = measureDistance(); if (d < minD) { minD = d; minA = angle; } Nach kompletter Schwenkrichtung wechseln, blinkLED(map(minD, 5, 100, 50, 500)) aufrufen."
 }

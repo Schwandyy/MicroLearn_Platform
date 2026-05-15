@@ -123,7 +123,9 @@
             "label_en": "The note plays for twice as long."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Hertz heißt Schwingungen pro Sekunde. Bei 524 Hz schwingt die Luft doppelt so schnell wie bei 262 Hz - das hörst du als doppelt so hohen Ton (eine Oktave höher).",
+        "explanation_en": "Hertz means vibrations per second. At 524 Hz the air vibrates twice as fast as at 262 Hz - you hear that as twice as high a tone (one octave up)."
       }
     },
     {

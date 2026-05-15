@@ -142,7 +142,9 @@
             "label_en": "So that the topic name gets encrypted."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Der Broker erkennt jedes Gerät an seiner Client-ID. Sind zwei Geräte mit derselben ID online, hält der Broker das für Doppel-Login und wirft das ältere raus. Gib jedem Gerät einen eigenen Namen.",
+        "explanation_en": "The broker identifies each device by its client ID. If two devices come online with the same ID, the broker treats it as a duplicate login and disconnects the older one. Give each device a unique name."
       }
     },
     {

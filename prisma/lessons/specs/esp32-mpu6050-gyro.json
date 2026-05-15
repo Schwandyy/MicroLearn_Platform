@@ -13,13 +13,38 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "mpu6050-sensor", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 4 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "mpu6050-sensor",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 4
+    }
   ],
   "learningGoal": "Lerner verkabelt MPU-6050 per I²C, liest mit der Adafruit-MPU6050-Library X/Y/Z-Beschleunigung in m/s², und erkennt die Neigung („Sensor liegt flach\", „Sensor steht senkrecht\").",
   "newConcepts": "6-DOF (Degrees of Freedom), Sensor-Fusion-Konzept (vereinfacht), Schwellwert-Logik („|y| > 5 m/s² → seitlich gekippt\"), Adafruit-Sensor-Pattern mit sensors_event_t.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 I²C: SDA=21, SCL=22. MPU6050: VCC=3.3V, GND, SCL, SDA. Library „Adafruit MPU6050\". mpu.begin(). Im Loop: sensors_event_t a, g, temp; mpu.getEvent(&a, &g, &temp); Serial.print(a.acceleration.x), .y, .z. Im Code-Walk eine kleine if-Kaskade: if (a.acceleration.x > 5) Serial.println(\"nach rechts gekippt\")."
 }

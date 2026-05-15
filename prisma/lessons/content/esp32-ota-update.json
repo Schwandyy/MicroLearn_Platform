@@ -153,7 +153,9 @@
             "label_en": "The ESP32 reboots every minute because it receives no upload."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "ArduinoOTA.handle() prüft im Loop, ob jemand ein neues Programm schicken will. Ohne diesen Aufruf hört der ESP32 nie zu - neue Programme musst du dann wieder per USB-Kabel aufspielen.",
+        "explanation_en": "ArduinoOTA.handle() checks each loop whether anyone wants to send a new program. Without it the ESP32 never listens - you'd have to flash via USB cable again."
       }
     },
     {

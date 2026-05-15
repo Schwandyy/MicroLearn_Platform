@@ -148,7 +148,9 @@
             "label_en": "You need to run the Arduino IDE as administrator."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Sehr häufiges Problem! Entweder fehlt am PC ein USB-Treiber (CP210x für viele ESP32-Boards, CH340 für günstige), oder das verwendete USB-Kabel ist nur ein Lade-Kabel (überträgt Strom, aber keine Daten).",
+        "explanation_en": "Very common issue! Either your PC is missing a USB driver (CP210x for many ESP32 boards, CH340 for cheap ones), or the USB cable is charge-only (carries power but no data)."
       }
     },
     {

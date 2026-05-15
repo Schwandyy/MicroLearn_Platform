@@ -13,13 +13,37 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "soil-moisture-yl69", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 3 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "soil-moisture-yl69",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 3
+    }
   ],
   "learningGoal": "Lerner liest den analogen Feuchte-Wert mit analogRead(), kalibriert „trocken\" und „nass\" durch Messung in der Luft und in Wasser, gibt eine Warnung aus wenn ein Schwellwert unterschritten wird.",
   "newConcepts": "Sensor-Kalibrierung (Min-/Max-Werte selbst herausfinden), map() für Prozent-Skala, Hysterese als Begriff (wird kurz erwähnt, nicht implementiert), Korrosion bei dauer-bestromten Sensoren (Hinweis: in Pause schalten).",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32. YL-69-Modul: VCC=3.3V, GND, AO (Analog) an GPIO 34. (DO/digital ignorieren wir.) Im Loop: int raw = analogRead(34); int percent = map(raw, 0, 4095, 100, 0); // umgekehrt: kleiner ADC = nass, größer = trocken. Serial-Print + if (percent < 30) Serial.println(\"💧 Bitte gießen\"). Im Code-Walk Hinweis: Sensor besser nur kurz einschalten (über extra GPIO) damit er nicht durchkorrodiert."
 }

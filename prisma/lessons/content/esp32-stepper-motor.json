@@ -126,7 +126,9 @@
             "label_en": "2048 — because that's the steps-per-revolution value."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Eine volle Umdrehung sind beim 28BYJ-48 etwa 2048 Mini-Schritte (mit Getriebe). 180° ist die Hälfte einer Umdrehung - also 2048 geteilt durch 2 = 1024 Schritte.",
+        "explanation_en": "On the 28BYJ-48 a full rotation takes about 2048 micro-steps (with gearbox). 180 degrees is half a rotation - so 2048 divided by 2 = 1024 steps."
       }
     },
     {

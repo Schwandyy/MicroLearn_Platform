@@ -109,7 +109,9 @@
             "label_en": "The ESP32 needs these values during boot."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Jeder Sensor ist ein bisschen anders gebaut. Wenn du selbst ganz trocken und ganz nass misst, kennt dein Code die echten Grenzen und kann dazwischen sauber 0 bis 100 Prozent rechnen.",
+        "explanation_en": "Every sensor is built a little differently. By measuring completely dry and completely wet yourself, your code knows the real limits and can map 0 to 100 percent cleanly."
       }
     },
     {

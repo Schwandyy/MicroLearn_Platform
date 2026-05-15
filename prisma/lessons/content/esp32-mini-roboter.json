@@ -123,7 +123,9 @@
             "label_en": "It limits the servo angle to a maximum of 100°."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "map() ist ein Umrechner: nimm einen Eingangsbereich (5 bis 100 cm) und mappe ihn proportional auf einen Ausgangsbereich (50 bis 500 ms). Je näher das Hindernis, desto kürzer die Pause.",
+        "explanation_en": "map() is a converter: take an input range (5-100 cm) and map it proportionally to an output range (50-500 ms). The closer the obstacle, the shorter the pause."
       }
     },
     {

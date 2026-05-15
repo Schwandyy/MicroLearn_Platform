@@ -109,7 +109,9 @@
             "label_en": "It protects the sensor from too high a voltage."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Ohne Pull-Up-Widerstand ist die Datenleitung undefiniert - wie ein Schalter, der weder An noch Aus zeigt. Der Widerstand zieht sie auf 3,3 V hoch, der Sensor zieht sie zum Senden runter.",
+        "explanation_en": "Without a pull-up resistor the data line is undefined - like a switch that shows neither On nor Off. The resistor pulls it up to 3.3 V; the sensor pulls it down to send data."
       }
     },
     {

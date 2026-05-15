@@ -13,13 +13,37 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "ds18b20-waterproof", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 3 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "ds18b20-waterproof",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 3
+    }
   ],
   "learningGoal": "Lerner baut den 1-Wire-Bus mit Pull-Up-Widerstand auf (4.7 kΩ Standard, hier 220 Ω-Hinweis als Alternative), nutzt die DallasTemperature-Library, liest Temperaturwerte präzise auf 0.1 °C aus.",
   "newConcepts": "1-Wire-Bus (mehrere Sensoren an einer Datenleitung möglich), Pull-Up-Widerstand-Pflicht (4.7 kΩ zwischen Datenleitung und VCC), DallasTemperature-Library als Wrapper um OneWire, requestTemperatures()-Pattern.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32. DS18B20: rot=3.3V, schwarz=GND, gelb (Data) an GPIO 4. PFLICHT: 4.7 kΩ Pull-Up zwischen Data und 3.3V. Libraries: „OneWire\" + „DallasTemperature\". OneWire oneWire(4); DallasTemperature sensors(&oneWire); sensors.begin(). Im Loop: sensors.requestTemperatures(); float c = sensors.getTempCByIndex(0); Serial.println(c). Im Build-Step erwähnen dass 4.7 kΩ nicht im AZ-Sortiment ist — Alternative: zwei 10 kΩ parallel (= 5 kΩ, geht auch)."
 }

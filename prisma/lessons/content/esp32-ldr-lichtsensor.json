@@ -109,7 +109,9 @@
             "label_en": "analogRead() adds up multiple samples to improve accuracy."
           }
         ],
-        "correctKey": "a"
+        "correctKey": "a",
+        "explanation_de": "12 Bit bedeutet: der ADC kann 2 hoch 12 = 4096 verschiedene Stufen unterscheiden. Diese Stufen heißen 0 bis 4095. Auflösung ist nicht dasselbe wie Spannung.",
+        "explanation_en": "12 bits means the ADC can distinguish 2 to the power of 12 = 4096 different steps. Those steps are numbered 0 to 4095. Resolution is not the same as voltage."
       }
     },
     {

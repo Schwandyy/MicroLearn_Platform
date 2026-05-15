@@ -126,7 +126,9 @@
             "label_en": "The ESP32 doesn't support PWM for motors."
           }
         ],
-        "correctKey": "b"
+        "correctKey": "b",
+        "explanation_de": "Motoren ziehen viel Strom - viel mehr als ein winziger ESP32-Pin liefern kann. Deshalb brauchst du einen Transistor oder Treiber als Stromschalter, den du nur mit einem Mini-Signal steuerst.",
+        "explanation_en": "Motors draw a lot of current - far more than a tiny ESP32 pin can deliver. That's why you need a transistor or driver as a current switch that you trigger with just a tiny signal."
       }
     },
     {

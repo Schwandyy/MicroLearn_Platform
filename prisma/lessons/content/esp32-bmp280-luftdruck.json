@@ -109,7 +109,9 @@
             "label_en": "SDA and SCL carry both data and power simultaneously, so each sensor only needs two pins."
           }
         ],
-        "correctKey": "a"
+        "correctKey": "a",
+        "explanation_de": "Jeder I²C-Sensor hat eine eingebaute Hausnummer (Adresse). Der ESP32 spricht gezielt einen Sensor an, nur dieser antwortet. Deshalb können viele Sensoren denselben zwei Draht teilen.",
+        "explanation_en": "Every I²C sensor has a built-in house number (address). The ESP32 addresses one sensor directly; only that one answers. That's why many sensors share the same two wires."
       }
     },
     {

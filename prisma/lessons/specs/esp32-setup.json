@@ -13,10 +13,23 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    }
   ],
   "learningGoal": "Lerner installiert die Arduino IDE, fügt den ESP32-Core hinzu, wählt Board + Port in der IDE und sieht den ESP32 erfolgreich verbunden. Voraussetzung für alle weiteren Lessons.",
   "newConcepts": "Arduino IDE, ESP32-Core über Boards Manager, Board-Auswahl, Port-Auswahl, USB-Datenkabel vs. Lade-Kabel.",
-  "stepOutline": ["INTRO", "PARTS", "SETUP", "SETUP", "SETUP", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "SETUP",
+    "SETUP",
+    "SETUP",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "Diese Lesson hat KEINEN Code-Walk — nur Software-Setup."
 }

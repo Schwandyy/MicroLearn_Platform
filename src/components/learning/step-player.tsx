@@ -423,6 +423,7 @@ function QuizStep({
       | Array<{ key: string; label_de: string; label_en: string }>
       | undefined) ?? [];
   const correctKey = payload.correctKey as string | undefined;
+  const explanation = payload[`explanation_${locale}`] as string | undefined;
   const isCorrect = submitted && answer === correctKey;
   const isWrong = submitted && answer !== correctKey;
   const firedRef = useRef(false);
@@ -481,14 +482,26 @@ function QuizStep({
               {t("checkAnswer")}
             </Button>
           ) : isCorrect ? (
-            <p className="rounded-md bg-emerald-50/60 p-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
-              ✓ {t("correct")}
-            </p>
+            <div className="grid gap-2">
+              <p className="rounded-md bg-emerald-50/60 p-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
+                ✓ {t("correct")}
+              </p>
+              {explanation && (
+                <p className="rounded-md bg-primary/5 p-3 text-sm leading-relaxed">
+                  💡 {explanation}
+                </p>
+              )}
+            </div>
           ) : isWrong ? (
             <div className="grid gap-2">
               <p className="rounded-md bg-destructive/10 p-3 text-sm font-semibold text-destructive">
                 ✗ {t("wrong")}
               </p>
+              {explanation && (
+                <p className="rounded-md bg-amber-50/60 p-3 text-sm leading-relaxed dark:bg-amber-900/20">
+                  🧭 {explanation}
+                </p>
+              )}
               <Button
                 type="button"
                 variant="outline"

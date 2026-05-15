@@ -13,13 +13,38 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "stepper-28byj48-uln2003", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 6 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "stepper-28byj48-uln2003",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 6
+    }
   ],
   "learningGoal": "Lerner steuert einen Schrittmotor in genauen Winkeln, versteht Schritte/Umdrehung (4096 für 28BYJ-48 im Half-Step), und lässt den Motor um exakt 90° und zurück fahren.",
   "newConcepts": "Schritte vs. Winkel-Verhältnis, Unipolar-Stepper, ULN2003 als Treiber (4 Eingänge), Stepper-Library (Stepper.h), step()-Funktion mit Vorzeichen für Richtung.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 mit Arduino-Framework. ULN2003 → IN1=GPIO 19, IN2=GPIO 18, IN3=GPIO 5, IN4=GPIO 17. 5V/GND vom ESP32 (USB-Versorgung reicht für 28BYJ-48). Library „Stepper\" benutzen mit 2048 Schritten pro Umdrehung (Half-Step → 4096, hier nehmen wir 2048 Full-Step für Einfachheit). Stepper-Reihenfolge: (steps, IN1, IN3, IN2, IN4) — typische Falle, im Code-Walk erklären. Im Loop: 512 Schritte vorwärts (90°), Pause, 512 Schritte rückwärts."
 }

@@ -13,13 +13,37 @@
   "safetyNotes_de": null,
   "safetyNotes_en": null,
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "bmp280-sensor", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 4 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "bmp280-sensor",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 4
+    }
   ],
   "learningGoal": "Lerner verkabelt einen I²C-Sensor (SDA/SCL), installiert die Adafruit-BMP280-Library, liest Druck + Temperatur + berechnete Höhe alle 2 Sekunden aus.",
   "newConcepts": "I²C-Bus-Konzept (SDA + SCL, alle Sensoren teilen sich denselben Bus), Sensor-Adresse 0x76/0x77, Adafruit-Library-Workflow (begin, readPressure, readAltitude), seaLevelPressure-Parameter.",
-  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32 I²C-Pins: SDA=GPIO 21, SCL=GPIO 22. BMP280: VCC=3.3V, GND, SDA, SCL. Library „Adafruit BMP280\" + „Adafruit Unified Sensor\". bmp.begin(0x76) (manche Module 0x77). Im Loop: temperature = bmp.readTemperature(), pressure = bmp.readPressure() / 100.0 (in hPa), altitude = bmp.readAltitude(1013.25). Serial alle 2 s."
 }

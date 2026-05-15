@@ -13,13 +13,39 @@
   "safetyNotes_de": "Stromhungrig: 30 mA pro LED bei voller Helligkeit. Bei mehr als 8 LEDs auf voller Helligkeit nicht über USB-VIN versorgen, sondern externes 5V-Netzteil mit gemeinsamer Masse nutzen.",
   "safetyNotes_en": "Power hungry: 30 mA per LED at full brightness. With more than 8 LEDs at full brightness, don't power from USB VIN — use an external 5V supply with shared ground.",
   "bom": [
-    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
-    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
-    { "kind": "component", "slug": "neopixel-strip-ws2812b", "qty": 1 },
-    { "kind": "component", "slug": "jumper-wires-mm", "qty": 3 }
+    {
+      "kind": "board",
+      "slug": "esp32-devkit-v1",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "breadboard-half",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "neopixel-strip-ws2812b",
+      "qty": 1
+    },
+    {
+      "kind": "component",
+      "slug": "jumper-wires-mm",
+      "qty": 3
+    }
   ],
   "learningGoal": "Lerner steuert einen NeoPixel-Streifen mit Adafruit_NeoPixel-Library, setzt einzelne LEDs in RGB-Werten, programmiert eine Regenbogen-Animation mit HSV→RGB-Konvertierung.",
   "newConcepts": "Adressierbare LEDs (Daisy-Chain), Pixel-Index als Array, Color-Wheel (Hue 0–255 → RGB), show()-Pattern (zwischen setPixelColor und show kein delay nötig), Helligkeitsbegrenzung mit setBrightness().",
-  "stepOutline": ["INTRO", "PARTS", "SAFETY", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "stepOutline": [
+    "INTRO",
+    "PARTS",
+    "SAFETY",
+    "EXPLAIN",
+    "BUILD",
+    "CODE_WALK",
+    "SIMULATE",
+    "QUIZ",
+    "CELEBRATE"
+  ],
   "codeHints": "ESP32. NeoPixel-Strip: 5V (USB-VIN bei wenigen LEDs ok), GND, DIN an GPIO 5. 470 Ω-Widerstand in der Datenleitung empfohlen (Hinweis im Build). Library „Adafruit NeoPixel\". #define NUM_LEDS 8. Adafruit_NeoPixel strip(NUM_LEDS, 5, NEO_GRB + NEO_KHZ800). strip.begin(); strip.setBrightness(50). Im Loop: einfache Color-Wheel-Funktion, jeder LED um Index versetzten Hue → strip.show(); delay(20)."
 }
