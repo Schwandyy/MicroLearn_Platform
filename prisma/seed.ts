@@ -14,6 +14,7 @@ async function main() {
       name: "ESP32 DevKit V1",
       manufacturer: "Espressif",
       family: "ESP32",
+      iconKey: "Cpu",
       imageUrl:
         "https://www.az-delivery.de/cdn/shop/products/esp32-nodemcu-module-wlan-wifi-development-board-mit-cp2102-nachfolgermodell-zum-esp8266-kompatibel-mit-arduino-872375.jpg",
       logicLevel: "V3_3" as const,
@@ -32,8 +33,8 @@ async function main() {
       name: "Arduino Uno R3",
       manufacturer: "Arduino",
       family: "AVR",
-      imageUrl:
-        "https://store.arduino.cc/cdn/shop/products/A000066_03.front_643x483.jpg",
+      iconKey: "CircuitBoard",
+      imageUrl: null,
       logicLevel: "V5" as const,
       voltageMin: 4.5,
       voltageMax: 5.5,
@@ -50,8 +51,8 @@ async function main() {
       name: "Raspberry Pi Pico",
       manufacturer: "Raspberry Pi Foundation",
       family: "RP2040",
-      imageUrl:
-        "https://www.raspberrypi.com/app/uploads/2022/06/Pico.png",
+      iconKey: "CircuitBoard",
+      imageUrl: null,
       logicLevel: "V3_3" as const,
       voltageMin: 1.8,
       voltageMax: 5.5,
@@ -68,6 +69,7 @@ async function main() {
       name: "ESP8266 NodeMCU",
       manufacturer: "Espressif",
       family: "ESP8266",
+      iconKey: "Cpu",
       imageUrl: null,
       logicLevel: "V3_3" as const,
       voltageMin: 3.0,
@@ -84,8 +86,8 @@ async function main() {
       name: "Arduino Nano",
       manufacturer: "Arduino",
       family: "AVR",
-      imageUrl:
-        "https://store.arduino.cc/cdn/shop/products/A000005_03.front_643x483.jpg",
+      iconKey: "CircuitBoard",
+      imageUrl: null,
       logicLevel: "V5" as const,
       voltageMin: 4.5,
       voltageMax: 5.5,
@@ -116,8 +118,8 @@ async function main() {
       slug: "led-red-5mm",
       name: "LED rot 5 mm",
       category: "actuator",
-      imageUrl:
-        "https://www.az-delivery.de/cdn/shop/products/100x-rote-led-5mm-869731.jpg",
+      iconKey: "Lightbulb",
+      imageUrl: null,
       logicLevel: "BOTH" as const,
       voltageMin: 1.8,
       voltageMax: 2.2,
@@ -132,8 +134,8 @@ async function main() {
       slug: "resistor-220ohm",
       name: "Widerstand 220 Ω",
       category: "passive",
-      imageUrl:
-        "https://www.az-delivery.de/cdn/shop/products/widerstand-set-30-werte-je-20-stuck-600-stuck-1-4w-1-tolerance-872159.jpg",
+      iconKey: "Zap",
+      imageUrl: null,
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -150,8 +152,8 @@ async function main() {
       slug: "breadboard-half",
       name: "Steckbrett (halb)",
       category: "tool",
-      imageUrl:
-        "https://www.az-delivery.de/cdn/shop/products/mb-102-breadboard-830-pin-mit-2-stromschienen-und-jumper-wires-set.jpg",
+      iconKey: "Grid3x3",
+      imageUrl: null,
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -168,8 +170,8 @@ async function main() {
       slug: "jumper-wires-mm",
       name: "Jumper-Kabel (M/M)",
       category: "tool",
-      imageUrl:
-        "https://www.az-delivery.de/cdn/shop/products/40x-jumper-wire-kabel-male-male-20cm-fuer-arduino-und-raspberry-pi-872133.jpg",
+      iconKey: "Cable",
+      imageUrl: null,
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -191,32 +193,37 @@ async function main() {
   console.log(`  ✓ ${components.length} components`);
 
   // -----------------------------------------------------------------------
-  // Affiliate programs (alle aktiv für Test, später Admin-toggle)
+  // Affiliate programs — alle 4 aktiv (Admin kann später deaktivieren)
+  // Tracking-IDs werden über Env-Vars geladen, hier Defaults für Dev
   // -----------------------------------------------------------------------
   const programs = [
     {
       merchant: "AZ_DELIVERY" as const,
       displayName: "AZ-Delivery",
-      urlTemplate: "https://www.az-delivery.de/products/{slug}?ref={trackingId}",
+      urlTemplate: "https://www.az-delivery.de/products/{slug}",
+      trackingId: process.env.AFFILIATE_AZ_REF ?? null,
+      isActive: true,
+    },
+    {
+      merchant: "AMAZON_DE" as const,
+      displayName: "Amazon",
+      urlTemplate: "https://www.amazon.de/s?k={slug}&tag={trackingId}",
+      trackingId: process.env.AFFILIATE_AMAZON_TAG ?? "microlearn-21",
       isActive: true,
     },
     {
       merchant: "BERRYBASE" as const,
       displayName: "BerryBase",
-      urlTemplate: "https://www.berrybase.de/{slug}",
-      isActive: false,
+      urlTemplate: "https://www.berrybase.de/search?sSearch={slug}",
+      trackingId: process.env.AFFILIATE_BERRYBASE_REF ?? null,
+      isActive: true,
     },
     {
       merchant: "REICHELT" as const,
-      displayName: "Reichelt Elektronik",
-      urlTemplate: "https://www.reichelt.de/{slug}",
-      isActive: false,
-    },
-    {
-      merchant: "AMAZON_DE" as const,
-      displayName: "Amazon DE",
-      urlTemplate: "https://www.amazon.de/dp/{slug}?tag={trackingId}",
-      isActive: false,
+      displayName: "Reichelt",
+      urlTemplate: "https://www.reichelt.de/index.html?ACTION=446&LA=0&q={slug}",
+      trackingId: process.env.AFFILIATE_REICHELT_REF ?? null,
+      isActive: true,
     },
   ];
   for (const p of programs) {
@@ -226,11 +233,19 @@ async function main() {
       update: p,
     });
   }
-  console.log(`  ✓ ${programs.length} affiliate programs`);
+  console.log(`  ✓ ${programs.length} affiliate programs (all active)`);
 
-  // Affiliate links für unsere Bauteile (für die "Hier kaufen"-Buttons)
   const azProgram = await prisma.affiliateProgram.findUniqueOrThrow({
     where: { merchant: "AZ_DELIVERY" },
+  });
+  const amazonProgram = await prisma.affiliateProgram.findUniqueOrThrow({
+    where: { merchant: "AMAZON_DE" },
+  });
+  const berryProgram = await prisma.affiliateProgram.findUniqueOrThrow({
+    where: { merchant: "BERRYBASE" },
+  });
+  const reicheltProgram = await prisma.affiliateProgram.findUniqueOrThrow({
+    where: { merchant: "REICHELT" },
   });
 
   const ledComp = await prisma.component.findUniqueOrThrow({
@@ -249,51 +264,90 @@ async function main() {
     where: { slug: "esp32-devkit-v1" },
   });
 
-  const affLinks = [
+  // Pro Bauteil eine "Such-Definition" — wird in URL-Template eingesetzt
+  interface PartLinks {
+    componentId?: string;
+    boardId?: string;
+    az: string;
+    amazon: string;
+    berry: string;
+    reichelt: string;
+  }
+  const parts: PartLinks[] = [
     {
       componentId: ledComp.id,
-      productUrl: "https://www.az-delivery.de/products/100-x-led-rot",
-      productSlug: "100-x-led-rot",
+      az: "100-x-led-rot",
+      amazon: "LED+rot+5mm+100+Stueck",
+      berry: "LED+rot+5mm",
+      reichelt: "LED+5MM+ROT",
     },
     {
       componentId: resComp.id,
-      productUrl: "https://www.az-delivery.de/products/widerstands-sortiment",
-      productSlug: "widerstands-sortiment",
+      az: "widerstands-sortiment",
+      amazon: "widerstand+220+ohm+1/4W",
+      berry: "widerstand+220",
+      reichelt: "widerstand+220+ohm",
     },
     {
       componentId: bbComp.id,
-      productUrl: "https://www.az-delivery.de/products/mb-102-breadboard",
-      productSlug: "mb-102-breadboard",
+      az: "mb-102-breadboard",
+      amazon: "breadboard+830+pin+mb102",
+      berry: "breadboard+830",
+      reichelt: "steckboard+830",
     },
     {
       componentId: wireComp.id,
-      productUrl: "https://www.az-delivery.de/products/40-x-jumper-wire-kabel-male-male",
-      productSlug: "40-x-jumper-wire-kabel-male-male",
+      az: "40-x-jumper-wire-kabel-male-male",
+      amazon: "jumper+wire+male+male",
+      berry: "jumper+wire",
+      reichelt: "jumper+kabel+male",
     },
     {
       boardId: esp32Board.id,
-      productUrl: "https://www.az-delivery.de/products/esp32-developmentboard",
-      productSlug: "esp32-developmentboard",
+      az: "esp32-developmentboard",
+      amazon: "ESP32+DevKit+V1+CP2102",
+      berry: "ESP32+DevKit",
+      reichelt: "ESP32+DEVKITC",
     },
   ];
-  for (const link of affLinks) {
-    await prisma.affiliateLink.upsert({
-      where: { id: `${azProgram.id}-${link.componentId ?? link.boardId}` },
-      create: {
-        id: `${azProgram.id}-${link.componentId ?? link.boardId}`,
-        programId: azProgram.id,
-        productUrl: link.productUrl,
-        productSlug: link.productSlug,
-        componentId: link.componentId ?? null,
-        boardId: link.boardId ?? null,
-      },
-      update: {
-        productUrl: link.productUrl,
-        productSlug: link.productSlug,
-      },
-    });
+
+  function buildUrl(template: string, slug: string, trackingId: string | null) {
+    return template
+      .replace("{slug}", slug)
+      .replace("{trackingId}", trackingId ?? "");
   }
-  console.log(`  ✓ ${affLinks.length} affiliate links (AZ-Delivery active)`);
+
+  let linkCount = 0;
+  for (const part of parts) {
+    const ownerId = part.componentId ?? part.boardId;
+    const entries = [
+      { program: azProgram, slug: part.az, key: "az" },
+      { program: amazonProgram, slug: part.amazon, key: "amazon" },
+      { program: berryProgram, slug: part.berry, key: "berry" },
+      { program: reicheltProgram, slug: part.reichelt, key: "reichelt" },
+    ];
+    for (const e of entries) {
+      const url = buildUrl(e.program.urlTemplate, e.slug, e.program.trackingId);
+      const id = `${e.program.id}-${ownerId}`;
+      await prisma.affiliateLink.upsert({
+        where: { id },
+        create: {
+          id,
+          programId: e.program.id,
+          productUrl: url,
+          productSlug: e.slug,
+          componentId: part.componentId ?? null,
+          boardId: part.boardId ?? null,
+        },
+        update: {
+          productUrl: url,
+          productSlug: e.slug,
+        },
+      });
+      linkCount += 1;
+    }
+  }
+  console.log(`  ✓ ${linkCount} affiliate links across 4 programs`);
 
   // -----------------------------------------------------------------------
   // Learning paths

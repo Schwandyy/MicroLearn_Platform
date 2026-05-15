@@ -5,7 +5,7 @@ import { auth } from "@/server/auth";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
 import { StepPlayer, type StepView } from "@/components/learning/step-player";
-import type { BomItemView } from "@/components/learning/bom-cards";
+import type { BomItemView, BomAffiliateOption } from "@/components/learning/bom-cards";
 import type { StepKind } from "@prisma/client";
 
 export default async function LessonPage({
@@ -26,9 +26,16 @@ export default async function LessonPage({
       steps: { orderBy: { sortOrder: "asc" } },
       bom: {
         include: {
-          component: true,
-          board: true,
-          affiliateLink: { include: { program: true } },
+          component: {
+            include: {
+              affiliateLinks: { include: { program: true } },
+            },
+          },
+          board: {
+            include: {
+              affiliateLinks: { include: { program: true } },
+            },
+          },
         },
       },
     },
@@ -59,17 +66,39 @@ export default async function LessonPage({
           : item.board.descriptionShort_en
         : null;
     const imageUrl = item.component?.imageUrl ?? item.board?.imageUrl ?? null;
-    const programActive = item.affiliateLink?.program?.isActive ?? false;
+    const iconKey = item.component?.iconKey ?? item.board?.iconKey ?? null;
+
+    const allLinks = [
+      ...(item.component?.affiliateLinks ?? []),
+      ...(item.board?.affiliateLinks ?? []),
+    ].filter((l) => l.program.isActive);
+
+    // Sort: AZ_DELIVERY first (default), then AMAZON_DE, then alphabetical
+    const order: Record<string, number> = {
+      AZ_DELIVERY: 0,
+      AMAZON_DE: 1,
+      BERRYBASE: 2,
+      REICHELT: 3,
+    };
+    allLinks.sort(
+      (a, b) =>
+        (order[a.program.merchant] ?? 99) - (order[b.program.merchant] ?? 99),
+    );
+
+    const affiliates: BomAffiliateOption[] = allLinks.map((link) => ({
+      programMerchant: link.program.merchant,
+      programDisplayName: link.program.displayName,
+      url: link.productUrl,
+    }));
+
     return {
       id: item.id,
       name,
       quantity: item.quantity,
       imageUrl,
+      iconKey,
       descriptionShort: descriptionShort ?? null,
-      affiliateUrl: programActive ? item.affiliateLink!.productUrl : null,
-      affiliateProgram: programActive
-        ? item.affiliateLink!.program.displayName
-        : null,
+      affiliates,
     };
   });
 

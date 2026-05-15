@@ -252,6 +252,7 @@ model Board {
   manufacturer    String?
   family          String?    // ESP32, AVR, RP2040, STM32, …
   imageUrl        String?
+  iconKey         String?    // Lucide icon name fallback
   descriptionShort_de String?
   descriptionShort_en String?
 
@@ -283,6 +284,7 @@ model Component {
   name            String
   category        String     // sensor, actuator, display, power, …
   imageUrl        String?
+  iconKey         String?    // Lucide icon name fallback
 
   logicLevel      LogicLevel
   voltageMin      Float
