@@ -15,9 +15,11 @@ interface ChatMessage {
 export function MentorChat({
   lessonId,
   available,
+  stepContext,
 }: {
   lessonId?: string;
   available: boolean;
+  stepContext?: { title: string; body: string; kind: string } | null;
 }) {
   const t = useTranslations("mentor");
   const locale = useLocale() as "de" | "en";
@@ -53,6 +55,7 @@ export function MentorChat({
         body: JSON.stringify({
           lessonId,
           locale,
+          stepContext: stepContext ?? undefined,
           messages: next
             .filter((m, i) => i < next.length - 1)
             .map((m) => ({ role: m.role, content: m.content })),
@@ -121,16 +124,16 @@ export function MentorChat({
           type="button"
           aria-label={t("openMentor")}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-lg transition hover:opacity-90"
+          className="fixed bottom-20 right-4 z-[60] inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg transition hover:opacity-90 sm:bottom-6 sm:right-6 sm:px-5"
         >
           <Sparkles className="h-4 w-4" />
-          {t("openMentor")}
+          <span className="hidden sm:inline">{t("openMentor")}</span>
         </button>
       )}
 
       <div
         className={cn(
-          "fixed bottom-4 right-4 z-40 flex w-[min(420px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl transition-all",
+          "fixed bottom-4 right-4 z-[60] flex w-[min(420px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl transition-all",
           open ? "h-[min(640px,calc(100vh-2rem))]" : "pointer-events-none h-0 opacity-0",
         )}
       >

@@ -15,9 +15,16 @@ const messageSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 
+const stepContextSchema = z.object({
+  title: z.string().max(200),
+  body: z.string().max(4000),
+  kind: z.string().max(40),
+});
+
 const schema = z.object({
   lessonId: z.string().cuid().optional(),
   locale: z.enum(["de", "en"]).default("de"),
+  stepContext: stepContextSchema.optional(),
   messages: z.array(messageSchema).min(1).max(40),
 });
 
@@ -27,6 +34,7 @@ function buildSystem(opts: {
   lessonBody?: string;
   lessonBoards: string[];
   userLevel: 1 | 2 | 3 | 4;
+  stepContext?: { title: string; body: string; kind: string };
 }): string {
   const langGuard =
     opts.locale === "de"
@@ -61,6 +69,18 @@ Titel: ${opts.lessonTitle}
 Auszug:
 ${opts.lessonBody?.slice(0, 1500) ?? "(kein Auszug verfügbar)"}`
     : "Keine spezifische Lektion im Kontext."
+}
+
+${
+  opts.stepContext
+    ? `AKTUELLER SCHRITT (genau hier ist der Lernende gerade!)
+Typ: ${opts.stepContext.kind}
+Titel: ${opts.stepContext.title}
+Inhalt:
+${opts.stepContext.body.slice(0, 1200)}
+
+Bevorzuge Antworten, die direkt zu DIESEM Schritt passen.`
+    : ""
 }`;
 }
 
@@ -144,6 +164,7 @@ export async function POST(req: Request) {
       : undefined,
     lessonBoards: lesson?.recommendedBoards.map((b) => b.name) ?? [],
     userLevel: levelNumber,
+    stepContext: parsed.data.stepContext,
   });
 
   const client = requireAnthropic();

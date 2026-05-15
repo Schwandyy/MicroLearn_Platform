@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { prisma } from "@/server/db/prisma";
 import { requireSession } from "@/server/auth/require-session";
+import { getUserEntitlement } from "@/server/lib/access";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
 import { StepPlayer, type StepView } from "@/components/learning/step-player";
@@ -44,9 +45,15 @@ export default async function LessonPage({
   });
   if (!lesson || !lesson.isPublished) notFound();
 
-  const progress = await prisma.userProgress.findUnique({
-    where: { userId_lessonId: { userId: session.user.id, lessonId: lesson.id } },
-  });
+  const [progress, entitlement] = await Promise.all([
+    prisma.userProgress.findUnique({
+      where: {
+        userId_lessonId: { userId: session.user.id, lessonId: lesson.id },
+      },
+    }),
+    getUserEntitlement(session.user.id),
+  ]);
+  const mentorAvailable = entitlement !== "free";
 
   const stepViews: StepView[] = lesson.steps.map((s) => ({
     id: s.id,
@@ -122,6 +129,7 @@ export default async function LessonPage({
       xpReward={lesson.xpReward}
       locale={l}
       alreadyCompleted={Boolean(progress?.completedAt)}
+      mentorAvailable={mentorAvailable}
     />
   );
 }

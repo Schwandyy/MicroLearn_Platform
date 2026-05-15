@@ -29,6 +29,7 @@ import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
 import { Esp32PinVisual } from "./esp32-pin-visual";
+import { MentorChat } from "./mentor-chat";
 
 export type StepKind =
   | "INTRO"
@@ -60,6 +61,7 @@ export function StepPlayer({
   xpReward,
   locale,
   alreadyCompleted,
+  mentorAvailable,
 }: {
   lessonId: string;
   lessonTitle: string;
@@ -70,6 +72,7 @@ export function StepPlayer({
   xpReward: number;
   locale: "de" | "en";
   alreadyCompleted: boolean;
+  mentorAvailable: boolean;
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
@@ -178,6 +181,16 @@ export function StepPlayer({
           />
         </div>
       </footer>
+
+      <MentorChat
+        lessonId={lessonId}
+        available={mentorAvailable}
+        stepContext={
+          current
+            ? { title: current.title, body: current.body, kind: current.kind }
+            : null
+        }
+      />
     </div>
   );
 }
