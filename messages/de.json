@@ -403,7 +403,14 @@
     "noComments": "Noch keine Kommentare — sei die/der Erste.",
     "deleteConfirm": "Wirklich löschen?",
     "private": "Privat — nur du siehst dein Projekt.",
-    "publicHint": "Öffentlich heißt: alle eingeloggten Lerner können es sehen."
+    "publicHint": "Öffentlich heißt: alle eingeloggten Lerner können es sehen.",
+    "uploadButton": "Bild hochladen",
+    "uploadOrUrl": "Bild hochladen oder URL einfügen",
+    "uploadHint": "JPG/PNG/WebP, max. 5 MB",
+    "uploading": "Lädt hoch …",
+    "uploadFailed": "Upload fehlgeschlagen",
+    "uploadDisabled": "Upload nicht verfügbar — bitte URL einfügen",
+    "remove": "Entfernen"
   },
   "certificates": {
     "title": "Mein Zertifikat",

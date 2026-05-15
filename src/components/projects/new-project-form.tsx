@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "./image-upload";
 
 export function NewProjectForm() {
   const t = useTranslations("projects");
@@ -71,13 +72,8 @@ export function NewProjectForm() {
         />
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="coverImage">{t("fieldImage")}</Label>
-        <Input
-          id="coverImage"
-          name="coverImage"
-          type="url"
-          placeholder={t("fieldImagePlaceholder")}
-        />
+        <Label>{t("uploadOrUrl")}</Label>
+        <ImageUpload name="coverImage" />
       </div>
       <label className="flex items-center gap-2 text-sm">
         <Checkbox

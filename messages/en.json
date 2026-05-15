@@ -403,7 +403,14 @@
     "noComments": "No comments yet — be the first.",
     "deleteConfirm": "Really delete?",
     "private": "Private — only you can see your project.",
-    "publicHint": "Public means: all signed-in learners can see it."
+    "publicHint": "Public means: all signed-in learners can see it.",
+    "uploadButton": "Upload image",
+    "uploadOrUrl": "Upload an image or paste a URL",
+    "uploadHint": "JPG/PNG/WebP, max 5 MB",
+    "uploading": "Uploading …",
+    "uploadFailed": "Upload failed",
+    "uploadDisabled": "Upload not available — paste a URL instead",
+    "remove": "Remove"
   },
   "certificates": {
     "title": "My certificate",
