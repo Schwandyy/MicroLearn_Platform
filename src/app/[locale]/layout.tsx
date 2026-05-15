@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { Navbar } from "@/components/navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/auth/session-provider";
+import { CookieBanner } from "@/components/cookie-banner";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -29,6 +30,7 @@ export default async function LocaleLayout({
           <SessionProvider>
             <Navbar />
             <main className="flex-1">{children}</main>
+            <CookieBanner />
             <Toaster />
           </SessionProvider>
         </NextIntlClientProvider>

@@ -147,6 +147,7 @@ model User {
   certificates      Certificate[]
   projects          Project[]
   comments          Comment[]
+  pushSubscriptions PushSubscription[]
   classroomsTaught  Classroom[]   @relation("ClassroomTeacher")
   reviewsAuthored   ContentReview[] @relation("ReviewAuthor")
 
@@ -604,6 +605,23 @@ model Streak {
   freezesRemaining Int     @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  locale    String   @default("de")
+  enabled   Boolean  @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, enabled])
 }
 
 model XPTransaction {

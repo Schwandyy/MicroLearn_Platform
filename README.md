@@ -100,18 +100,29 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Assessment-Quiz (8 Fragen, visueller Wizard, Auto-Level)
 - [x] Nutzer-Dashboard (Lernpfade, XP, Streak, Boards, Sprachswitch)
 
-### 🚧 Phase 2 (next)
+### ✅ Phase 2
 
-- [ ] Lernpfad-/Lesson-Renderer (Konzept → Quiz → Projekt → Final-Quiz)
-- [ ] Wokwi-Embed-Wrapper (serverseitiger API-Key)
-- [ ] Stripe-Integration (Free/Pro/Institution + Webhook)
-- [ ] Scraping-Pipeline (hackster, az-delivery, arduino, randomnerdtutorials, adafruit, GitHub)
-- [ ] Claude-Aufbereitung + AI Pre-Check (Sicherheit, Logik, Kompatibilität)
-- [ ] Review-Queue + Admin-Interface
-- [ ] MeiliSearch-Index
-- [ ] KI-Mentor-Chat (Pro)
-- [ ] Klassen-Dashboard + Schüler-Code-Generator (Institution)
-- [ ] Push-Notifications (Streak-Reminder)
+- [x] Port 3030 (3000 lokal belegt)
+- [x] Lesson-Renderer (Konzept → Mini-Quiz → Wokwi-Projekt → Schaltplan/Safety → Final-Quiz → XP/Streak)
+- [x] Wokwi-Embed via iframe (öffentliche Projekte), serverseitiger API-Key vorbereitet
+- [x] Stripe-Integration (Pricing, Checkout, Customer-Portal, Webhook mit Signaturprüfung)
+- [x] Scraping-Pipeline (az-delivery, randomnerdtutorials, GitHub READMEs)
+- [x] Claude-Aufbereitung (bilinguale JSON-Lessons mit Prompt-Caching) + AI Pre-Check (Safety/Logic/Compat/Language)
+- [x] Review-Queue + Admin-Interface (Approve/Request Changes/Reject)
+- [x] MeiliSearch-Index + `/api/search`
+- [x] KI-Mentor-Chat (Pro, streaming via SSE, kontextuell, 50/Tag Rate-Limit)
+- [x] Klassen-Dashboard + Schüler-Code-Generator (Institution)
+- [x] Push-Notifications (VAPID, Streak-Reminder Cron 18:00 UTC)
+- [x] Cookie-Banner (DSGVO, localStorage)
+
+### 🚧 Phase 3 (next)
+
+- [ ] Lehrplan-Mapping (BW/BY/NRW MINT-Curricula)
+- [ ] PDF-Zertifikate (Worker mit puppeteer-core / @react-pdf/renderer)
+- [ ] Hackster/Adafruit/Arduino-Tutorial-Scraper
+- [ ] Wokwi-Premium-Proxy (serverseitiger Key für privat-Projekte)
+- [ ] Community-Projekte (Showcase + Kommentare)
+- [ ] Mobile App Wrapper (Capacitor)
 
 ---
 

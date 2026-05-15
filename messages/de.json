@@ -236,6 +236,25 @@
     "loginRequired": "Mentor ist nur für Pro-Mitglieder.",
     "openMentor": "Mentor öffnen"
   },
+  "classroom": {
+    "title": "Klassenmanagement",
+    "subtitle": "Verwalte deine Klassen, generiere Schülercodes und sieh Fortschritte.",
+    "newClassroom": "Neue Klasse",
+    "namePlaceholder": "Name der Klasse (z. B. „9c Technik 2026/27\")",
+    "curriculumPlaceholder": "Lehrplan-Tag (z. B. „BW-MINT-9\")",
+    "create": "Erstellen",
+    "students": "Schüler",
+    "codes": "Codes",
+    "noStudents": "Noch keine Schüler beigetreten.",
+    "noCodes": "Noch keine Codes generiert.",
+    "newCode": "Neuen Code erzeugen",
+    "codeExpires": "Gültig bis",
+    "codeUses": "{uses} / {max} verwendet",
+    "deactivateStudent": "Deaktivieren",
+    "reactivateStudent": "Reaktivieren",
+    "exportPdf": "Bericht als PDF",
+    "needsInstitution": "Klassen-Verwaltung ist Teil des Institution-Plans."
+  },
   "consent": {
     "title": "Datenschutz",
     "body": "Wir setzen nur Cookies, die für den Betrieb der App nötig sind. Für Statistik und Werbung holen wir uns deine Einwilligung.",

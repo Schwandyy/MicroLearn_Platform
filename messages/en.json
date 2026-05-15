@@ -236,6 +236,25 @@
     "loginRequired": "Mentor is for Pro members.",
     "openMentor": "Open mentor"
   },
+  "classroom": {
+    "title": "Classroom management",
+    "subtitle": "Manage your classes, generate student codes and track progress.",
+    "newClassroom": "New classroom",
+    "namePlaceholder": "Classroom name (e.g. \"Grade 9 Tech 2026/27\")",
+    "curriculumPlaceholder": "Curriculum tag (e.g. \"BW-MINT-9\")",
+    "create": "Create",
+    "students": "Students",
+    "codes": "Codes",
+    "noStudents": "No students have joined yet.",
+    "noCodes": "No codes generated yet.",
+    "newCode": "Generate code",
+    "codeExpires": "Valid until",
+    "codeUses": "{uses} / {max} used",
+    "deactivateStudent": "Deactivate",
+    "reactivateStudent": "Reactivate",
+    "exportPdf": "Export PDF report",
+    "needsInstitution": "Classroom management is part of the Institution plan."
+  },
   "consent": {
     "title": "Privacy",
     "body": "We only set cookies necessary to run the app. For analytics and marketing we ask for your consent.",

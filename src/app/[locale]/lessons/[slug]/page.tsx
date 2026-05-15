@@ -9,6 +9,8 @@ import { Markdown } from "@/components/learning/markdown";
 import { WokwiEmbed } from "@/components/learning/wokwi-embed";
 import { QuizPlayer } from "@/components/learning/quiz-player";
 import { LessonCompleteButton } from "@/components/learning/lesson-complete-button";
+import { MentorChat } from "@/components/learning/mentor-chat";
+import { getUserEntitlement } from "@/server/lib/access";
 import { Cpu, Clock, Trophy } from "lucide-react";
 
 export default async function LessonPage({
@@ -40,6 +42,7 @@ export default async function LessonPage({
   const progress = await prisma.userProgress.findUnique({
     where: { userId_lessonId: { userId: session.user.id, lessonId: lesson.id } },
   });
+  const entitlement = await getUserEntitlement(session.user.id);
 
   const miniQuiz = lesson.quizzes.find((q) => q.kind === "MINI") ?? null;
   const finalQuiz = lesson.quizzes.find((q) => q.kind === "LESSON_FINAL") ?? null;
@@ -224,6 +227,8 @@ export default async function LessonPage({
           alreadyCompleted={Boolean(progress?.completedAt)}
         />
       </section>
+
+      <MentorChat lessonId={lesson.id} available={entitlement !== "free"} />
     </article>
   );
 }
