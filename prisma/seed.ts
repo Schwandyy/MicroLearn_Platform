@@ -782,15 +782,16 @@ async function main() {
     },
   ];
 
-  const courseBySlug: Record<string, { id: string }> = {};
-  for (let i = 0; i < courseDefs.length; i++) {
-    const c = courseDefs[i];
+  const courseBySlug = new Map<string, { id: string }>();
+  let courseIndex = 0;
+  for (const c of courseDefs) {
+    courseIndex += 1;
     const course = await prisma.course.upsert({
       where: { slug: c.slug },
       create: {
         slug: c.slug,
         pathId: c.pathId,
-        sortOrder: i + 1,
+        sortOrder: courseIndex,
         title_de: c.title_de,
         title_en: c.title_en,
         summary_de: c.summary_de,
@@ -806,12 +807,17 @@ async function main() {
         summary_en: c.summary_en,
       },
     });
-    courseBySlug[c.slug] = course;
+    courseBySlug.set(c.slug, course);
   }
-  const courseLicht = courseBySlug["erste-lichter"];
-  const courseBewegung = courseBySlug["bewegung-und-robotik"];
-  const courseSensoren = courseBySlug["sensoren-grundlagen"];
-  const courseAnzeige = courseBySlug["anzeige-und-iot"];
+  function getCourse(slug: string): { id: string } {
+    const c = courseBySlug.get(slug);
+    if (!c) throw new Error(`Course not seeded: ${slug}`);
+    return c;
+  }
+  const courseLicht = getCourse("erste-lichter");
+  const courseBewegung = getCourse("bewegung-und-robotik");
+  const courseSensoren = getCourse("sensoren-grundlagen");
+  const courseAnzeige = getCourse("anzeige-und-iot");
 
   // Alias für die existierende Blink-Lesson (lebt im Licht-Kurs)
   const course = courseLicht;
