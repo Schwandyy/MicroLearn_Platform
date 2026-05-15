@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signIn } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
@@ -12,10 +13,23 @@ import { Github, Mail, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { maybeStorePasswordCredential } from "@/lib/credential-store";
 
+/**
+ * Stellt sicher, dass eine callbackUrl nur intern auf unsere App zeigt.
+ * Open-Redirect-Schutz: niemals nach extern weiterleiten.
+ */
+function sanitizeCallback(raw: string | null): string {
+  if (!raw) return "/dashboard";
+  // muss mit einem einzelnen Slash beginnen (also relativ, kein „//foo")
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/dashboard";
+}
+
 export function SignInForm() {
   const t = useTranslations("auth");
   const router = useRouter();
   const { toast } = useToast();
+  const params = useSearchParams();
+  const callbackUrl = sanitizeCallback(params?.get("callbackUrl") ?? null);
   const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<"email" | "student">("email");
 
@@ -39,9 +53,9 @@ export function SignInForm() {
         return;
       }
       await maybeStorePasswordCredential(email, password);
-      // refresh() zwingt Server Components (Navbar) zur Neu-Auswertung der Session
       router.refresh();
-      router.push("/dashboard");
+      // Hard navigation, damit Server Components (auth()) den frischen Cookie sehen
+      window.location.href = callbackUrl;
     });
   };
 
@@ -63,7 +77,7 @@ export function SignInForm() {
         return;
       }
       router.refresh();
-      router.push("/dashboard");
+      window.location.href = callbackUrl;
     });
   };
 
@@ -75,7 +89,7 @@ export function SignInForm() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              onClick={() => signIn("google", { callbackUrl })}
             >
               <Mail className="mr-2 h-4 w-4" />
               {t("continueWith", { provider: "Google" })}
@@ -83,7 +97,7 @@ export function SignInForm() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+              onClick={() => signIn("github", { callbackUrl })}
             >
               <Github className="mr-2 h-4 w-4" />
               {t("continueWith", { provider: "GitHub" })}
@@ -91,7 +105,7 @@ export function SignInForm() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => signIn("apple", { callbackUrl: "/dashboard" })}
+              onClick={() => signIn("apple", { callbackUrl })}
             >
               <KeyRound className="mr-2 h-4 w-4" />
               {t("continueWith", { provider: "Apple" })}

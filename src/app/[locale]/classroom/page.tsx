@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/server/auth";
+import { requireSession } from "@/server/auth/require-session";
 import { prisma } from "@/server/db/prisma";
 import { getUserEntitlement } from "@/server/lib/access";
 import {
@@ -23,8 +22,10 @@ export default async function ClassroomPage({
   setRequestLocale(locale);
   const t = await getTranslations("classroom");
 
-  const session = await auth();
-  if (!session?.user?.id) redirect(`/${locale}/auth/sign-in`);
+  const session = await requireSession({
+    locale,
+    callbackPath: `/${locale}/classroom`,
+  });
 
   const entitlement = await getUserEntitlement(session.user.id);
   const isAdmin = session.user.role === "ADMIN";

@@ -1,7 +1,7 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { prisma } from "@/server/db/prisma";
-import { auth } from "@/server/auth";
+import { requireSession } from "@/server/auth/require-session";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
 import { StepPlayer, type StepView } from "@/components/learning/step-player";
@@ -17,12 +17,10 @@ export default async function LessonPage({
   setRequestLocale(locale);
   const l = locale as Locale;
 
-  const session = await auth();
-  console.log("[lesson]", slug, "session?", {
-    hasSession: Boolean(session),
-    userId: session?.user?.id,
+  const session = await requireSession({
+    locale,
+    callbackPath: `/${locale}/lessons/${slug}`,
   });
-  if (!session?.user?.id) redirect(`/${locale}/auth/sign-in`);
 
   const lesson = await prisma.lesson.findUnique({
     where: { slug },
