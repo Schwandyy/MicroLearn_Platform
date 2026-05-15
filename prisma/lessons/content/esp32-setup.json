@@ -1,0 +1,165 @@
+{
+  "slug": "esp32-setup",
+  "title_de": "Setup: Computer + ESP32 verbinden",
+  "title_en": "Setup: connect your computer + ESP32",
+  "summary_de": "Bevor wir Lichter blinken lassen: 10 Minuten Setup. Du installierst die Arduino IDE, machst sie mit dem ESP32 bekannt und stellst die Verbindung zum Board her. Danach kann's losgehen.",
+  "summary_en": "Before we blink any lights: 10 minutes of setup. You'll install the Arduino IDE, teach it about the ESP32, and connect to the board. Then we're ready to go.",
+  "estimatedMinutes": 10,
+  "xpReward": 60,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Bevor wir loslegen",
+      "title_en": "Before we start",
+      "body_de": "Damit dein Computer Code an den ESP32 schicken kann, brauchen wir drei Sachen: eine kostenlose Programmier-App (Arduino IDE), einen kleinen ESP32-Zusatz dafür, und eine funktionierende USB-Verbindung. Das dauert insgesamt 10 Minuten — wir gehen Schritt für Schritt durch.",
+      "body_en": "For your computer to send code to the ESP32, we need three things: a free programming app (Arduino IDE), a small ESP32 add-on inside it, and a working USB connection. The whole thing takes 10 minutes — we'll go through it step by step.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Was du brauchst",
+      "title_en": "What you need",
+      "body_de": "Deinen ESP32 DevKit V1, ein USB-Kabel (Micro-USB) und einen Computer mit Windows, macOS oder Linux. Wichtig beim Kabel: es muss ein DATENkabel sein, kein reines Lade-Kabel. Viele Handy-Kabel laden nur — die funktionieren hier nicht. Im Zweifel: das Kabel, das beim ESP32 dabei war.",
+      "body_en": "Your ESP32 DevKit V1, a USB cable (micro-USB), and a computer running Windows, macOS or Linux. Cable matters: it has to be a DATA cable, not a charge-only one. Lots of phone cables only charge — those won't work here. When in doubt: the cable that came with your ESP32.",
+      "payload": null
+    },
+    {
+      "kind": "SETUP",
+      "title_de": "1. Arduino IDE installieren",
+      "title_en": "1. Install the Arduino IDE",
+      "body_de": "Die Arduino IDE ist das Programm, in dem du deinen ESP32-Code schreibst und auf das Board lädst. Kostenlos, läuft auf jedem System.",
+      "body_en": "The Arduino IDE is the program where you'll write your ESP32 code and upload it to the board. Free, runs on every system.",
+      "payload": {
+        "checklist": [
+          {
+            "de": "Öffne https://www.arduino.cc/en/software in deinem Browser.",
+            "en": "Open https://www.arduino.cc/en/software in your browser."
+          },
+          {
+            "de": "Klicke auf den großen Download-Button für dein System (Windows / Mac / Linux).",
+            "en": "Click the large download button for your system (Windows / Mac / Linux)."
+          },
+          {
+            "de": "Auf der Spenden-Seite: einfach „Just download\" klicken — die IDE ist trotzdem komplett kostenlos.",
+            "en": "On the donation page: just click \"Just download\" — the IDE is completely free either way."
+          },
+          {
+            "de": "Installiere die heruntergeladene Datei (Doppelklick auf Win/Mac, ggf. „in Programme verschieben\").",
+            "en": "Install the downloaded file (double-click on Win/Mac, drag to Applications on Mac)."
+          },
+          {
+            "de": "Starte die Arduino IDE einmal — ein leeres Fenster mit Menü oben sollte erscheinen.",
+            "en": "Launch the Arduino IDE once — an empty window with a menu at the top should appear."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SETUP",
+      "title_de": "2. ESP32 in der IDE bekannt machen",
+      "title_en": "2. Tell the IDE about the ESP32",
+      "body_de": "Standardmäßig kennt die Arduino IDE nur Arduino-Boards. Wir fügen das ESP32-„Paket\" hinzu — danach taucht der ESP32 in der Board-Liste auf.",
+      "body_en": "Out of the box the Arduino IDE only knows Arduino boards. We add the ESP32 \"package\" — after that the ESP32 shows up in the board list.",
+      "payload": {
+        "checklist": [
+          {
+            "de": "In der IDE: Menü „Datei\" → „Voreinstellungen\" (Mac: „Arduino IDE\" → „Einstellungen\").",
+            "en": "In the IDE: menu \"File\" → \"Preferences\" (Mac: \"Arduino IDE\" → \"Settings\")."
+          },
+          {
+            "de": "Im Feld „Zusätzliche Boardverwalter-URLs\" diese Adresse einfügen: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json",
+            "en": "In the field \"Additional Boards Manager URLs\" paste this address: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+          },
+          {
+            "de": "Mit „OK\" bestätigen.",
+            "en": "Click \"OK\" to confirm."
+          },
+          {
+            "de": "Menü „Werkzeuge\" → „Board\" → „Boardverwalter\" öffnen.",
+            "en": "Menu \"Tools\" → \"Board\" → \"Boards Manager\" open it."
+          },
+          {
+            "de": "Im Suchfeld „esp32\" tippen. Du siehst „esp32 by Espressif Systems\". Auf „Installieren\" klicken — dauert 1–2 Minuten.",
+            "en": "Type \"esp32\" in the search box. You'll see \"esp32 by Espressif Systems\". Click \"Install\" — takes 1–2 minutes."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SETUP",
+      "title_de": "3. Board und Port wählen",
+      "title_en": "3. Choose your board and port",
+      "body_de": "Jetzt verbinden wir den ESP32 mit dem Computer und sagen der IDE, welches Board sie ansprechen soll.",
+      "body_en": "Now we connect the ESP32 to the computer and tell the IDE which board to talk to.",
+      "payload": {
+        "checklist": [
+          {
+            "de": "Stecke das USB-Kabel: eine Seite an den ESP32, andere Seite an den Computer. Eine kleine LED auf dem Board sollte leuchten — der ESP32 hat Strom.",
+            "en": "Plug the USB cable: one end to the ESP32, the other to the computer. A small LED on the board should light up — the ESP32 has power."
+          },
+          {
+            "de": "Menü „Werkzeuge\" → „Board\" → „esp32\" → „ESP32 Dev Module\" wählen.",
+            "en": "Menu \"Tools\" → \"Board\" → \"esp32\" → select \"ESP32 Dev Module\"."
+          },
+          {
+            "de": "Menü „Werkzeuge\" → „Port\" öffnen. Du siehst je nach System einen Eintrag wie „/dev/cu.usbserial-XXXX\" (Mac), „/dev/ttyUSB0\" (Linux) oder „COM3\" (Windows). Diesen Port wählen.",
+            "en": "Menu \"Tools\" → \"Port\". Depending on your system you'll see something like \"/dev/cu.usbserial-XXXX\" (Mac), \"/dev/ttyUSB0\" (Linux) or \"COM3\" (Windows). Select that port."
+          },
+          {
+            "de": "Siehst du keinen Port? Dann fehlt der USB-Treiber. Suche im Web nach „CP210x driver\" (für die meisten ESP32-DevKits) oder „CH340 driver\". Installieren, Computer neu starten — Port erscheint.",
+            "en": "No port showing up? Then the USB driver is missing. Search online for \"CP210x driver\" (covers most ESP32 DevKits) or \"CH340 driver\". Install, restart the computer — the port will appear."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Test: zeigt der ESP32 ein Lebenszeichen?",
+      "title_en": "Test: does the ESP32 respond?",
+      "body_de": "Menü „Werkzeuge\" → „Boardinformationen abrufen\". Es öffnet sich ein kleines Fenster mit BN: ESP32 Dev Module und einer Versionsnummer. Damit weißt du: der ESP32 ist erreichbar, der USB-Anschluss funktioniert, die IDE kennt das Board. Wenn das alles passt — du bist setup-fertig.",
+      "body_en": "Menu \"Tools\" → \"Get Board Info\". A small window opens with BN: ESP32 Dev Module and a version number. That tells you the ESP32 is reachable, USB works, the IDE knows the board. If all of that lines up — you're setup-ready.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Du steckst den ESP32 an, aber unter „Werkzeuge → Port\" siehst du nichts. Was ist die häufigste Ursache?",
+      "body_en": "You plug in the ESP32, but \"Tools → Port\" shows nothing. What's the most common cause?",
+      "payload": {
+        "prompt_de": "Du steckst den ESP32 an, aber unter „Werkzeuge → Port\" siehst du nichts. Was ist die häufigste Ursache?",
+        "prompt_en": "You plug in the ESP32, but \"Tools → Port\" shows nothing. What's the most common cause?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Der ESP32 ist kaputt.",
+            "label_en": "The ESP32 is broken."
+          },
+          {
+            "key": "b",
+            "label_de": "Entweder der USB-Treiber fehlt (CP210x oder CH340), oder das USB-Kabel überträgt nur Strom statt Daten.",
+            "label_en": "Either the USB driver is missing (CP210x or CH340), or the cable only carries power, not data."
+          },
+          {
+            "key": "c",
+            "label_de": "Du musst die Arduino IDE als Administrator starten.",
+            "label_en": "You need to run the Arduino IDE as administrator."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Du bist startbereit!",
+      "title_en": "You're ready to roll!",
+      "body_de": "Setup steht. Dein Computer und dein ESP32 reden jetzt miteinander — und das ist die Grundlage für alles, was folgt. In der nächsten Lesson lassen wir eine LED blinken: dein erstes echtes Mikroelektronik-Projekt.",
+      "body_en": "Setup is done. Your computer and your ESP32 are talking to each other now — and that's the foundation for everything that follows. In the next lesson we'll blink an LED: your first real microelectronics project.",
+      "payload": {
+        "xpAward": 60
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "slug": "esp32-setup",
+  "pathSlug": "mein-erstes-licht",
+  "courseSlug": "erste-lichter",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 0,
+  "estimatedMinutes": 10,
+  "xpReward": 60,
+  "title_de": "Setup: Computer + ESP32 verbinden",
+  "title_en": "Setup: connect your computer + ESP32",
+  "summary_de": "Bevor wir Lichter blinken lassen: 10 Minuten Setup. Du installierst die Arduino IDE, machst sie mit dem ESP32 bekannt und stellst die Verbindung zum Board her. Danach kann's losgehen.",
+  "summary_en": "Before we blink any lights: 10 minutes of setup. You'll install the Arduino IDE, teach it about the ESP32, and connect to the board. Then we're ready to go.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 }
+  ],
+  "learningGoal": "Lerner installiert die Arduino IDE, fügt den ESP32-Core hinzu, wählt Board + Port in der IDE und sieht den ESP32 erfolgreich verbunden. Voraussetzung für alle weiteren Lessons.",
+  "newConcepts": "Arduino IDE, ESP32-Core über Boards Manager, Board-Auswahl, Port-Auswahl, USB-Datenkabel vs. Lade-Kabel.",
+  "stepOutline": ["INTRO", "PARTS", "SETUP", "SETUP", "SETUP", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "Diese Lesson hat KEINEN Code-Walk — nur Software-Setup."
+}

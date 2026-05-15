@@ -54,43 +54,37 @@
       "body_de": "Keine externe Bibliothek nötig — der ESP32 bringt alles mit.",
       "body_en": "No external library needed — the ESP32 has everything built in.",
       "payload": {
-        "code": "// ESP32 — Buzzer Melodie\n// \"Alle meine Entchen\" / \"Twinkle Twinkle\"\n\n#define BUZZER_PIN 25\n#define LEDC_CHANNEL 0\n#define LEDC_RESOLUTION 8\n\n// Frequenzen in Hz\n#define C4 262\n#define D4 294\n#define E4 330\n#define F4 349\n#define G4 392\n#define A4 440\n\n// { Frequenz in Hz, Dauer in ms }\nstruct Note {\n  int freq;\n  int duration;\n};\n\n// Alle meine Entchen (erste 8 Noten)\nNote melody[] = {\n  {C4, 400},\n  {D4, 400},\n  {E4, 400},\n  {F4, 400},\n  {G4, 800},\n  {G4, 800},\n  {A4, 400},\n  {A4, 400}\n};\n\nint noteCount = sizeof(melody) / sizeof(melody[0]);\n\nvoid playNote(int freq, int ms) {\n  ledcWriteTone(LEDC_CHANNEL, freq);\n  delay(ms);\n  ledcWriteTone(LEDC_CHANNEL, 0); // Pause zwischen Noten\n  delay(50);\n}\n\nvoid setup() {\n  ledcSetup(LEDC_CHANNEL, 1000, LEDC_RESOLUTION);\n  ledcAttachPin(BUZZER_PIN, LEDC_CHANNEL);\n}\n\nvoid loop() {\n  for (int i = 0; i < noteCount; i++) {\n    playNote(melody[i].freq, melody[i].duration);\n  }\n  delay(2000); // Pause vor Wiederholung\n}",
+        "code": "// ESP32 — Buzzer Melodie\n// \"Alle meine Entchen\" — die ersten 8 Noten\n\n#define BUZZER_PIN 25\n#define KANAL 0\n\n// Wie hoch jede Note klingen soll (Hertz)\nint frequenzen[] = {262, 294, 330, 349, 392, 392, 440, 440};\n\n// Wie lange jede Note dauern soll (Millisekunden)\nint dauern[] = {400, 400, 400, 400, 800, 800, 400, 400};\n\nint anzahlNoten = 8;\n\nvoid setup() {\n  ledcSetup(KANAL, 1000, 8);\n  ledcAttachPin(BUZZER_PIN, KANAL);\n}\n\nvoid loop() {\n  for (int i = 0; i < anzahlNoten; i++) {\n    ledcWriteTone(KANAL, frequenzen[i]);\n    delay(dauern[i]);\n    ledcWriteTone(KANAL, 0);  // kurze Pause zwischen Noten\n    delay(50);\n  }\n  delay(2000);  // dann ein bisschen warten und wieder von vorne\n}",
         "lines": [
           {
             "from": 4,
-            "to": 13,
-            "explain_de": "Pin und LEDC-Kanal festlegen, Noten-Frequenzen als sprechende Konstanten definieren — so steht D4 statt 294 im Code.",
-            "explain_en": "Define pin and LEDC channel, then note frequencies as readable constants — D4 in the code instead of a bare 294."
+            "to": 5,
+            "explain_de": "Wir geben dem Buzzer-Pin (GPIO 25) und unserem PWM-Kanal (0) einen sprechenden Namen.",
+            "explain_en": "We give the buzzer pin (GPIO 25) and our PWM channel (0) readable names."
           },
           {
-            "from": 16,
-            "to": 30,
-            "explain_de": "Struct Note fasst Frequenz und Dauer zusammen. Das Array melody[] ist unsere Partitur — eine Zeile pro Note.",
-            "explain_en": "The Note struct pairs a frequency with a duration. The melody[] array is our score — one line per note."
+            "from": 7,
+            "to": 8,
+            "explain_de": "Acht Zahlen — die Frequenzen der ersten 8 Noten von „Alle meine Entchen\". 262 Hz ist das C, 294 Hz ist das D usw.",
+            "explain_en": "Eight numbers — the frequencies of the first 8 notes of „Twinkle Twinkle\". 262 Hz is a C, 294 Hz is a D, and so on."
           },
           {
-            "from": 32,
-            "to": 32,
-            "explain_de": "sizeof(melody) / sizeof(melody[0]) zählt die Noten automatisch — du kannst Noten hinzufügen, ohne diese Zahl manuell anzupassen.",
-            "explain_en": "sizeof(melody) / sizeof(melody[0]) counts notes automatically — add more notes without manually updating a counter."
+            "from": 10,
+            "to": 11,
+            "explain_de": "Dazu passend acht Längen in Millisekunden. Die Note an Position 0 ist 400 ms lang, die an Position 4 ist 800 ms lang — eine halbe Sekunde länger.",
+            "explain_en": "And the matching eight lengths in milliseconds. The note at position 0 is 400 ms long, the one at position 4 is 800 ms — half a second longer."
           },
           {
-            "from": 34,
-            "to": 39,
-            "explain_de": "playNote() startet den Ton, wartet die gewünschte Dauer, stoppt dann kurz (50 ms Stille) — so klingen gleiche Noten hintereinander nicht wie eine lange Note.",
-            "explain_en": "playNote() starts the tone, waits for the duration, then briefly silences (50 ms) — so repeated notes don't blur into one long beep."
+            "from": 15,
+            "to": 18,
+            "explain_de": "setup(): Wir konfigurieren den PWM-Kanal und verbinden ihn mit dem Buzzer-Pin. Ab jetzt kann der ESP32 Töne ausgeben.",
+            "explain_en": "setup(): We configure the PWM channel and attach it to the buzzer pin. From now on the ESP32 can produce tones."
           },
           {
-            "from": 41,
-            "to": 44,
-            "explain_de": "ledcSetup konfiguriert den PWM-Kanal, ledcAttachPin verbindet ihn mit GPIO 25.",
-            "explain_en": "ledcSetup configures the PWM channel, ledcAttachPin connects it to GPIO 25."
-          },
-          {
-            "from": 46,
-            "to": 51,
-            "explain_de": "loop() spielt die Melodie einmal durch und wartet 2 Sekunden, bevor es von vorn beginnt.",
-            "explain_en": "loop() plays through the melody once, then waits 2 seconds before starting over."
+            "from": 20,
+            "to": 28,
+            "explain_de": "loop() geht alle 8 Noten durch: Ton starten, Dauer warten, Ton aus, kurze Pause — fertig. Nach allen Noten 2 Sekunden warten, dann wiederholt sich das Lied.",
+            "explain_en": "loop() walks through all 8 notes: start the tone, wait for the duration, silence the tone, brief pause — done. After all notes, wait 2 seconds, then the song repeats."
           }
         ]
       }
