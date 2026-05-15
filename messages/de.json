@@ -156,7 +156,92 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "back": "Zurück",
+    "next": "Weiter"
+  },
+  "paths": {
+    "title": "Lernpfade",
+    "subtitle": "Strukturierte Wege durch die Mikroelektronik — wähle nach Level oder Board.",
+    "estimated": "{hours} Std.",
+    "lessonsCount": "{count} Lektionen",
+    "startPath": "Lernpfad starten",
+    "continuePath": "Weitermachen"
+  },
+  "lesson": {
+    "conceptHeading": "Konzept",
+    "miniQuizHeading": "Kleine Übung",
+    "projectHeading": "Projekt",
+    "finalQuizHeading": "Abschluss-Quiz",
+    "bomHeading": "Bauteile (BOM)",
+    "safetyHeading": "Sicherheitshinweise",
+    "schematicHeading": "Schaltplan",
+    "codeHeading": "Code",
+    "duration": "{min} Min",
+    "xp": "{xp} XP",
+    "markComplete": "Lektion abschließen",
+    "completed": "Abgeschlossen ✓",
+    "quizPassed": "Bestanden — gut gemacht!",
+    "quizFailed": "Noch nicht ganz — versuch es nochmal.",
+    "submitQuiz": "Auswerten",
+    "score": "Ergebnis: {score} %",
+    "noWokwi": "Für diese Lektion gibt es noch kein Wokwi-Projekt.",
+    "openInWokwi": "In Wokwi öffnen"
+  },
+  "pricing": {
+    "title": "Preise",
+    "subtitle": "Starte kostenlos. Upgrade, wenn du mehr willst.",
+    "month": "Monat",
+    "year": "Jahr",
+    "billedYearly": "jährlich abgerechnet",
+    "free": "Free",
+    "freePrice": "0 €",
+    "freeFeatures": [
+      "2 vollständige Beginner-Projekte",
+      "Community lesend",
+      "Wokwi 3×/Monat",
+      "Affiliate-Links + ethische Werbung"
+    ],
+    "freeCta": "Loslegen",
+    "pro": "Pro",
+    "proPriceMonthly": "9,99 €",
+    "proPriceYearly": "89 €",
+    "proFeatures": [
+      "Alle Lernpfade & Projekte",
+      "KI-Mentor (kontextuell)",
+      "Wokwi unbegrenzt + BOM-Export",
+      "Community vollständig",
+      "Streak-Freeze, Zertifikate, keine Werbung"
+    ],
+    "proCta": "Pro werden",
+    "institution": "Institution",
+    "institutionPrice": "49 €",
+    "institutionFeatures": [
+      "Alles aus Pro",
+      "Bis 50 Schüler",
+      "Klassenmanagement + Schüler-Code",
+      "Fortschrittsberichte (PDF)",
+      "Lehrplan-Mapping (BW, BY, NRW)",
+      "SAML/SSO, Prioritäts-Support"
+    ],
+    "institutionCta": "Demo anfragen",
+    "managePortal": "Abo verwalten"
+  },
+  "mentor": {
+    "title": "KI-Mentor",
+    "placeholder": "Frag, was du gerade nicht verstehst…",
+    "send": "Senden",
+    "remaining": "{n} Nachrichten heute übrig",
+    "limitReached": "Tageslimit erreicht. Morgen wieder verfügbar.",
+    "loginRequired": "Mentor ist nur für Pro-Mitglieder.",
+    "openMentor": "Mentor öffnen"
+  },
+  "consent": {
+    "title": "Datenschutz",
+    "body": "Wir setzen nur Cookies, die für den Betrieb der App nötig sind. Für Statistik und Werbung holen wir uns deine Einwilligung.",
+    "acceptAll": "Alle akzeptieren",
+    "essentialOnly": "Nur notwendige",
+    "learnMore": "Mehr erfahren"
   },
   "offline": {
     "title": "Du bist offline",

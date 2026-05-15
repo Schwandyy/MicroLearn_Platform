@@ -28,7 +28,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-App läuft auf <http://localhost:3000> → redirect nach `/de`.
+App läuft auf <http://localhost:3030> → redirect nach `/de`.
 
 > **Hinweis:** Ohne Docker Desktop kannst du auch eine lokale Postgres-Installation
 > (z. B. `brew install postgresql@16 && brew services start postgresql@16`) verwenden

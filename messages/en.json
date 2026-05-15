@@ -156,7 +156,92 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "edit": "Edit"
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next"
+  },
+  "paths": {
+    "title": "Learning paths",
+    "subtitle": "Structured routes through microelectronics — pick by level or board.",
+    "estimated": "{hours} h",
+    "lessonsCount": "{count} lessons",
+    "startPath": "Start path",
+    "continuePath": "Continue"
+  },
+  "lesson": {
+    "conceptHeading": "Concept",
+    "miniQuizHeading": "Quick exercise",
+    "projectHeading": "Project",
+    "finalQuizHeading": "Final quiz",
+    "bomHeading": "Bill of materials",
+    "safetyHeading": "Safety notes",
+    "schematicHeading": "Schematic",
+    "codeHeading": "Code",
+    "duration": "{min} min",
+    "xp": "{xp} XP",
+    "markComplete": "Mark lesson complete",
+    "completed": "Completed ✓",
+    "quizPassed": "Passed — nice work!",
+    "quizFailed": "Not quite — try again.",
+    "submitQuiz": "Submit",
+    "score": "Score: {score} %",
+    "noWokwi": "No Wokwi project for this lesson yet.",
+    "openInWokwi": "Open in Wokwi"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Start free. Upgrade when you want more.",
+    "month": "month",
+    "year": "year",
+    "billedYearly": "billed yearly",
+    "free": "Free",
+    "freePrice": "€0",
+    "freeFeatures": [
+      "2 complete beginner projects",
+      "Community read-only",
+      "Wokwi 3×/month",
+      "Affiliate links + ethical ads"
+    ],
+    "freeCta": "Get started",
+    "pro": "Pro",
+    "proPriceMonthly": "€9.99",
+    "proPriceYearly": "€89",
+    "proFeatures": [
+      "All paths & projects",
+      "AI mentor (context-aware)",
+      "Unlimited Wokwi + BOM export",
+      "Full community",
+      "Streak freeze, certificates, no ads"
+    ],
+    "proCta": "Go Pro",
+    "institution": "Institution",
+    "institutionPrice": "€49",
+    "institutionFeatures": [
+      "Everything in Pro",
+      "Up to 50 students",
+      "Classroom + class codes",
+      "Progress reports (PDF)",
+      "Curriculum mapping (BW, BY, NRW)",
+      "SAML/SSO, priority support"
+    ],
+    "institutionCta": "Request demo",
+    "managePortal": "Manage subscription"
+  },
+  "mentor": {
+    "title": "AI Mentor",
+    "placeholder": "Ask what you don't understand…",
+    "send": "Send",
+    "remaining": "{n} messages left today",
+    "limitReached": "Daily limit reached. Back tomorrow.",
+    "loginRequired": "Mentor is for Pro members.",
+    "openMentor": "Open mentor"
+  },
+  "consent": {
+    "title": "Privacy",
+    "body": "We only set cookies necessary to run the app. For analytics and marketing we ask for your consent.",
+    "acceptAll": "Accept all",
+    "essentialOnly": "Essential only",
+    "learnMore": "Learn more"
   },
   "offline": {
     "title": "You're offline",

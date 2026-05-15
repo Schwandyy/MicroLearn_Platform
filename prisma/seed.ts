@@ -215,6 +215,209 @@ async function main() {
   });
   console.log("  ✓ starter badge");
 
+  // -----------------------------------------------------------------------
+  // Demo course + lesson under ESP32 Basics path
+  // -----------------------------------------------------------------------
+  const esp32Path = await prisma.learningPath.findUnique({
+    where: { slug: "esp32-basics" },
+  });
+  const esp32Board = await prisma.board.findUnique({
+    where: { slug: "esp32-devkit-v1" },
+  });
+
+  if (esp32Path && esp32Board) {
+    const course = await prisma.course.upsert({
+      where: { slug: "esp32-getting-started" },
+      create: {
+        slug: "esp32-getting-started",
+        pathId: esp32Path.id,
+        sortOrder: 1,
+        title_de: "Erste Schritte mit dem ESP32",
+        title_en: "Getting started with the ESP32",
+        summary_de:
+          "Setup der Toolchain, erstes Blink, GPIO-Grundlagen und WLAN-Basics.",
+        summary_en:
+          "Set up your toolchain, blink your first LED, learn GPIO and WiFi basics.",
+        isPublished: true,
+        publishedAt: new Date(),
+      },
+      update: {},
+    });
+
+    const blinkLesson = await prisma.lesson.upsert({
+      where: { slug: "esp32-blink-led" },
+      create: {
+        slug: "esp32-blink-led",
+        courseId: course.id,
+        sortOrder: 1,
+        kind: "PROJECT",
+        xpReward: 100,
+        estimatedMinutes: 20,
+        wokwiProjectId: "336838716100935764",
+        title_de: "LED zum Blinken bringen",
+        title_en: "Make an LED blink",
+        body_de: `Wir starten klassisch: eine LED am ESP32 zum Blinken bringen.
+
+## Was du lernst
+- Wie der **GPIO-Pin** als Ausgang konfiguriert wird
+- Warum LEDs immer einen **Vorwiderstand** brauchen
+- Was \`delay(ms)\` macht und warum es für komplexere Programme keine gute Idee ist
+
+## Wie es funktioniert
+Der ESP32 hat 3,3 V Logikpegel. Eine typische rote LED hat eine Flussspannung von ~2 V und einen empfohlenen Strom von 10 mA. Damit ergibt sich der Vorwiderstand:
+
+\`R = (3,3 V - 2 V) / 0,01 A = 130 Ω\`
+
+In der Praxis nimmst du den nächstgrößeren Standardwert: **220 Ω**.
+`,
+        body_en: `We're starting with the classic: blinking an LED on the ESP32.
+
+## What you'll learn
+- How to configure a **GPIO pin** as an output
+- Why LEDs always need a **current-limiting resistor**
+- What \`delay(ms)\` does and why it's not a good idea for bigger programs
+
+## How it works
+The ESP32 runs at 3.3 V logic level. A typical red LED has a forward voltage of ~2 V and recommended current of 10 mA. So the resistor is:
+
+\`R = (3.3 V - 2 V) / 0.01 A = 130 Ω\`
+
+In practice pick the next standard value: **220 Ω**.
+`,
+        codeSnippet: `// ESP32 — Blink (DE: blinken / EN: blink)
+const int LED_PIN = 2; // onboard LED on most DevKit boards
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH);
+  delay(500);
+  digitalWrite(LED_PIN, LOW);
+  delay(500);
+}
+`,
+        schematicNotes_de:
+          "Eine externe LED an GPIO 2 → 220 Ω → LED → GND. Anode (langes Bein) Richtung GPIO.",
+        schematicNotes_en:
+          "External LED on GPIO 2 → 220 Ω → LED → GND. Anode (long leg) towards GPIO.",
+        safetyNotes_de:
+          "Niemals eine LED **ohne Vorwiderstand** direkt an einen GPIO hängen — sonst Kurzschluss-Strom durch die LED und der ESP32 schaltet ab. Verwende immer min. 220 Ω.",
+        safetyNotes_en:
+          "Never connect an LED **without a current-limiting resistor** directly to a GPIO — you'd short-circuit through the LED and brown out the ESP32. Always use 220 Ω or more.",
+        isPublished: true,
+        publishedAt: new Date(),
+        recommendedBoards: { connect: [{ id: esp32Board.id }] },
+      },
+      update: {},
+    });
+
+    await prisma.bOMItem.upsert({
+      where: { id: `${blinkLesson.id}-board` },
+      create: {
+        id: `${blinkLesson.id}-board`,
+        lessonId: blinkLesson.id,
+        boardId: esp32Board.id,
+        quantity: 1,
+        note_de: "ESP32 DevKit V1 oder kompatibel.",
+        note_en: "ESP32 DevKit V1 or compatible.",
+      },
+      update: {},
+    });
+
+    // Mini-quiz
+    await prisma.quiz.upsert({
+      where: { id: `${blinkLesson.id}-mini` },
+      create: {
+        id: `${blinkLesson.id}-mini`,
+        lessonId: blinkLesson.id,
+        kind: "MINI",
+        passScore: 60,
+        title_de: "Verstanden?",
+        title_en: "Got it?",
+        questions: [
+          {
+            id: "q1",
+            prompt_de: "Warum braucht eine LED am ESP32 einen Vorwiderstand?",
+            prompt_en: "Why does an LED on the ESP32 need a current-limiting resistor?",
+            options: [
+              {
+                key: "a",
+                label_de: "Damit sie blinkt",
+                label_en: "So that it blinks",
+              },
+              {
+                key: "b",
+                label_de:
+                  "Um den Strom durch die LED zu begrenzen — sonst geht sie kaputt",
+                label_en:
+                  "To limit the current through the LED — otherwise it burns out",
+              },
+              {
+                key: "c",
+                label_de: "Damit die Farbe stimmt",
+                label_en: "To set the right colour",
+              },
+              {
+                key: "d",
+                label_de: "Damit der ESP32 mehr Spannung liefert",
+                label_en: "So the ESP32 outputs more voltage",
+              },
+            ],
+            correctKey: "b",
+            weight: 1,
+          },
+        ],
+      },
+      update: {},
+    });
+
+    // Final quiz
+    await prisma.quiz.upsert({
+      where: { id: `${blinkLesson.id}-final` },
+      create: {
+        id: `${blinkLesson.id}-final`,
+        lessonId: blinkLesson.id,
+        kind: "LESSON_FINAL",
+        passScore: 70,
+        title_de: "Abschluss-Quiz",
+        title_en: "Final quiz",
+        questions: [
+          {
+            id: "f1",
+            prompt_de: "Welcher Modus ist nötig, damit ein Pin eine LED ansteuern kann?",
+            prompt_en: "Which pin mode is needed to drive an LED?",
+            options: [
+              { key: "a", label_de: "INPUT", label_en: "INPUT" },
+              { key: "b", label_de: "INPUT_PULLUP", label_en: "INPUT_PULLUP" },
+              { key: "c", label_de: "OUTPUT", label_en: "OUTPUT" },
+              { key: "d", label_de: "ANALOG", label_en: "ANALOG" },
+            ],
+            correctKey: "c",
+            weight: 1,
+          },
+          {
+            id: "f2",
+            prompt_de: "Welche Spannung führt der ESP32 an seinen GPIOs?",
+            prompt_en: "What is the ESP32 GPIO logic voltage?",
+            options: [
+              { key: "a", label_de: "1,8 V", label_en: "1.8 V" },
+              { key: "b", label_de: "3,3 V", label_en: "3.3 V" },
+              { key: "c", label_de: "5 V", label_en: "5 V" },
+              { key: "d", label_de: "12 V", label_en: "12 V" },
+            ],
+            correctKey: "b",
+            weight: 1,
+          },
+        ],
+      },
+      update: {},
+    });
+
+    console.log("  ✓ demo course + lesson + quizzes");
+  }
+
   console.log("✅ done");
 }
 
