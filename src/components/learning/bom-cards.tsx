@@ -9,7 +9,6 @@ import {
   ChevronDown,
   CheckCircle2,
   Circle,
-  Search,
 } from "lucide-react";
 import { PartIcon } from "./part-icon";
 import { cn } from "@/lib/utils";
@@ -18,8 +17,6 @@ export interface BomAffiliateOption {
   programMerchant: string;
   programDisplayName: string;
   url: string;
-  /** "direct" = link to specific product page; "search" = link to shop search results */
-  linkKind: "direct" | "search";
 }
 
 export interface BomItemView {
@@ -180,15 +177,9 @@ function BomCard({
                 target="_blank"
                 rel="noopener noreferrer sponsored"
               >
-                {primary.linkKind === "direct" ? (
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                ) : (
-                  <Search className="mr-2 h-4 w-4" />
-                )}
+                <ShoppingCart className="mr-2 h-4 w-4" />
                 <span className="truncate">
-                  {primary.linkKind === "direct"
-                    ? `${t("buyNow")} · ${primary.programDisplayName}`
-                    : t("searchAt", { shop: primary.programDisplayName })}
+                  {t("buyNow")} · {primary.programDisplayName}
                 </span>
               </a>
             </Button>

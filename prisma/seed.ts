@@ -263,54 +263,31 @@ async function main() {
     where: { slug: "esp32-devkit-v1" },
   });
 
-  // Affiliate-Links pro Bauteil pro Programm.
-  // WICHTIG: Direkt-URLs sind HTTP-verifiziert. Wo Verifikation 404 ergibt,
-  // landet ein Such-URL — das UI erkennt das automatisch am Pattern und
-  // zeigt „Bei {Shop} suchen" statt „Hier kaufen" (kein toter Link je).
-  // Verifizierungs-Skript: pnpm verify:affiliate (auf Wunsch nightly via Cron)
+  // Affiliate-Direktlinks pro Bauteil pro Programm.
+  // STRIKT: nur HTTP-200-verifizierte Direktlinks. Keine Such-URLs, keine
+  // Verlegenheits-Buttons. Wenn ein Programm für ein Bauteil keinen Direktlink
+  // hat, taucht es bei diesem Bauteil im UI gar nicht auf.
+  // Verifikation: pnpm verify:affiliate
   type Merchant = "AZ_DELIVERY" | "AMAZON_DE" | "BERRYBASE" | "REICHELT";
-
-  // Search-URL-Builder pro Shop (HTTP-verifizierte Pattern)
-  const searchUrl: Record<Merchant, (q: string) => string> = {
-    AZ_DELIVERY: (q) => `https://www.az-delivery.de/search?q=${encodeURIComponent(q)}`,
-    AMAZON_DE: (q) => `https://www.amazon.de/s?k=${encodeURIComponent(q)}`,
-    BERRYBASE: (q) => `https://www.berrybase.de/search?sSearch=${encodeURIComponent(q)}`,
-    REICHELT: (q) => `https://www.reichelt.de/de/de/index.html?ACTION=446&LA=0&q=${encodeURIComponent(q)}`,
-  };
 
   interface PartConfig {
     componentId?: string;
     boardId?: string;
-    /** Stand: 2026-05-15 HTTP-verifiziert. Bei Erweiterung: pnpm verify:affiliate ausführen. */
+    /** Stand: 2026-05-15 HTTP-verifiziert. Vor jedem Hinzufügen: pnpm verify:affiliate */
     directUrls: Partial<Record<Merchant, string>>;
-    /** Such-Query pro Shop für Fallback bei nicht-verifiziertem Direkt-URL */
-    searchQueries: Record<Merchant, string>;
   }
 
   const parts: PartConfig[] = [
     {
       componentId: ledComp.id,
-      directUrls: {
-        // Alle Direkt-URLs für 5mm-LED waren 404 → reine Suche
-      },
-      searchQueries: {
-        AZ_DELIVERY: "LED rot 5mm",
-        AMAZON_DE: "LED rot 5mm 100 Stück",
-        BERRYBASE: "LED 5mm rot",
-        REICHELT: "LED 5MM ROT",
-      },
+      // Kein verifizierter Direktlink → keine Kauf-Sektion in der Karte
+      directUrls: {},
     },
     {
       componentId: resComp.id,
       directUrls: {
         REICHELT:
           "https://www.reichelt.de/de/de/shop/produkt/metallschichtwiderstand_0_6_w_1_-_220_ohm-1956.html",
-      },
-      searchQueries: {
-        AZ_DELIVERY: "Widerstand 220 Ohm",
-        AMAZON_DE: "Widerstand 220 Ohm 1/4W",
-        BERRYBASE: "Widerstand 220",
-        REICHELT: "metallschichtwiderstand 220",
       },
     },
     {
@@ -319,23 +296,11 @@ async function main() {
         REICHELT:
           "https://www.reichelt.de/de/de/shop/produkt/steckboard_400-300070.html",
       },
-      searchQueries: {
-        AZ_DELIVERY: "Breadboard 400 Pin",
-        AMAZON_DE: "Breadboard 400 Pin",
-        BERRYBASE: "Breadboard 400",
-        REICHELT: "Steckboard 400",
-      },
     },
     {
       componentId: wireComp.id,
       directUrls: {
         AMAZON_DE: "https://www.amazon.de/dp/B01EV70C78",
-      },
-      searchQueries: {
-        AZ_DELIVERY: "Jumper Kabel Male Male",
-        AMAZON_DE: "Jumper Wire Male Male 40",
-        BERRYBASE: "Jumper Kabel Male Male",
-        REICHELT: "Jumperdraht Male Male",
       },
     },
     {
@@ -346,12 +311,6 @@ async function main() {
         AMAZON_DE: "https://www.amazon.de/dp/B071P98VTG",
         REICHELT:
           "https://www.reichelt.de/de/de/shop/produkt/espressif_esp32-devkitc-32d-298105.html",
-      },
-      searchQueries: {
-        AZ_DELIVERY: "ESP32 DevKit",
-        AMAZON_DE: "ESP32 DevKit V1 CP2102",
-        BERRYBASE: "ESP32 DevKit",
-        REICHELT: "ESP32 DEVKITC",
       },
     },
   ];
@@ -380,15 +339,13 @@ async function main() {
   ];
 
   let directLinks = 0;
-  let searchLinks = 0;
   for (const part of parts) {
     const ownerId = part.componentId ?? part.boardId;
     for (const { program, merchant } of allPrograms) {
       const direct = part.directUrls[merchant];
-      const baseUrl = direct ?? searchUrl[merchant](part.searchQueries[merchant]);
-      const url = appendTrackingTag(baseUrl, merchant, program.trackingId);
-      if (direct) directLinks += 1;
-      else searchLinks += 1;
+      if (!direct) continue; // kein Direktlink → Programm taucht für dieses Bauteil nicht auf
+      const url = appendTrackingTag(direct, merchant, program.trackingId);
+      directLinks += 1;
       const id = `${program.id}-${ownerId}`;
       await prisma.affiliateLink.upsert({
         where: { id },
@@ -396,19 +353,19 @@ async function main() {
           id,
           programId: program.id,
           productUrl: url,
-          productSlug: baseUrl,
+          productSlug: direct,
           componentId: part.componentId ?? null,
           boardId: part.boardId ?? null,
         },
         update: {
           productUrl: url,
-          productSlug: baseUrl,
+          productSlug: direct,
         },
       });
     }
   }
   console.log(
-    `  ✓ ${directLinks} direct + ${searchLinks} search affiliate links (no 404s)`,
+    `  ✓ ${directLinks} verifizierte Affiliate-Direktlinks (keine Such-URLs)`,
   );
 
   // -----------------------------------------------------------------------

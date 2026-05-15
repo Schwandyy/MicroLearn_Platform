@@ -77,36 +77,17 @@ export default async function LessonPage({
       ...(item.board?.affiliateLinks ?? []),
     ].filter((l) => l.program.isActive);
 
-    // Sort: AZ_DELIVERY first (default), then AMAZON_DE, then alphabetical
-    const order: Record<string, number> = {
-      AZ_DELIVERY: 0,
-      AMAZON_DE: 1,
-      BERRYBASE: 2,
-      REICHELT: 3,
-    };
-    allLinks.sort(
-      (a, b) =>
-        (order[a.program.merchant] ?? 99) - (order[b.program.merchant] ?? 99),
+    // Neutrale Sortierung — alphabetisch nach Anzeigename. Keine
+    // Anbieter-Bevorzugung (AZ-Delivery zählt hier nicht mehr als „erst").
+    allLinks.sort((a, b) =>
+      a.program.displayName.localeCompare(b.program.displayName, "de"),
     );
 
-    const affiliates: BomAffiliateOption[] = allLinks.map((link) => {
-      // Search-URL pattern recognition — keeps direct/search badges honest
-      const urlLower = link.productUrl.toLowerCase();
-      const isSearch =
-        urlLower.includes("/search") ||
-        urlLower.includes("/s?k=") ||
-        urlLower.includes("?ssearch=") ||
-        urlLower.includes("?search=") ||
-        urlLower.includes("&search=") ||
-        urlLower.includes("?q=") ||
-        urlLower.includes("&q=");
-      return {
-        programMerchant: link.program.merchant,
-        programDisplayName: link.program.displayName,
-        url: link.productUrl,
-        linkKind: isSearch ? ("search" as const) : ("direct" as const),
-      };
-    });
+    const affiliates: BomAffiliateOption[] = allLinks.map((link) => ({
+      programMerchant: link.program.merchant,
+      programDisplayName: link.program.displayName,
+      url: link.productUrl,
+    }));
 
     return {
       id: item.id,
