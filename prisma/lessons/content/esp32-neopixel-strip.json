@@ -40,11 +40,11 @@
       "kind": "EXPLAIN",
       "title_de": "Wie weiß jede LED, welche Farbe sie leuchten soll?",
       "title_en": "How does each LED know which color to show?",
-      "body_de": "Stell dir eine Schlange vor: Du flüsterst der ersten LED ihre Farbe zu, die gibt alle weiteren Farben einfach weiter — das nennt sich Daisy-Chain. Jede LED hat eine Adresse (Index 0, 1, 2 …). Im Code schreibst du strip.setPixelColor(2, rot) und genau LED Nummer 2 gehorcht.",
-      "body_en": "Think of a chain of whispers: you tell the first LED its color, and it passes the rest along — that's called daisy-chaining. Each LED has an address (index 0, 1, 2 …). In code you write strip.setPixelColor(2, red) and exactly LED number 2 lights up.",
+      "body_de": "Stell dir eine Schlange vor: Du flüsterst der ersten LED ihre Farbe zu, die gibt alle weiteren Farben einfach weiter — das nennt sich Daisy-Chain. Jede LED hat eine Adresse (Index 0, 1, 2 …). Im Code schreibst du strip.setPixelColor(2, rot) und genau LED Nummer 2 gehorcht. Wichtig: setPixelColor() merkt sich die Farbe erstmal nur im Speicher — du musst danach strip.show() aufrufen, damit alle Farben gemeinsam über das Datenkabel zur Schlange wandern. Das macht Animationen sauber: keine halben Zustände unterwegs.",
+      "body_en": "Think of a chain of whispers: you tell the first LED its color, and it passes the rest along — that's called daisy-chaining. Each LED has an address (index 0, 1, 2 …). In code you write strip.setPixelColor(2, red) and exactly LED number 2 lights up. Important: setPixelColor() only stores the color in memory — you then have to call strip.show() so all the colors travel together down the data wire to the chain. That keeps animations clean: no half-states along the way.",
       "payload": {
-        "keyPoint_de": "Alle LEDs hängen an EINEM Datenkabel — jede reagiert nur auf ihren eigenen Index.",
-        "keyPoint_en": "All LEDs share ONE data wire — each one only reacts to its own index."
+        "keyPoint_de": "setPixelColor() merkt sich die Farben, strip.show() schickt sie raus — erst zusammen, sonst wartet die LED.",
+        "keyPoint_en": "setPixelColor() remembers the colors, strip.show() pushes them out — only together, otherwise the LED stays put."
       }
     },
     {
