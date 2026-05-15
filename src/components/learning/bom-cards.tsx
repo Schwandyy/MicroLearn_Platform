@@ -112,27 +112,27 @@ function BomCard({
         owned && "border-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10",
       )}
     >
-      {/* Toggle: kleines Icon oben rechts */}
+      {/* Toggle: sichtbarer "Hab ich"-Schalter oben rechts */}
       <button
         type="button"
         aria-label={owned ? t("haveItChecked") : t("haveItToggle")}
-        title={owned ? t("haveItChecked") : t("haveItToggle")}
         onClick={onToggle}
         className={cn(
-          "absolute right-2 top-2 z-10 rounded-full p-1.5 transition",
+          "absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
           owned
-            ? "text-emerald-500 hover:bg-emerald-100/50"
-            : "text-muted-foreground/60 hover:bg-muted hover:text-foreground",
+            ? "border-emerald-400 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200"
+            : "border-border bg-background text-muted-foreground hover:border-primary hover:bg-muted hover:text-foreground",
         )}
       >
         {owned ? (
-          <CheckCircle2 className="h-6 w-6" />
+          <CheckCircle2 className="h-4 w-4" />
         ) : (
-          <Circle className="h-6 w-6" />
+          <Circle className="h-4 w-4" />
         )}
+        <span>{owned ? t("haveItChecked") : t("haveItToggle")}</span>
       </button>
 
-      <CardContent className="grid gap-3 p-4 pr-12">
+      <CardContent className="grid gap-3 p-4 pr-24 pt-10 sm:pt-4">
         {/* Header: Bild mit Quantity-Badge + Name */}
         <div className="flex items-start gap-3">
           <div className="relative h-16 w-16 flex-shrink-0">

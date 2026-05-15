@@ -7,6 +7,14 @@ interface BreadboardProps {
   ledColor?: "red" | "green" | "yellow" | "blue";
   ledAnimation?: "blink" | "solid" | "fade" | "pulse" | "off";
   highlightWires?: ("3v3" | "gnd" | "signal")[];
+  /**
+   * Aufbau-Stufe für Schritt-für-Schritt-Diagramme.
+   * 1 = nur Widerstand neu, LED + GND-Kabel ausgegraut
+   * 2 = + LED neu, GND-Kabel ausgegraut
+   * 3 = + GND-Kabel neu (alles eingebaut)
+   * "all" = alles voll sichtbar (Default — z.B. für Simulator)
+   */
+  buildStage?: 1 | 2 | 3 | "all";
   className?: string;
 }
 
@@ -26,10 +34,26 @@ export function Breadboard({
   ledColor = "red",
   ledAnimation = "off",
   highlightWires = [],
+  buildStage = "all",
   className,
 }: BreadboardProps) {
   const led = COLOR_MAP[ledColor]!;
   const isOn = ledOn && ledAnimation !== "off";
+
+  // Sichtbarkeit pro Element je nach Build-Stufe.
+  // active = neu/hervorgehoben, dim = noch nicht da (ausgegraut), full = sichtbar
+  type Vis = "active" | "dim" | "full";
+  const vis: { resistor: Vis; led: Vis; wireGnd: Vis; wireSignal: Vis } =
+    buildStage === "all"
+      ? { resistor: "full", led: "full", wireGnd: "full", wireSignal: "full" }
+      : buildStage === 1
+        ? { resistor: "active", led: "dim", wireGnd: "dim", wireSignal: "active" }
+        : buildStage === 2
+          ? { resistor: "full", led: "active", wireGnd: "dim", wireSignal: "full" }
+          : { resistor: "full", led: "full", wireGnd: "active", wireSignal: "full" };
+
+  const dimOpacity = (v: Vis): number => (v === "dim" ? 0.18 : 1);
+  const isActive = (v: Vis): boolean => v === "active";
 
   return (
     <div className={cn("relative mx-auto w-full max-w-xl", className)}>
@@ -92,7 +116,27 @@ export function Breadboard({
         </g>
 
         {/* Widerstand 220Ω (waagerecht) */}
-        <g transform="translate(155, 95)">
+        <g transform="translate(155, 95)" opacity={dimOpacity(vis.resistor)}>
+          {isActive(vis.resistor) && (
+            <rect
+              x="-20"
+              y="-22"
+              width="80"
+              height="44"
+              rx="6"
+              fill="#fef3c7"
+              stroke="#f59e0b"
+              strokeWidth="2"
+              strokeDasharray="4 3"
+            >
+              <animate
+                attributeName="stroke-opacity"
+                values="1;0.3;1"
+                dur="1.6s"
+                repeatCount="indefinite"
+              />
+            </rect>
+          )}
           <rect x="0" y="-6" width="40" height="12" rx="2" fill="#fde68a" stroke="#a16207" strokeWidth="1" />
           <line x1="-15" y1="0" x2="0" y2="0" stroke="#9ca3af" strokeWidth="1.5" />
           <line x1="40" y1="0" x2="55" y2="0" stroke="#9ca3af" strokeWidth="1.5" />
@@ -104,7 +148,27 @@ export function Breadboard({
         </g>
 
         {/* LED (rechts vom Widerstand) */}
-        <g transform="translate(280, 95)">
+        <g transform="translate(280, 95)" opacity={dimOpacity(vis.led)}>
+          {isActive(vis.led) && (
+            <rect
+              x="-20"
+              y="-22"
+              width="40"
+              height="60"
+              rx="6"
+              fill="#fef3c7"
+              stroke="#f59e0b"
+              strokeWidth="2"
+              strokeDasharray="4 3"
+            >
+              <animate
+                attributeName="stroke-opacity"
+                values="1;0.3;1"
+                dur="1.6s"
+                repeatCount="indefinite"
+              />
+            </rect>
+          )}
           {/* Glow */}
           <circle cx="0" cy="0" r="32" fill="url(#ledGlow)" />
           {/* Kuppe */}
@@ -136,19 +200,30 @@ export function Breadboard({
         <path
           d="M 70 100 Q 110 100 140 95"
           fill="none"
-          stroke={highlightWires.includes("signal") ? "#22c55e" : "#16a34a"}
-          strokeWidth={highlightWires.includes("signal") ? "3" : "2"}
+          stroke={highlightWires.includes("signal") || isActive(vis.wireSignal) ? "#22c55e" : "#16a34a"}
+          strokeWidth={highlightWires.includes("signal") || isActive(vis.wireSignal) ? "3" : "2"}
           strokeLinecap="round"
+          opacity={dimOpacity(vis.wireSignal)}
         />
         {/* Widerstand-Ende → LED Anode */}
-        <line x1="210" y1="95" x2="277" y2="92" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" />
+        <line
+          x1="210"
+          y1="95"
+          x2="277"
+          y2="92"
+          stroke="#9ca3af"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity={vis.led === "dim" ? 0.18 : 1}
+        />
         {/* LED Cathode → GND */}
         <path
           d="M 283 125 Q 283 200 50 220"
           fill="none"
-          stroke={highlightWires.includes("gnd") ? "#3b82f6" : "#2563eb"}
-          strokeWidth={highlightWires.includes("gnd") ? "3" : "2"}
+          stroke={highlightWires.includes("gnd") || isActive(vis.wireGnd) ? "#3b82f6" : "#2563eb"}
+          strokeWidth={highlightWires.includes("gnd") || isActive(vis.wireGnd) ? "3" : "2"}
           strokeLinecap="round"
+          opacity={dimOpacity(vis.wireGnd)}
         />
       </svg>
     </div>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Github, Mail, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { maybeStorePasswordCredential } from "@/lib/credential-store";
 
 export function SignInForm() {
   const t = useTranslations("auth");
@@ -21,10 +22,12 @@ export function SignInForm() {
   const onEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    const email = String(data.get("email") ?? "");
+    const password = String(data.get("password") ?? "");
     startTransition(async () => {
       const res = await signIn("credentials", {
-        email: data.get("email"),
-        password: data.get("password"),
+        email,
+        password,
         redirect: false,
       });
       if (res?.error) {
@@ -35,6 +38,9 @@ export function SignInForm() {
         });
         return;
       }
+      await maybeStorePasswordCredential(email, password);
+      // refresh() zwingt Server Components (Navbar) zur Neu-Auswertung der Session
+      router.refresh();
       router.push("/dashboard");
     });
   };
@@ -56,6 +62,7 @@ export function SignInForm() {
         });
         return;
       }
+      router.refresh();
       router.push("/dashboard");
     });
   };

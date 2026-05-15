@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -22,6 +22,7 @@ import { Breadboard } from "./breadboard-svg";
 import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
+import { Esp32PinVisual } from "./esp32-pin-visual";
 
 export type StepKind =
   | "INTRO"
@@ -68,10 +69,15 @@ export function StepPlayer({
   const { toast } = useToast();
   const [stepIndex, setStepIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
+  // Quiz-Gate: pro QUIZ-Step merken, ob korrekt gelöst (key = step.id)
+  const [quizPassed, setQuizPassed] = useState<Record<string, boolean>>({});
   const total = steps.length;
   const current = steps[stepIndex];
+  const currentQuizPassed = current?.kind === "QUIZ" ? Boolean(quizPassed[current.id]) : true;
 
   const goNext = () => {
+    // QUIZ-Steps blockieren das Weiterklicken bis korrekt beantwortet
+    if (current?.kind === "QUIZ" && !currentQuizPassed) return;
     if (stepIndex < total - 1) {
       setStepIndex(stepIndex + 1);
       return;
@@ -131,6 +137,9 @@ export function StepPlayer({
               safetyNotes={safetyNotes}
               xpReward={xpReward}
               locale={locale}
+              onQuizPass={() =>
+                setQuizPassed((prev) => ({ ...prev, [current.id]: true }))
+              }
             />
           )}
         </div>
@@ -153,6 +162,10 @@ export function StepPlayer({
             isPending={isPending}
             onClick={goNext}
             stepPayload={current?.payload ?? null}
+            disabled={current?.kind === "QUIZ" && !currentQuizPassed}
+            hintWhenDisabled={
+              current?.kind === "QUIZ" ? t("quizGateHint") : undefined
+            }
           />
         </div>
       </footer>
@@ -168,6 +181,7 @@ function StepBody({
   safetyNotes,
   xpReward,
   locale,
+  onQuizPass,
 }: {
   step: StepView;
   lessonTitle: string;
@@ -176,6 +190,7 @@ function StepBody({
   safetyNotes: string | null;
   xpReward: number;
   locale: "de" | "en";
+  onQuizPass: () => void;
 }) {
   const t = useTranslations("lesson");
   const payload = step.payload ?? {};
@@ -226,6 +241,8 @@ function StepBody({
         ((payload as Record<string, unknown>)[
           `instruction_${locale}`
         ] as string | undefined) ?? step.body;
+      const buildStage = (payload as { buildStage?: 1 | 2 | 3 | "all" })
+        .buildStage;
       return (
         <div className="space-y-6">
           <header>
@@ -240,6 +257,7 @@ function StepBody({
               ((payload as { highlightWires?: ("3v3" | "gnd" | "signal")[] })
                 .highlightWires) ?? []
             }
+            buildStage={buildStage}
           />
           {instruction && (
             <Card>
@@ -290,7 +308,15 @@ function StepBody({
         </div>
       );
     case "QUIZ":
-      return <QuizStep payload={payload} body={step.body} title={step.title} locale={locale} />;
+      return (
+        <QuizStep
+          payload={payload}
+          body={step.body}
+          title={step.title}
+          locale={locale}
+          onPass={onQuizPass}
+        />
+      );
     case "CELEBRATE":
       return (
         <div className="space-y-6 py-10 text-center">
@@ -303,12 +329,15 @@ function StepBody({
           </p>
         </div>
       );
-    case "EXPLAIN":
+    case "EXPLAIN": {
+      const highlightPin = (payload as { highlightPin?: "GPIO2" | "GND" | "3V3" })
+        .highlightPin;
       return (
         <div className="space-y-5">
           <header>
             <h2 className="text-2xl font-bold">{step.title}</h2>
           </header>
+          {highlightPin && <Esp32PinVisual highlightPin={highlightPin} />}
           <Card>
             <CardContent className="p-6">
               <p className="text-base leading-relaxed">{step.body}</p>
@@ -324,6 +353,7 @@ function StepBody({
           </Card>
         </div>
       );
+    }
   }
 }
 
@@ -332,11 +362,13 @@ function QuizStep({
   title,
   body,
   locale,
+  onPass,
 }: {
   payload: Record<string, unknown>;
   title: string;
   body: string;
   locale: "de" | "en";
+  onPass: () => void;
 }) {
   const t = useTranslations("lesson");
   const [answer, setAnswer] = useState<string | null>(null);
@@ -351,6 +383,10 @@ function QuizStep({
   const correctKey = payload.correctKey as string | undefined;
   const isCorrect = submitted && answer === correctKey;
   const isWrong = submitted && answer !== correctKey;
+
+  useEffect(() => {
+    if (isCorrect) onPass();
+  }, [isCorrect, onPass]);
 
   return (
     <div className="space-y-5">
@@ -431,15 +467,18 @@ function NextButton({
   isPending,
   onClick,
   stepPayload,
+  disabled,
+  hintWhenDisabled,
 }: {
   stepKind: StepKind;
   isLast: boolean;
   isPending: boolean;
   onClick: () => void;
   stepPayload: Record<string, unknown> | null;
+  disabled?: boolean;
+  hintWhenDisabled?: string;
 }) {
   const t = useTranslations("lesson");
-  // For Quiz steps, we let the quiz UI handle correctness — Next still works.
   void stepPayload;
   const label = isLast
     ? t("finish")
@@ -447,9 +486,20 @@ function NextButton({
       ? t("letsGo")
       : t("next");
   return (
-    <Button type="button" onClick={onClick} disabled={isPending} size="lg">
-      {label}
-      <ArrowRight className="ml-2 h-4 w-4" />
-    </Button>
+    <div className="flex flex-col items-end gap-1">
+      <Button
+        type="button"
+        onClick={onClick}
+        disabled={isPending || disabled}
+        size="lg"
+        title={disabled ? hintWhenDisabled : undefined}
+      >
+        {label}
+        <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+      {disabled && hintWhenDisabled && (
+        <span className="text-xs text-muted-foreground">{hintWhenDisabled}</span>
+      )}
+    </div>
   );
 }

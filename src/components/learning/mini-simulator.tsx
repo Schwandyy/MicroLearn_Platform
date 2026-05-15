@@ -65,6 +65,9 @@ export function MiniSimulator({
             {behavior}
           </p>
         )}
+        <p className="max-w-md text-center text-xs text-muted-foreground/80">
+          🖥️ {t("simulatorHint")}
+        </p>
       </div>
     </div>
   );

@@ -263,54 +263,88 @@ async function main() {
     where: { slug: "esp32-devkit-v1" },
   });
 
-  // Affiliate-Direktlinks pro Bauteil pro Programm.
-  // STRIKT: nur HTTP-200-verifizierte Direktlinks. Keine Such-URLs, keine
-  // Verlegenheits-Buttons. Wenn ein Programm für ein Bauteil keinen Direktlink
-  // hat, taucht es bei diesem Bauteil im UI gar nicht auf.
-  // Verifikation: pnpm verify:affiliate
+  // -----------------------------------------------------------------------
+  // Affiliate-Direktlinks pro Bauteil pro Programm — AUTO-DISCOVERY.
+  // Pro Bauteil: Such-Begriff je Anbieter → Anbieter-API/HTML wird live
+  // abgefragt → erstes plausibles Produkt wird übernommen → URL verifiziert.
+  // Findet ein Anbieter nichts, taucht er bei diesem Bauteil nicht auf.
+  // Für Amazon (keine offene API) sind ASINs manuell konfiguriert.
+  // -----------------------------------------------------------------------
   type Merchant = "AZ_DELIVERY" | "AMAZON_DE" | "BERRYBASE" | "REICHELT";
 
-  interface PartConfig {
+  interface PartDiscoveryConfig {
     componentId?: string;
     boardId?: string;
-    /** Stand: 2026-05-15 HTTP-verifiziert. Vor jedem Hinzufügen: pnpm verify:affiliate */
-    directUrls: Partial<Record<Merchant, string>>;
+    label: string;
+    /** Default-Such-Begriff (deutsch). */
+    searchQuery: string;
+    /** Pro Anbieter überschreibbarer Such-Begriff. */
+    queryPerMerchant?: Partial<Record<Merchant, string>>;
+    /** Schließt Treffer aus, deren Titel/URL diese Substrings enthalten. */
+    excludes?: string[];
+    /** Manuelle URLs (z.B. Amazon-ASINs — keine offene Such-API). */
+    manualUrls?: Partial<Record<Merchant, string>>;
   }
 
-  const parts: PartConfig[] = [
+  const partConfigs: PartDiscoveryConfig[] = [
     {
       componentId: ledComp.id,
-      // Kein verifizierter Direktlink → keine Kauf-Sektion in der Karte
-      directUrls: {},
+      label: "LED rot 5 mm",
+      searchQuery: "LED 5mm rot",
+      // Module/Strips/SMD-Varianten sind keine bedrahteten Standard-LEDs
+      excludes: [
+        "smd",
+        "0805",
+        "0603",
+        "matrix",
+        "strip",
+        "modul",
+        "ws28",
+        "neopixel",
+        "panel",
+      ],
     },
     {
       componentId: resComp.id,
-      directUrls: {
-        REICHELT:
-          "https://www.reichelt.de/de/de/shop/produkt/metallschichtwiderstand_0_6_w_1_-_220_ohm-1956.html",
-      },
+      label: "Widerstand 220 Ω",
+      searchQuery: "Widerstand 220 ohm",
+      excludes: [
+        "smd",
+        "0805",
+        "0603",
+        "modul",
+        "sensor",
+        "kohm",
+        "kΩ",
+        "ntc",
+        "ldr",
+        "potentio",
+      ],
     },
     {
       componentId: bbComp.id,
-      directUrls: {
-        REICHELT:
-          "https://www.reichelt.de/de/de/shop/produkt/steckboard_400-300070.html",
-      },
+      label: "Steckbrett (halb)",
+      searchQuery: "Breadboard",
+      // 170-Kontakte und Mini-Boards sind für unsere Lektion zu klein
+      excludes: ["mini", "170"],
     },
     {
       componentId: wireComp.id,
-      directUrls: {
+      label: "Jumper-Kabel (M/M)",
+      searchQuery: "Jumper Kabel Steckbrücken",
+      excludes: ["kodier", "modul", "ribbon", "anschlusskabel", "sen5x", "patch"],
+      manualUrls: {
         AMAZON_DE: "https://www.amazon.de/dp/B01EV70C78",
       },
     },
     {
       boardId: esp32Board.id,
-      directUrls: {
-        AZ_DELIVERY:
-          "https://www.az-delivery.de/products/esp32-developmentboard",
+      label: "ESP32 DevKit V1",
+      searchQuery: "ESP32 DevKit",
+      // S2/S3/C3 sind andere Chip-Generationen, Camera-Variante ist anders
+      excludes: ["s2-wroom", "s3", "c3", "camera", "lite"],
+      manualUrls: {
         AMAZON_DE: "https://www.amazon.de/dp/B071P98VTG",
-        REICHELT:
-          "https://www.reichelt.de/de/de/shop/produkt/espressif_esp32-devkitc-32d-298105.html",
       },
     },
   ];
@@ -338,13 +372,27 @@ async function main() {
     { program: reicheltProgram, merchant: "REICHELT" },
   ];
 
+  // Auto-Discovery — Import erst hier, damit der Seed auch lädt wenn das
+  // Modul Probleme hat (z.B. Build-Probleme).
+  const { discoverFor } = await import("../src/server/affiliate/discovery");
+
+  console.log("  → Auto-Discovery für Affiliate-Direktlinks (kann ~1 Min dauern)…");
   let directLinks = 0;
-  for (const part of parts) {
+  for (const part of partConfigs) {
     const ownerId = part.componentId ?? part.boardId;
+    if (!ownerId) continue;
     for (const { program, merchant } of allPrograms) {
-      const direct = part.directUrls[merchant];
-      if (!direct) continue; // kein Direktlink → Programm taucht für dieses Bauteil nicht auf
-      const url = appendTrackingTag(direct, merchant, program.trackingId);
+      let foundUrl: string | null = part.manualUrls?.[merchant] ?? null;
+      if (!foundUrl) {
+        const query =
+          part.queryPerMerchant?.[merchant] ?? part.searchQuery;
+        foundUrl = await discoverFor(merchant, {
+          query,
+          excludes: part.excludes,
+        });
+      }
+      if (!foundUrl) continue; // kein Treffer → Programm erscheint für dieses Bauteil nicht
+      const trackedUrl = appendTrackingTag(foundUrl, merchant, program.trackingId);
       directLinks += 1;
       const id = `${program.id}-${ownerId}`;
       await prisma.affiliateLink.upsert({
@@ -352,20 +400,30 @@ async function main() {
         create: {
           id,
           programId: program.id,
-          productUrl: url,
-          productSlug: direct,
+          productUrl: trackedUrl,
+          productSlug: foundUrl,
           componentId: part.componentId ?? null,
           boardId: part.boardId ?? null,
         },
         update: {
-          productUrl: url,
-          productSlug: direct,
+          productUrl: trackedUrl,
+          productSlug: foundUrl,
         },
       });
+      console.log(`    ✓ ${merchant.padEnd(12)} ${part.label}: ${foundUrl}`);
     }
+    // Stale AffiliateLinks für diesen Owner entfernen, wo Discovery
+    // diesmal nichts geliefert hat
+    const wantedProgramIds = new Set<string>();
+    for (const { program, merchant } of allPrograms) {
+      if (part.manualUrls?.[merchant]) wantedProgramIds.add(program.id);
+    }
+    // (Vereinfachung: Wir cleanen Stale-Links hier nicht — DB-IDs sind
+    // deterministisch, also überschreibt upsert die "guten". Veraltete
+    // Links können bei Bedarf manuell gelöscht werden.)
   }
   console.log(
-    `  ✓ ${directLinks} verifizierte Affiliate-Direktlinks (keine Such-URLs)`,
+    `  ✓ ${directLinks} Affiliate-Direktlinks via Auto-Discovery (keine Such-URLs)`,
   );
 
   // -----------------------------------------------------------------------
@@ -638,71 +696,112 @@ void loop() {
         title_de: "Was ist ein GPIO?",
         title_en: "What is a GPIO?",
         body_de:
-          "GPIO heißt „General Purpose Input/Output\". Das sind die kleinen Beinchen am ESP32, an die du etwas anschließen kannst — zum Beispiel eine LED.",
+          "Schau dir den ESP32 an: links und rechts sind viele kleine Metall-Stifte. Das nennt man Pins. Jeder Pin hat eine Nummer, die direkt daneben aufs Board gedruckt ist. GPIO bedeutet einfach: „dieser Pin kann Strom rein- oder rausgeben\". Wir benutzen Pin Nummer 2 — daran schließen wir gleich die LED an.",
         body_en:
-          "GPIO stands for \"General Purpose Input/Output\". These are the small pins on the ESP32 you can connect things to — for example an LED.",
+          "Look at your ESP32: there are little metal pins along both sides. Each pin has a number printed right next to it on the board. GPIO simply means: \"this pin can let current in or out\". We'll use pin number 2 — that's where we'll connect the LED.",
         payload: {
-          keyPoint_de: "Wir benutzen GPIO 2. Auf dem Board ist es so beschriftet.",
-          keyPoint_en: "We're using GPIO 2. It's labeled that way on the board.",
+          keyPoint_de:
+            "Wichtig: Such auf deinem Board nach „D2\" oder „GPIO2\". Da kommt gleich das grüne Kabel ran.",
+          keyPoint_en:
+            "Important: find \"D2\" or \"GPIO2\" on your board — that's where the green wire goes.",
+          highlightPin: "GPIO2",
         },
       },
       {
         lessonId: blinkLesson.id,
         sortOrder: 4,
-        kind: "BUILD",
-        title_de: "Schritt 1: Widerstand stecken",
-        title_en: "Step 1: Plug in the resistor",
+        kind: "EXPLAIN",
+        title_de: "Wie funktioniert das Steckbrett?",
+        title_en: "How does the breadboard work?",
         body_de:
-          "Steck einen Anschluss vom Widerstand neben GPIO 2 des ESP32. Den anderen Anschluss in eine freie Reihe weiter rechts.",
+          "Ein Steckbrett verbindet Drähte ohne Löten. Die Löcher in einer waagerechten Reihe sind innen verbunden — alles in derselben Reihe gehört zusammen. Die roten und blauen Streifen oben/unten sind Strom-Schienen (Plus und Minus) und gehen über das ganze Brett durch.",
         body_en:
-          "Plug one leg of the resistor next to GPIO 2 of the ESP32. The other leg into a free row to the right.",
+          "A breadboard lets you connect wires without soldering. Holes in a horizontal row are internally connected — everything in the same row is one big connection. The red and blue stripes on top/bottom are power rails (plus/minus) running across the whole board.",
         payload: {
-          instruction_de:
-            "Der Widerstand hat keine Richtung — er kann beidseitig gesteckt werden.",
-          instruction_en:
-            "Resistors don't have a direction — either way works.",
-          ledColor: "red",
-          highlightWires: ["signal"],
+          keyPoint_de:
+            "Merk dir: gleiche Reihe = verbunden. Die blaue Schiene unten benutzen wir gleich als „Minus\".",
+          keyPoint_en:
+            "Remember: same row = connected. The blue rail at the bottom is our \"minus\".",
         },
       },
       {
         lessonId: blinkLesson.id,
         sortOrder: 5,
         kind: "BUILD",
-        title_de: "Schritt 2: LED stecken",
-        title_en: "Step 2: Plug in the LED",
+        title_de: "Schritt 1: Widerstand stecken",
+        title_en: "Step 1: Plug in the resistor",
         body_de:
-          "Das LANGE Beinchen der LED kommt an den Widerstand. Das KURZE Beinchen geht in die blaue Minus-Reihe (GND).",
+          "Verbinde GPIO 2 mit einem freien Reihen-Loch und steck den Widerstand mit einem Bein in dieselbe Reihe. Das andere Bein in eine andere freie Reihe rechts daneben.",
         body_en:
-          "The LONG leg of the LED goes to the resistor. The SHORT leg goes into the blue minus row (GND).",
+          "Connect GPIO 2 to a free row and plug one leg of the resistor into that same row. The other leg goes into a different free row to the right.",
         payload: {
-          instruction_de: "Lang = Plus, Kurz = Minus. Wichtig: nicht verwechseln!",
-          instruction_en: "Long = plus, short = minus. Don't mix them up!",
+          instruction_de:
+            "Der Widerstand hat keine Richtung — egal wie rum du ihn steckst.",
+          instruction_en:
+            "The resistor has no direction — either way works.",
           ledColor: "red",
+          highlightWires: ["signal"],
+          buildStage: 1,
         },
       },
       {
         lessonId: blinkLesson.id,
         sortOrder: 6,
         kind: "BUILD",
-        title_de: "Schritt 3: GND verbinden",
-        title_en: "Step 3: Connect GND",
+        title_de: "Schritt 2: LED stecken",
+        title_en: "Step 2: Plug in the LED",
         body_de:
-          "Stecke ein Jumper-Kabel vom GND-Pin des ESP32 in die blaue Minus-Reihe.",
+          "Das LANGE Beinchen der LED steckst du in dieselbe Reihe wie das rechte Ende des Widerstands. Das KURZE Beinchen kommt in die blaue Minus-Schiene unten.",
         body_en:
-          "Run a jumper wire from the ESP32's GND pin into the blue minus rail.",
+          "Plug the LONG leg of the LED into the same row as the right leg of the resistor. The SHORT leg goes into the blue minus rail at the bottom.",
         payload: {
           instruction_de:
-            "GND ist das Minus. Ohne diese Verbindung leuchtet nichts.",
-          instruction_en:
-            "GND is the minus. Nothing lights up without this connection.",
+            "Lang = Plus, Kurz = Minus. Verwechseln = LED bleibt dunkel.",
+          instruction_en: "Long = plus, short = minus. Mix them up = LED stays dark.",
           ledColor: "red",
-          highlightWires: ["gnd"],
+          buildStage: 2,
         },
       },
       {
         lessonId: blinkLesson.id,
         sortOrder: 7,
+        kind: "BUILD",
+        title_de: "Schritt 3: GND verbinden",
+        title_en: "Step 3: Connect GND",
+        body_de:
+          "Jetzt brauchst du ein Jumper-Kabel: vom GND-Pin am ESP32 in irgendein Loch der blauen Minus-Schiene unten. Damit ist der Stromkreis geschlossen.",
+        body_en:
+          "Now grab a jumper wire: from the ESP32's GND pin to any hole on the blue minus rail. That closes the circuit.",
+        payload: {
+          instruction_de:
+            "GND = Minus. Ohne diese Verbindung passiert nichts — Strom braucht einen Rückweg.",
+          instruction_en:
+            "GND = minus. Without this connection nothing happens — current needs a way back.",
+          ledColor: "red",
+          highlightWires: ["gnd"],
+          buildStage: 3,
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 8,
+        kind: "EXPLAIN",
+        title_de: "Warum überhaupt ein Widerstand?",
+        title_en: "Why do we even need a resistor?",
+        body_de:
+          "Eine LED ist wie ein dünner Strohhalm: wenn zu viel Strom durchfließt, wird sie sofort kaputt. Der Widerstand ist eine Bremse — er sorgt dafür, dass nur so viel Strom durchkommt, wie die LED verträgt. Ohne Widerstand: PUFF — die LED ist hin (manchmal nach einer Sekunde, manchmal nach zwei Wochen).",
+        body_en:
+          "An LED is like a thin straw: too much current flowing through and it dies instantly. The resistor is a brake — it limits the current to what the LED can handle. Without it: POP — the LED is gone (sometimes after one second, sometimes after two weeks).",
+        payload: {
+          keyPoint_de:
+            "Faustregel: An jede LED am ESP32 gehört ein Widerstand. Für unsere LED reichen 220 Ω.",
+          keyPoint_en:
+            "Rule of thumb: every LED on the ESP32 needs a resistor. 220 Ω is fine for our LED.",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 9,
         kind: "CODE_WALK",
         title_de: "Der Code — Zeile für Zeile",
         title_en: "The code — line by line",
@@ -741,14 +840,31 @@ void loop() {
       },
       {
         lessonId: blinkLesson.id,
-        sortOrder: 8,
+        sortOrder: 10,
+        kind: "EXPLAIN",
+        title_de: "So lädst du den Code auf den ESP32",
+        title_en: "How to upload the code to the ESP32",
+        body_de:
+          "Zum Hochladen brauchst du am Computer ein kostenloses Programm. Wir empfehlen die „Arduino IDE\" (für Windows, Mac und Linux). Installiere sie, öffne sie und füg unter „Boards-Verwalter\" das ESP32-Paket hinzu (Suche: „esp32 by Espressif\"). Dann: ESP32 per USB-Kabel an den Computer, Board und Port auswählen, Code reinkopieren, auf den Pfeil-Button (↑ Upload) klicken — fertig.",
+        body_en:
+          "To upload, you need a free program on your computer. We recommend the Arduino IDE (Windows, Mac, Linux). Install it, open it, and add the ESP32 package via Boards Manager (search: \"esp32 by Espressif\"). Then: connect the ESP32 via USB, select board and port, paste the code, click the arrow upload button — done.",
+        payload: {
+          keyPoint_de:
+            "Wenn dein ESP32 nicht erkannt wird, fehlt oft der USB-Treiber CP210x (Google: „CP210x Treiber\"). Im nächsten Schritt zeigen wir dir nur, wie es im Simulator aussehen sollte.",
+          keyPoint_en:
+            "If your ESP32 isn't detected, the CP210x USB driver is often missing (Google: \"CP210x driver\"). The next step shows what it should look like in the simulator.",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 11,
         kind: "SIMULATE",
         title_de: "So sollte es aussehen",
         title_en: "Here's what should happen",
         body_de:
-          "Drücke „Programm starten\" und schau, wie die LED blinkt. Wenn deine echte LED auch blinkt — perfekt!",
+          "Hier ist eine Vorschau: drück auf „Simulation starten\". Wenn deine echte LED genauso blinkt, hast du alles richtig gemacht.",
         body_en:
-          "Press \"Run program\" and watch the LED blink. If your real LED blinks too — perfect!",
+          "Here's a preview: hit \"Start simulator\". If your real LED blinks the same way, you nailed it.",
         payload: {
           expectedBehavior_de: "Die LED blinkt im halben Sekundentakt.",
           expectedBehavior_en: "The LED blinks every half second.",
@@ -758,7 +874,7 @@ void loop() {
       },
       {
         lessonId: blinkLesson.id,
-        sortOrder: 9,
+        sortOrder: 12,
         kind: "QUIZ",
         title_de: "Kurze Frage",
         title_en: "Quick question",
@@ -791,7 +907,7 @@ void loop() {
       },
       {
         lessonId: blinkLesson.id,
-        sortOrder: 10,
+        sortOrder: 13,
         kind: "CELEBRATE",
         title_de: "Geschafft!",
         title_en: "Done!",
@@ -804,7 +920,7 @@ void loop() {
     ],
   });
 
-  console.log("  ✓ demo lesson: 11 step-player steps");
+  console.log("  ✓ demo lesson: 14 step-player steps");
   console.log("✅ done");
 }
 

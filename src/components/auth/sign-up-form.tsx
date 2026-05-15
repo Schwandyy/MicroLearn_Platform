@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Github, Mail, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { maybeStorePasswordCredential } from "@/lib/credential-store";
 
 export function SignUpForm() {
   const t = useTranslations("auth");
@@ -20,15 +21,14 @@ export function SignUpForm() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    const email = String(data.get("email") ?? "");
+    const password = String(data.get("password") ?? "");
+    const name = String(data.get("name") ?? "");
     startTransition(async () => {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.get("email"),
-          password: data.get("password"),
-          name: data.get("name"),
-        }),
+        body: JSON.stringify({ email, password, name }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -40,14 +40,16 @@ export function SignUpForm() {
         return;
       }
       const login = await signIn("credentials", {
-        email: data.get("email"),
-        password: data.get("password"),
+        email,
+        password,
         redirect: false,
       });
       if (login?.error) {
         router.push("/auth/sign-in");
         return;
       }
+      await maybeStorePasswordCredential(email, password, name);
+      router.refresh();
       router.push("/assessment");
     });
   };
