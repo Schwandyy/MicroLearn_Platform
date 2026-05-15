@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ImageIcon, Sparkles } from "lucide-react";
 import { CommentsBlock } from "@/components/projects/comments-block";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
+import { ShowcaseToggle } from "@/components/projects/showcase-toggle";
 
 export default async function ProjectDetailPage({
   params,
@@ -36,6 +37,10 @@ export default async function ProjectDetailPage({
 
   const isOwner = session?.user?.id === project.authorId;
   const isAdmin = session?.user?.role === "ADMIN";
+  const canFeature =
+    session?.user?.role === "ADMIN" ||
+    session?.user?.role === "TEACHER" ||
+    session?.user?.role === "INSTRUCTOR";
   if (!project.isPublic && !isOwner && !isAdmin) notFound();
 
   const title = locale === "de" ? project.title_de : project.title_en;
@@ -61,11 +66,18 @@ export default async function ProjectDetailPage({
             {" · "}
             {new Date(project.createdAt).toLocaleDateString(locale)}
           </p>
-          {(isOwner || isAdmin) && (
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {(isOwner || isAdmin) && (
               <DeleteProjectButton slug={project.slug} />
-            </div>
-          )}
+            )}
+            {canFeature && project.isPublic && (
+              <ShowcaseToggle
+                slug={project.slug}
+                featured={Boolean(project.showcase)}
+                initialRank={project.showcase?.rank ?? null}
+              />
+            )}
+          </div>
         </header>
 
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border bg-muted">
