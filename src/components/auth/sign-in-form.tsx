@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Github, Mail, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { maybeStorePasswordCredential } from "@/lib/credential-store";
+import { Link } from "@/i18n/routing";
 
 /**
  * Stellt sicher, dass eine callbackUrl nur intern auf unsere App zeigt.
@@ -138,13 +139,21 @@ export function SignInForm() {
             </Button>
           </form>
 
-          <button
-            type="button"
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            onClick={() => setMode("student")}
-          >
-            {t("studentCodeAccess")}
-          </button>
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {t("forgotLink")}
+            </Link>
+            <button
+              type="button"
+              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+              onClick={() => setMode("student")}
+            >
+              {t("studentCodeAccess")}
+            </button>
+          </div>
         </>
       ) : (
         <>

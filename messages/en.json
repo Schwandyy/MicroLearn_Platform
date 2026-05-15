@@ -77,7 +77,21 @@
     "submit": "Continue",
     "haveAccount": "Already have an account?",
     "noAccount": "Don't have an account?",
-    "studentCodeAccess": "Student? Use your class code"
+    "studentCodeAccess": "Student? Use your class code",
+    "forgotTitle": "Forgot password?",
+    "forgotSubtitle": "Enter your email — we'll send a link to reset your password.",
+    "forgotSubmit": "Send reset link",
+    "forgotSent": "If this email exists, a link is on the way. Check your inbox (and spam).",
+    "forgotLink": "Forgot password?",
+    "resetTitle": "Set a new password",
+    "resetSubtitle": "Pick a new password, at least 8 characters.",
+    "resetSubmit": "Set password",
+    "resetSuccess": "Password changed. You can sign in now.",
+    "resetInvalid": "Link invalid or expired. Request a new one.",
+    "resetWeak": "At least 8 characters.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordsMismatch": "Passwords do not match."
   },
   "assessment": {
     "title": "Where are you today?",

@@ -77,7 +77,21 @@
     "submit": "Weiter",
     "haveAccount": "Schon ein Konto?",
     "noAccount": "Noch kein Konto?",
-    "studentCodeAccess": "Schüler? Mit Klassencode anmelden"
+    "studentCodeAccess": "Schüler? Mit Klassencode anmelden",
+    "forgotTitle": "Passwort vergessen?",
+    "forgotSubtitle": "Gib deine E-Mail ein — wir schicken dir einen Link, um dein Passwort zurückzusetzen.",
+    "forgotSubmit": "Reset-Link senden",
+    "forgotSent": "Wenn diese E-Mail bei uns existiert, ist ein Link unterwegs. Schau in dein Postfach (und Spam).",
+    "forgotLink": "Passwort vergessen?",
+    "resetTitle": "Neues Passwort setzen",
+    "resetSubtitle": "Wähle ein neues Passwort, mindestens 8 Zeichen.",
+    "resetSubmit": "Passwort setzen",
+    "resetSuccess": "Passwort geändert. Du kannst dich jetzt anmelden.",
+    "resetInvalid": "Der Link ist ungültig oder abgelaufen. Fordere einen neuen an.",
+    "resetWeak": "Mindestens 8 Zeichen.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordsMismatch": "Passwörter stimmen nicht überein."
   },
   "assessment": {
     "title": "Wo stehst du heute?",
