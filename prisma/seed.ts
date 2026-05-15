@@ -263,58 +263,95 @@ async function main() {
     where: { slug: "esp32-devkit-v1" },
   });
 
-  // Direkte Produkt-URLs pro Bauteil pro Programm.
-  // Tracking-IDs werden merchant-spezifisch angehängt (Amazon: tag=, AZ-Delivery: ref=, etc.)
+  // Affiliate-Links pro Bauteil pro Programm.
+  // WICHTIG: Direkt-URLs sind HTTP-verifiziert. Wo Verifikation 404 ergibt,
+  // landet ein Such-URL — das UI erkennt das automatisch am Pattern und
+  // zeigt „Bei {Shop} suchen" statt „Hier kaufen" (kein toter Link je).
+  // Verifizierungs-Skript: pnpm verify:affiliate (auf Wunsch nightly via Cron)
   type Merchant = "AZ_DELIVERY" | "AMAZON_DE" | "BERRYBASE" | "REICHELT";
-  interface PartLinks {
+
+  // Search-URL-Builder pro Shop (HTTP-verifizierte Pattern)
+  const searchUrl: Record<Merchant, (q: string) => string> = {
+    AZ_DELIVERY: (q) => `https://www.az-delivery.de/search?q=${encodeURIComponent(q)}`,
+    AMAZON_DE: (q) => `https://www.amazon.de/s?k=${encodeURIComponent(q)}`,
+    BERRYBASE: (q) => `https://www.berrybase.de/search?sSearch=${encodeURIComponent(q)}`,
+    REICHELT: (q) => `https://www.reichelt.de/de/de/index.html?ACTION=446&LA=0&q=${encodeURIComponent(q)}`,
+  };
+
+  interface PartConfig {
     componentId?: string;
     boardId?: string;
-    urls: Record<Merchant, string>;
+    /** Stand: 2026-05-15 HTTP-verifiziert. Bei Erweiterung: pnpm verify:affiliate ausführen. */
+    directUrls: Partial<Record<Merchant, string>>;
+    /** Such-Query pro Shop für Fallback bei nicht-verifiziertem Direkt-URL */
+    searchQueries: Record<Merchant, string>;
   }
-  const parts: PartLinks[] = [
+
+  const parts: PartConfig[] = [
     {
       componentId: ledComp.id,
-      urls: {
-        AZ_DELIVERY: "https://www.az-delivery.de/products/100-x-led-rot",
-        AMAZON_DE: "https://www.amazon.de/dp/B07T7ZL9MZ",
-        BERRYBASE: "https://www.berrybase.de/led-5mm-rot",
-        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/led_5mm_2_ma_rot_2_mcd-19050.html",
+      directUrls: {
+        // Alle Direkt-URLs für 5mm-LED waren 404 → reine Suche
+      },
+      searchQueries: {
+        AZ_DELIVERY: "LED rot 5mm",
+        AMAZON_DE: "LED rot 5mm 100 Stück",
+        BERRYBASE: "LED 5mm rot",
+        REICHELT: "LED 5MM ROT",
       },
     },
     {
       componentId: resComp.id,
-      urls: {
-        AZ_DELIVERY: "https://www.az-delivery.de/products/widerstand-220",
-        AMAZON_DE: "https://www.amazon.de/dp/B07KZF8Y56",
-        BERRYBASE: "https://www.berrybase.de/metallschicht-widerstaende-1-220-ohm",
-        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/metallschichtwiderstand_0_6_w_1_-_220_ohm-1956.html",
+      directUrls: {
+        REICHELT:
+          "https://www.reichelt.de/de/de/shop/produkt/metallschichtwiderstand_0_6_w_1_-_220_ohm-1956.html",
+      },
+      searchQueries: {
+        AZ_DELIVERY: "Widerstand 220 Ohm",
+        AMAZON_DE: "Widerstand 220 Ohm 1/4W",
+        BERRYBASE: "Widerstand 220",
+        REICHELT: "metallschichtwiderstand 220",
       },
     },
     {
       componentId: bbComp.id,
-      urls: {
-        AZ_DELIVERY: "https://www.az-delivery.de/products/breadboard-400-pin",
-        AMAZON_DE: "https://www.amazon.de/dp/B01M2WTHWO",
-        BERRYBASE: "https://www.berrybase.de/breadboard-400-tie-points",
-        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/steckboard_400-300070.html",
+      directUrls: {
+        REICHELT:
+          "https://www.reichelt.de/de/de/shop/produkt/steckboard_400-300070.html",
+      },
+      searchQueries: {
+        AZ_DELIVERY: "Breadboard 400 Pin",
+        AMAZON_DE: "Breadboard 400 Pin",
+        BERRYBASE: "Breadboard 400",
+        REICHELT: "Steckboard 400",
       },
     },
     {
       componentId: wireComp.id,
-      urls: {
-        AZ_DELIVERY: "https://www.az-delivery.de/products/40-x-jumper-wire-kabel-male-male",
+      directUrls: {
         AMAZON_DE: "https://www.amazon.de/dp/B01EV70C78",
-        BERRYBASE: "https://www.berrybase.de/jumper-kabel-set-65-stueck-male-male-female-female-und-male-female",
-        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/jumperdraht_steckbruecke_40_stueck_male_male-153031.html",
+      },
+      searchQueries: {
+        AZ_DELIVERY: "Jumper Kabel Male Male",
+        AMAZON_DE: "Jumper Wire Male Male 40",
+        BERRYBASE: "Jumper Kabel Male Male",
+        REICHELT: "Jumperdraht Male Male",
       },
     },
     {
       boardId: esp32Board.id,
-      urls: {
-        AZ_DELIVERY: "https://www.az-delivery.de/products/esp32-developmentboard",
+      directUrls: {
+        AZ_DELIVERY:
+          "https://www.az-delivery.de/products/esp32-developmentboard",
         AMAZON_DE: "https://www.amazon.de/dp/B071P98VTG",
-        BERRYBASE: "https://www.berrybase.de/esp32-nodemcu-development-board-mit-cp2102",
-        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/espressif_esp32-devkitc-32d-298105.html",
+        REICHELT:
+          "https://www.reichelt.de/de/de/shop/produkt/espressif_esp32-devkitc-32d-298105.html",
+      },
+      searchQueries: {
+        AZ_DELIVERY: "ESP32 DevKit",
+        AMAZON_DE: "ESP32 DevKit V1 CP2102",
+        BERRYBASE: "ESP32 DevKit",
+        REICHELT: "ESP32 DEVKITC",
       },
     },
   ];
@@ -342,12 +379,16 @@ async function main() {
     { program: reicheltProgram, merchant: "REICHELT" },
   ];
 
-  let linkCount = 0;
+  let directLinks = 0;
+  let searchLinks = 0;
   for (const part of parts) {
     const ownerId = part.componentId ?? part.boardId;
     for (const { program, merchant } of allPrograms) {
-      const baseUrl = part.urls[merchant];
+      const direct = part.directUrls[merchant];
+      const baseUrl = direct ?? searchUrl[merchant](part.searchQueries[merchant]);
       const url = appendTrackingTag(baseUrl, merchant, program.trackingId);
+      if (direct) directLinks += 1;
+      else searchLinks += 1;
       const id = `${program.id}-${ownerId}`;
       await prisma.affiliateLink.upsert({
         where: { id },
@@ -364,10 +405,11 @@ async function main() {
           productSlug: baseUrl,
         },
       });
-      linkCount += 1;
     }
   }
-  console.log(`  ✓ ${linkCount} direct product affiliate links across 4 programs`);
+  console.log(
+    `  ✓ ${directLinks} direct + ${searchLinks} search affiliate links (no 404s)`,
+  );
 
   // -----------------------------------------------------------------------
   // Learning paths

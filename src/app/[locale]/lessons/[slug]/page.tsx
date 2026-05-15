@@ -89,11 +89,24 @@ export default async function LessonPage({
         (order[a.program.merchant] ?? 99) - (order[b.program.merchant] ?? 99),
     );
 
-    const affiliates: BomAffiliateOption[] = allLinks.map((link) => ({
-      programMerchant: link.program.merchant,
-      programDisplayName: link.program.displayName,
-      url: link.productUrl,
-    }));
+    const affiliates: BomAffiliateOption[] = allLinks.map((link) => {
+      // Search-URL pattern recognition — keeps direct/search badges honest
+      const urlLower = link.productUrl.toLowerCase();
+      const isSearch =
+        urlLower.includes("/search") ||
+        urlLower.includes("/s?k=") ||
+        urlLower.includes("?ssearch=") ||
+        urlLower.includes("?search=") ||
+        urlLower.includes("&search=") ||
+        urlLower.includes("?q=") ||
+        urlLower.includes("&q=");
+      return {
+        programMerchant: link.program.merchant,
+        programDisplayName: link.program.displayName,
+        url: link.productUrl,
+        linkKind: isSearch ? ("search" as const) : ("direct" as const),
+      };
+    });
 
     return {
       id: item.id,

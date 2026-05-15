@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ChevronDown, CheckCircle2, Circle } from "lucide-react";
+import {
+  ShoppingCart,
+  ChevronDown,
+  CheckCircle2,
+  Circle,
+  Search,
+} from "lucide-react";
 import { PartIcon } from "./part-icon";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +18,8 @@ export interface BomAffiliateOption {
   programMerchant: string;
   programDisplayName: string;
   url: string;
+  /** "direct" = link to specific product page; "search" = link to shop search results */
+  linkKind: "direct" | "search";
 }
 
 export interface BomItemView {
@@ -172,9 +180,15 @@ function BomCard({
                 target="_blank"
                 rel="noopener noreferrer sponsored"
               >
-                <ShoppingCart className="mr-2 h-4 w-4" />
+                {primary.linkKind === "direct" ? (
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
                 <span className="truncate">
-                  {t("buyNow")} · {primary.programDisplayName}
+                  {primary.linkKind === "direct"
+                    ? `${t("buyNow")} · ${primary.programDisplayName}`
+                    : t("searchAt", { shop: primary.programDisplayName })}
                 </span>
               </a>
             </Button>
