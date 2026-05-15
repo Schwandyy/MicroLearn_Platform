@@ -17,14 +17,46 @@
     "languageSwitch": "Language"
   },
   "home": {
+    "heroBadge": "Learn microelectronics, structured",
     "heroTitle": "From your first LED blink to your own IoT project.",
-    "heroSubtitle": "Structured learning paths with an in-browser simulator, AI mentor, and an active community — in English and German.",
+    "heroSubtitle": "4 paths · 24 lessons · an AI mentor that knows your code at every step. In English and German.",
     "ctaStart": "Start free",
     "ctaSeePaths": "See learning paths",
-    "featureSimulator": "Wokwi simulator in the browser",
-    "featureAi": "AI mentor for every project",
-    "featureLevels": "4 levels — beginner to expert",
-    "featureBoards": "ESP32 · Arduino · Pi Pico · STM32"
+    "pathsTitle": "Four paths, from first blink to your own smart-home sensor.",
+    "pathsSubtitle": "Every path ends with a mini-project that pulls it all together — so you don't stop at theory.",
+    "pathOpen": "Open path",
+    "pathLessonCount": "{count} lessons",
+    "pathHours": "≈ {hours} h",
+    "teacherTitle": "Teacher? We thought of you.",
+    "teacherBody": "Class codes instead of email for students — GDPR-friendly, no account, no tracking. See live which lesson each student is on.",
+    "teacherCta": "Start a classroom",
+    "whyTitle": "Why not just YouTube or a kit?",
+    "whyCols": {
+      "feature": "Feature",
+      "youtube": "YouTube",
+      "courses": "Online course",
+      "kit": "Robot kit",
+      "us": "MicroLearn"
+    },
+    "whyRows": {
+      "structure": "Real learning path in the right order",
+      "mentor": "AI mentor that sees YOUR current code",
+      "progress": "Progress, quizzes, XP, streaks",
+      "hardware": "Direct hardware recommendations with prices",
+      "classroom": "School mode with class codes (GDPR-safe)"
+    },
+    "pricingTitle": "Three simple prices.",
+    "pricingSubtitle": "Start free. Pro for deeper paths. School for classrooms.",
+    "pricingFree": "Free",
+    "pricingFreeDesc": "All beginner lessons, step player, BOM cards.",
+    "pricingPro": "Pro",
+    "pricingProDesc": "Full paths, streaming AI mentor, certificates.",
+    "pricingSchool": "School",
+    "pricingSchoolDesc": "Teacher dashboard, student codes, live overview.",
+    "pricingCta": "Compare plans",
+    "finalCtaTitle": "Let's light up your first LED.",
+    "finalCtaSubtitle": "Three minutes of setup. One lesson later it's glowing.",
+    "finalCta": "Get started"
   },
   "auth": {
     "signIn": "Sign in",

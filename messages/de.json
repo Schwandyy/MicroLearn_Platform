@@ -17,14 +17,46 @@
     "languageSwitch": "Sprache"
   },
   "home": {
+    "heroBadge": "Mikroelektronik strukturiert lernen",
     "heroTitle": "Vom ersten LED-Blink zum eigenen IoT-Projekt.",
-    "heroSubtitle": "Strukturierte Lernpfade mit interaktivem Simulator, KI-Assistent und Community — auf Deutsch und Englisch.",
+    "heroSubtitle": "4 Pfade · 24 Lessons · ein KI-Mentor, der zu jedem Schritt deinen Code kennt. Auf Deutsch und Englisch.",
     "ctaStart": "Kostenlos starten",
     "ctaSeePaths": "Lernpfade ansehen",
-    "featureSimulator": "Wokwi-Simulator im Browser",
-    "featureAi": "KI-Mentor für jedes Projekt",
-    "featureLevels": "4 Levels — Anfänger bis Experte",
-    "featureBoards": "ESP32 · Arduino · Pi Pico · STM32"
+    "pathsTitle": "4 Pfade, vom ersten Blinken bis zum eigenen Smart-Home-Sensor.",
+    "pathsSubtitle": "Jeder Pfad endet mit einem Mini-Projekt, das alles vorige zusammenführt — damit es nicht beim Theorie-Wissen bleibt.",
+    "pathOpen": "Pfad öffnen",
+    "pathLessonCount": "{count} Lessons",
+    "pathHours": "≈ {hours} h",
+    "teacherTitle": "Du bist Lehrer? Wir haben an dich gedacht.",
+    "teacherBody": "Klassen-Code statt Email für Schüler — DSGVO-konform, kein Konto, kein Tracking. Du siehst live, welche Lesson welche Schüler:in gerade macht.",
+    "teacherCta": "Klassenraum starten",
+    "whyTitle": "Warum nicht einfach YouTube oder ein Bausatz?",
+    "whyCols": {
+      "feature": "Feature",
+      "youtube": "YouTube",
+      "courses": "Online-Kurs",
+      "kit": "Roboter-Bausatz",
+      "us": "MicroLearn"
+    },
+    "whyRows": {
+      "structure": "Echter Lernpfad in der richtigen Reihenfolge",
+      "mentor": "KI-Mentor, der DEINEN aktuellen Code sieht",
+      "progress": "Fortschritt, Quiz, XP, Streaks",
+      "hardware": "Direkte Hardware-Empfehlung mit Preis",
+      "classroom": "Schul-Modus mit Klassen-Codes (DSGVO-fest)"
+    },
+    "pricingTitle": "Drei einfache Preise.",
+    "pricingSubtitle": "Kostenlos einsteigen. Pro für tiefere Lernpfade. Klasse für Schulen.",
+    "pricingFree": "Kostenlos",
+    "pricingFreeDesc": "Alle Anfänger-Lessons, Step-Player, BOM-Karten.",
+    "pricingPro": "Pro",
+    "pricingProDesc": "Volle Pfade, KI-Mentor streaming, Zertifikate.",
+    "pricingSchool": "Klasse",
+    "pricingSchoolDesc": "Lehrer-Dashboard, Schüler-Codes, Live-Übersicht.",
+    "pricingCta": "Preise vergleichen",
+    "finalCtaTitle": "Lass uns dein erstes Licht zum Leuchten bringen.",
+    "finalCtaSubtitle": "Drei Minuten Setup. Eine Lesson später glimmt die LED.",
+    "finalCta": "Jetzt starten"
   },
   "auth": {
     "signIn": "Anmelden",
