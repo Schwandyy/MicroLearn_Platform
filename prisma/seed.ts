@@ -634,62 +634,72 @@ async function main() {
   );
 
   // -----------------------------------------------------------------------
-  // Learning paths
+  // Learning paths (4-Pfad-Konzept: Licht / Bewegung / Sensoren / IoT)
   // -----------------------------------------------------------------------
+  // Cleanup alter Pfad-Slugs (cascade löscht zugehörige Courses + Lessons —
+  // diese werden im selben Run frisch neu geseedet).
+  await prisma.learningPath.deleteMany({
+    where: {
+      slug: {
+        in: ["esp32-basics", "arduino-first-projects", "iot-with-mqtt", "embedded-rtos"],
+      },
+    },
+  });
+
   const paths = [
     {
-      slug: "esp32-basics",
+      slug: "mein-erstes-licht",
       level: "L1_BEGINNER" as const,
-      estimatedHours: 6,
+      estimatedHours: 4,
       sortOrder: 1,
-      title_de: "ESP32 Grundlagen",
-      title_en: "ESP32 Basics",
+      title_de: "Mein erstes Licht",
+      title_en: "My First Light",
       summary_de:
-        "Vom ersten Blink bis zum WLAN-Sensor. Schritt-für-Schritt im Step-Player.",
+        "LED, Taster, PWM, RGB, Buzzer, Lauflicht — sechs Mini-Projekte vom ersten Blinken bis zum mehrfarbigen Lichtspiel.",
       summary_en:
-        "From your first blink to a WiFi sensor. Step-by-step in the player.",
+        "LED, button, PWM, RGB, buzzer, light chase — six mini projects from first blink to multi-color light play.",
       isPublished: true,
       publishedAt: new Date(),
     },
     {
-      slug: "arduino-first-projects",
+      slug: "bewegung-robotik",
       level: "L2_NOVICE" as const,
-      estimatedHours: 8,
+      estimatedHours: 6,
       sortOrder: 2,
-      title_de: "Arduino — erste Projekte",
-      title_en: "Arduino — First Projects",
+      title_de: "Bewegung & Robotik",
+      title_en: "Motion & Robotics",
       summary_de:
-        "Sensoren, Aktoren, kleine Automatisierungen mit Arduino Uno.",
+        "Servo, DC-Motor, Schrittmotor, Ultraschall, PIR — alles, was sich bewegt oder Bewegung erkennt. Endet mit einem Mini-Roboter.",
       summary_en:
-        "Sensors, actuators, small automation projects with the Arduino Uno.",
+        "Servo, DC motor, stepper, ultrasonic, PIR — everything that moves or detects motion. Ends with a mini robot.",
       isPublished: true,
       publishedAt: new Date(),
     },
     {
-      slug: "iot-with-mqtt",
-      level: "L3_INTERMEDIATE" as const,
-      estimatedHours: 10,
+      slug: "welt-der-sensoren",
+      level: "L2_NOVICE" as const,
+      estimatedHours: 6,
       sortOrder: 3,
-      title_de: "IoT mit MQTT",
-      title_en: "IoT with MQTT",
+      title_de: "Welt der Sensoren",
+      title_en: "World of Sensors",
       summary_de:
-        "Mehrere ESP32 sprechen miteinander — Home Assistant inklusive.",
+        "Temperatur, Luftdruck, Licht, Lage, Bodenfeuchte, Wassertemperatur — sechs Sensoren, sechs Projekte, eine fertige Wetterstation.",
       summary_en:
-        "Multiple ESP32s talking to each other — Home Assistant included.",
+        "Temperature, pressure, light, orientation, soil moisture, water temperature — six sensors, six projects, one complete weather station.",
       isPublished: true,
       publishedAt: new Date(),
     },
     {
-      slug: "embedded-rtos",
-      level: "L4_EXPERT" as const,
-      estimatedHours: 16,
+      slug: "anzeige-iot",
+      level: "L3_INTERMEDIATE" as const,
+      estimatedHours: 8,
       sortOrder: 4,
-      title_de: "Embedded RTOS",
-      title_en: "Embedded RTOS",
+      title_de: "Anzeige & IoT",
+      title_en: "Display & IoT",
       summary_de:
-        "FreeRTOS, Tasks, Queues, Interrupts — produktive Firmware-Architektur.",
+        "WLAN, OLED, NeoPixel, MQTT, Webserver, OTA — vom ersten Pixel auf dem Display bis zum vernetzten Smart-Home-Sensor.",
       summary_en:
-        "FreeRTOS, tasks, queues, interrupts — productive firmware architecture.",
+        "WiFi, OLED, NeoPixel, MQTT, web server, OTA — from your first pixel on a display to a networked smart-home sensor.",
       isPublished: true,
       publishedAt: new Date(),
     },
@@ -720,29 +730,91 @@ async function main() {
   console.log("  ✓ starter badge");
 
   // -----------------------------------------------------------------------
-  // Demo Blink-Lesson — komplett als Step-Player
+  // Courses (1 pro Pfad)
   // -----------------------------------------------------------------------
-  const esp32Path = await prisma.learningPath.findUniqueOrThrow({
-    where: { slug: "esp32-basics" },
+  const pathLicht = await prisma.learningPath.findUniqueOrThrow({
+    where: { slug: "mein-erstes-licht" },
+  });
+  const pathBewegung = await prisma.learningPath.findUniqueOrThrow({
+    where: { slug: "bewegung-robotik" },
+  });
+  const pathSensoren = await prisma.learningPath.findUniqueOrThrow({
+    where: { slug: "welt-der-sensoren" },
+  });
+  const pathAnzeige = await prisma.learningPath.findUniqueOrThrow({
+    where: { slug: "anzeige-iot" },
   });
 
-  const course = await prisma.course.upsert({
-    where: { slug: "esp32-getting-started" },
-    create: {
-      slug: "esp32-getting-started",
-      pathId: esp32Path.id,
-      sortOrder: 1,
-      title_de: "Erste Schritte mit dem ESP32",
-      title_en: "Getting started with the ESP32",
-      summary_de:
-        "Setup, erstes Blinken einer LED, GPIO-Grundlagen, einfache WLAN-Basics.",
-      summary_en:
-        "Setup, blink your first LED, learn GPIO and simple WiFi basics.",
-      isPublished: true,
-      publishedAt: new Date(),
+  const courseDefs = [
+    {
+      pathId: pathLicht.id,
+      slug: "erste-lichter",
+      title_de: "Erste Lichter mit dem ESP32",
+      title_en: "First lights with the ESP32",
+      summary_de: "Sechs Mini-Projekte rund um LED, Taster und Buzzer.",
+      summary_en: "Six mini projects with LEDs, buttons and buzzers.",
     },
-    update: {},
-  });
+    {
+      pathId: pathBewegung.id,
+      slug: "bewegung-und-robotik",
+      title_de: "Bewegung & Robotik",
+      title_en: "Motion & Robotics",
+      summary_de: "Motoren, Servos und Bewegungssensoren — sechs Projekte.",
+      summary_en: "Motors, servos and motion sensors — six projects.",
+    },
+    {
+      pathId: pathSensoren.id,
+      slug: "sensoren-grundlagen",
+      title_de: "Sensoren-Grundlagen",
+      title_en: "Sensor fundamentals",
+      summary_de: "Sechs der wichtigsten Sensoren in der Hobby-Elektronik.",
+      summary_en: "Six of the most important sensors in hobby electronics.",
+    },
+    {
+      pathId: pathAnzeige.id,
+      slug: "anzeige-und-iot",
+      title_de: "Anzeige & IoT",
+      title_en: "Display & IoT",
+      summary_de:
+        "Vom OLED bis zum MQTT-Sensor — wie der ESP32 mit der Welt redet.",
+      summary_en:
+        "From OLED to MQTT sensor — how the ESP32 talks to the world.",
+    },
+  ];
+
+  const courseBySlug: Record<string, { id: string }> = {};
+  for (let i = 0; i < courseDefs.length; i++) {
+    const c = courseDefs[i];
+    const course = await prisma.course.upsert({
+      where: { slug: c.slug },
+      create: {
+        slug: c.slug,
+        pathId: c.pathId,
+        sortOrder: i + 1,
+        title_de: c.title_de,
+        title_en: c.title_en,
+        summary_de: c.summary_de,
+        summary_en: c.summary_en,
+        isPublished: true,
+        publishedAt: new Date(),
+      },
+      update: {
+        pathId: c.pathId,
+        title_de: c.title_de,
+        title_en: c.title_en,
+        summary_de: c.summary_de,
+        summary_en: c.summary_en,
+      },
+    });
+    courseBySlug[c.slug] = course;
+  }
+  const courseLicht = courseBySlug["erste-lichter"];
+  const courseBewegung = courseBySlug["bewegung-und-robotik"];
+  const courseSensoren = courseBySlug["sensoren-grundlagen"];
+  const courseAnzeige = courseBySlug["anzeige-und-iot"];
+
+  // Alias für die existierende Blink-Lesson (lebt im Licht-Kurs)
+  const course = courseLicht;
 
   // Delete existing steps + BOM if lesson exists, then upsert
   const existingLesson = await prisma.lesson.findUnique({
@@ -1311,7 +1383,7 @@ void loop() {
   // -----------------------------------------------------------------------
   await seedLesson({
     slug: "esp32-button-led",
-    courseId: course.id,
+    courseId: courseLicht.id,
     sortOrder: 2,
     title_de: "Taster: LED auf Knopfdruck",
     title_en: "Button: light an LED on press",
@@ -1506,7 +1578,7 @@ void loop() {
   // -----------------------------------------------------------------------
   await seedLesson({
     slug: "esp32-pwm-fade",
-    courseId: course.id,
+    courseId: courseLicht.id,
     sortOrder: 3,
     title_de: "Helligkeit steuern: LED weich dimmen",
     title_en: "Brightness control: smoothly fade an LED",
@@ -1679,8 +1751,8 @@ void loop() {
   // -----------------------------------------------------------------------
   await seedLesson({
     slug: "esp32-servo-sweep",
-    courseId: course.id,
-    sortOrder: 4,
+    courseId: courseBewegung.id,
+    sortOrder: 1,
     title_de: "Servo: Bewegung steuern",
     title_en: "Servo: control movement",
     summary_de:
@@ -1843,8 +1915,8 @@ void loop() {
   // -----------------------------------------------------------------------
   await seedLesson({
     slug: "esp32-dht22-temperature",
-    courseId: course.id,
-    sortOrder: 5,
+    courseId: courseSensoren.id,
+    sortOrder: 1,
     title_de: "Temperatur & Luftfeuchte messen",
     title_en: "Measure temperature & humidity",
     summary_de:
@@ -2018,8 +2090,8 @@ void loop() {
   // -----------------------------------------------------------------------
   await seedLesson({
     slug: "esp32-wifi-scan",
-    courseId: course.id,
-    sortOrder: 6,
+    courseId: courseAnzeige.id,
+    sortOrder: 1,
     title_de: "WLAN scannen: Welche Netze sind in Reichweite?",
     title_en: "WiFi scan: which networks are in range?",
     summary_de:
