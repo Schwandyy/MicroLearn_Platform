@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { generateLessonFromScrape, aiPreCheck } from "./ai-content";
 
@@ -92,14 +93,13 @@ export async function processScrapedContent(scrapedId: string) {
       estimatedMinutes: Math.max(5, Math.min(180, lesson.estimatedMinutes || 30)),
       title_de: lesson.title_de,
       title_en: lesson.title_en,
-      body_de: lesson.body_de,
-      body_en: lesson.body_en,
+      summary_de: lesson.summary_de,
+      summary_en: lesson.summary_en,
+      body_de: lesson.summary_de,
+      body_en: lesson.summary_en,
       codeSnippet: lesson.codeSnippet,
-      schematicNotes_de: lesson.schematicNotes_de,
-      schematicNotes_en: lesson.schematicNotes_en,
       safetyNotes_de: lesson.safetyNotes_de,
       safetyNotes_en: lesson.safetyNotes_en,
-      wokwiProjectId: lesson.wokwiProjectId,
       isPublished: false,
       recommendedBoards: boards.length
         ? { connect: boards.map((b) => ({ id: b.id })) }
@@ -110,6 +110,17 @@ export async function processScrapedContent(scrapedId: string) {
           quantity: Math.max(1, Math.floor(item.quantity || 1)),
           note_de: item.note_de ?? null,
           note_en: item.note_en ?? null,
+        })),
+      },
+      steps: {
+        create: lesson.steps.map((s, i) => ({
+          sortOrder: i,
+          kind: s.kind,
+          title_de: s.title_de,
+          title_en: s.title_en,
+          body_de: s.body_de,
+          body_en: s.body_en,
+          payload: (s.payload as Prisma.InputJsonValue | undefined) ?? Prisma.JsonNull,
         })),
       },
     },

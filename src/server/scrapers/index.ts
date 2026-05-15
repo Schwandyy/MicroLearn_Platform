@@ -3,12 +3,14 @@ import { prisma } from "@/server/db/prisma";
 import { azDeliveryScraper } from "./az-delivery";
 import { randomNerdScraper } from "./random-nerd";
 import { githubReadmeScraper } from "./github-readme";
+import { wokwiScraper } from "./wokwi";
 import type { Scraper } from "./types";
 
 export const SCRAPERS: Scraper[] = [
   azDeliveryScraper,
   randomNerdScraper,
   githubReadmeScraper,
+  wokwiScraper,
   // Weitere folgen: hackster.io, arduino.cc/Tutorial, adafruit.com/learn
 ];
 

@@ -3,57 +3,93 @@ import { requireAnthropic, ANTHROPIC_MODEL_CONTENT } from "./anthropic";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const CONTENT_SYSTEM_PROMPT = `Du bist ein erfahrener Mikroelektronik-Pädagoge und technischer Redakteur für MicroLearn (DACH-Raum).
-Du bekommst rohe Tutorial-Inhalte aus dem Netz (Markdown, manchmal HTML-Reste) und destillierst daraus eine eigenständige, originale Lerneinheit in DE *und* EN.
+Du bekommst rohe Tutorial-Inhalte aus dem Netz (Markdown, manchmal HTML-Reste) und destillierst daraus eine eigenständige, originale Lerneinheit in DE *und* EN als **Step-Player** für Anfänger.
+
+ZIEL: Ein Schulkind der 1. Klasse soll die Lerneinheit alleine durcharbeiten können. Ein Schritt pro Bildschirm.
 
 Liefere AUSSCHLIESSLICH valides JSON in genau diesem Schema, ohne Markdown-Codefences:
 {
-  "title_de": string,
+  "title_de": string,                  // kurz, neugierig-machend ("Eine LED zum Blinken bringen")
   "title_en": string,
-  "summary_de": string,            // 1-2 Sätze
-  "summary_en": string,            // 1-2 Sätze
-  "body_de": string,               // Markdown, 200-800 Worte, eigenständig erklärt, keine direkten Zitate
-  "body_en": string,               // Markdown, idem
-  "codeSnippet": string|null,      // C/C++ oder MicroPython, mit zweisprachigen Kommentaren (DE in einer Zeile, EN in der nächsten)
-  "schematicNotes_de": string|null,
-  "schematicNotes_en": string|null,
-  "safetyNotes_de": string|null,   // KONKRETE Hinweise (Spannung, Strom, Hitze), keine Floskeln
+  "summary_de": string,                // 1-2 Sätze: "Was bauen wir und warum?"
+  "summary_en": string,
+  "safetyNotes_de": string|null,       // KONKRETE Hinweise (Spannung, Strom, Hitze, Polung), keine Floskeln
   "safetyNotes_en": string|null,
+  "codeSnippet": string|null,          // C/C++ oder MicroPython, mit kindgerechten Kommentaren
   "level": "L1_BEGINNER"|"L2_NOVICE"|"L3_INTERMEDIATE"|"L4_EXPERT",
-  "estimatedMinutes": number,      // realistisch (15-120)
+  "estimatedMinutes": number,
   "kind": "CONCEPT"|"PROJECT",
-  "boardSlugs": string[],          // aus: esp32-devkit-v1, arduino-uno-r3, arduino-nano, esp8266-nodemcu, raspberry-pi-pico
-  "wokwiProjectId": string|null,   // nur falls in Quelle eindeutig vorhanden
+  "boardSlugs": string[],              // aus: esp32-devkit-v1, arduino-uno-r3, arduino-nano, esp8266-nodemcu, raspberry-pi-pico
   "bom": [{ "name": string, "quantity": number, "note_de": string, "note_en": string }],
-  "tags": string[]
+  "tags": string[],
+  "steps": [
+    {
+      "kind": "INTRO"|"PARTS"|"SAFETY"|"BUILD"|"CODE_WALK"|"SIMULATE"|"QUIZ"|"CELEBRATE"|"EXPLAIN",
+      "title_de": string,              // kurze Überschrift, max 8 Wörter
+      "title_en": string,
+      "body_de": string,               // 1-3 kurze Sätze, Kindersprache
+      "body_en": string,
+      "payload": object|null           // step-spezifische Daten (s.u.)
+    }
+  ]
 }
 
-Strikte Regeln:
-- Keine Plagiate. Schreibe in eigenen Worten — die Quelle ist Inspiration, nicht Vorlage.
-- Sicherheit zuerst: bei Netzspannung, LiPo, Lötkolben, Hochstrom IMMER konkrete Warnungen.
-- Logikpegel: ESP32 = 3,3 V, Arduino Uno = 5 V. Bei 5V-Sensoren am ESP32 explizit Pegelwandler / Spannungsteiler erwähnen.
-- DE und EN sind eigenständig formuliert, nicht maschinell übersetzt.
-- estimatedMinutes ehrlich.
-- Wenn die Quelle zu dünn / off-topic ist, antworte: {"reject":"<Grund>"}.`;
+STEP-PAYLOAD-FORMATE (kind → payload):
+- INTRO: { "coverPrompt": string }     // Bild-Prompt für Cover (KI generiert oder Asset)
+- PARTS: null                          // wird vom UI aus BOM zusammengesetzt
+- SAFETY: null                         // wird aus safetyNotes zusammengesetzt
+- BUILD: { "instruction_de": string, "instruction_en": string, "diagramHint": string }   // z.B. "LED langes Bein → GPIO2 über 220Ω"
+- CODE_WALK: { "code": string, "lines": [{ "from": int, "to": int, "explain_de": string, "explain_en": string }] }
+- SIMULATE: { "expectedBehavior_de": string, "expectedBehavior_en": string, "animation": "blink"|"solid"|"fade"|"pulse" }
+- QUIZ: { "prompt_de": string, "prompt_en": string, "options": [{"key":"a","label_de":"","label_en":""}], "correctKey": string }
+- CELEBRATE: { "xpAward": int }
+- EXPLAIN: { "imagePrompt": string|null, "keyPoint_de": string, "keyPoint_en": string }
+
+STRIKTE REGELN:
+- Step-Sequenz ist immer: INTRO → PARTS → SAFETY → BUILD (mehrere) → CODE_WALK → SIMULATE → QUIZ → CELEBRATE
+- Bei BUILD und CODE_WALK gilt: **ein Konzept pro Step**, nicht alles in einem Riesen-Step bündeln.
+- Sprache so einfach wie möglich. Keine Fachbegriffe ohne vorherige Erklärung im EXPLAIN-Step.
+- Keine Verweise auf externe Sites/Apps/Simulatoren — MicroLearn ist eigenständig.
+- Sicherheit zuerst: ein expliziter SAFETY-Step vor jedem BUILD.
+- Logikpegel: ESP32 = 3,3 V, Arduino Uno = 5 V. Bei 5V-Sensoren am ESP32 Pegelwandler erwähnen.
+- DE und EN eigenständig formuliert, nicht maschinell übersetzt.
+- Wenn die Quelle zu dünn ist: {"reject":"<Grund>"}.`;
+
+export type StepKindLiteral =
+  | "INTRO"
+  | "PARTS"
+  | "SAFETY"
+  | "BUILD"
+  | "CODE_WALK"
+  | "SIMULATE"
+  | "QUIZ"
+  | "CELEBRATE"
+  | "EXPLAIN";
+
+export interface GeneratedStep {
+  kind: StepKindLiteral;
+  title_de: string;
+  title_en: string;
+  body_de: string;
+  body_en: string;
+  payload: Record<string, unknown> | null;
+}
 
 export interface GeneratedLesson {
   title_de: string;
   title_en: string;
   summary_de: string;
   summary_en: string;
-  body_de: string;
-  body_en: string;
   codeSnippet: string | null;
-  schematicNotes_de: string | null;
-  schematicNotes_en: string | null;
   safetyNotes_de: string | null;
   safetyNotes_en: string | null;
   level: "L1_BEGINNER" | "L2_NOVICE" | "L3_INTERMEDIATE" | "L4_EXPERT";
   estimatedMinutes: number;
   kind: "CONCEPT" | "PROJECT";
   boardSlugs: string[];
-  wokwiProjectId: string | null;
   bom: { name: string; quantity: number; note_de: string; note_en: string }[];
   tags: string[];
+  steps: GeneratedStep[];
 }
 
 export interface GenerationResult {

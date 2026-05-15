@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -14,6 +14,8 @@ async function main() {
       name: "ESP32 DevKit V1",
       manufacturer: "Espressif",
       family: "ESP32",
+      imageUrl:
+        "https://www.az-delivery.de/cdn/shop/products/esp32-nodemcu-module-wlan-wifi-development-board-mit-cp2102-nachfolgermodell-zum-esp8266-kompatibel-mit-arduino-872375.jpg",
       logicLevel: "V3_3" as const,
       voltageMin: 3.0,
       voltageMax: 3.6,
@@ -22,12 +24,16 @@ async function main() {
         "Beliebter Dual-Core-Mikrocontroller mit WiFi und Bluetooth. 3,3 V Logikpegel — beim Anschluss von 5 V-Sensoren Pegelwandler verwenden.",
       description_en:
         "Popular dual-core MCU with WiFi and Bluetooth. 3.3 V logic level — use level shifters for 5 V sensors.",
+      descriptionShort_de: "Mini-Computer mit WLAN und Bluetooth.",
+      descriptionShort_en: "Tiny computer with WiFi and Bluetooth.",
     },
     {
       slug: "arduino-uno-r3",
       name: "Arduino Uno R3",
       manufacturer: "Arduino",
       family: "AVR",
+      imageUrl:
+        "https://store.arduino.cc/cdn/shop/products/A000066_03.front_643x483.jpg",
       logicLevel: "V5" as const,
       voltageMin: 4.5,
       voltageMax: 5.5,
@@ -36,12 +42,16 @@ async function main() {
         "Klassisches Einstiegsboard, robust und gut dokumentiert. 5 V Logikpegel.",
       description_en:
         "The classic beginner board — robust, well documented. 5 V logic level.",
+      descriptionShort_de: "Der klassische Einsteiger-Computer.",
+      descriptionShort_en: "The classic beginner computer.",
     },
     {
       slug: "raspberry-pi-pico",
       name: "Raspberry Pi Pico",
       manufacturer: "Raspberry Pi Foundation",
       family: "RP2040",
+      imageUrl:
+        "https://www.raspberrypi.com/app/uploads/2022/06/Pico.png",
       logicLevel: "V3_3" as const,
       voltageMin: 1.8,
       voltageMax: 5.5,
@@ -50,12 +60,15 @@ async function main() {
         "Günstig, Dual-Core ARM Cortex-M0+, programmierbar mit MicroPython oder C/C++.",
       description_en:
         "Affordable dual-core ARM Cortex-M0+, programmable with MicroPython or C/C++.",
+      descriptionShort_de: "Günstiger Mini-Computer aus Großbritannien.",
+      descriptionShort_en: "Affordable tiny computer from the UK.",
     },
     {
       slug: "esp8266-nodemcu",
       name: "ESP8266 NodeMCU",
       manufacturer: "Espressif",
       family: "ESP8266",
+      imageUrl: null,
       logicLevel: "V3_3" as const,
       voltageMin: 3.0,
       voltageMax: 3.6,
@@ -63,12 +76,16 @@ async function main() {
       description_de:
         "WiFi-Klassiker für IoT-Einsteiger. 3,3 V Logikpegel.",
       description_en: "The classic WiFi IoT entry board. 3.3 V logic level.",
+      descriptionShort_de: "WLAN-Klassiker für IoT-Einsteiger.",
+      descriptionShort_en: "WiFi classic for IoT beginners.",
     },
     {
       slug: "arduino-nano",
       name: "Arduino Nano",
       manufacturer: "Arduino",
       family: "AVR",
+      imageUrl:
+        "https://store.arduino.cc/cdn/shop/products/A000005_03.front_643x483.jpg",
       logicLevel: "V5" as const,
       voltageMin: 4.5,
       voltageMax: 5.5,
@@ -77,6 +94,8 @@ async function main() {
         "Kompakte Uno-Variante, ideal für Steckbrett-Projekte.",
       description_en:
         "Compact Uno variant — perfect for breadboard projects.",
+      descriptionShort_de: "Kleiner Arduino fürs Steckbrett.",
+      descriptionShort_en: "Tiny Arduino for breadboards.",
     },
   ];
 
@@ -90,14 +109,96 @@ async function main() {
   console.log(`  ✓ ${boards.length} boards`);
 
   // -----------------------------------------------------------------------
-  // Affiliate programs (seeded inactive — admin activates manually)
+  // Components (mit Kindersprache + Bild)
+  // -----------------------------------------------------------------------
+  const components = [
+    {
+      slug: "led-red-5mm",
+      name: "LED rot 5 mm",
+      category: "actuator",
+      imageUrl:
+        "https://www.az-delivery.de/cdn/shop/products/100x-rote-led-5mm-869731.jpg",
+      logicLevel: "BOTH" as const,
+      voltageMin: 1.8,
+      voltageMax: 2.2,
+      protocols: ["GPIO"] as const,
+      description_de: "Standard-LED, leuchtet rot wenn Strom fließt.",
+      description_en: "Standard red LED, lights up when current flows.",
+      descriptionShort_de: "Kleines Lämpchen, das leuchtet.",
+      descriptionShort_en: "Tiny lamp that lights up.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+    {
+      slug: "resistor-220ohm",
+      name: "Widerstand 220 Ω",
+      category: "passive",
+      imageUrl:
+        "https://www.az-delivery.de/cdn/shop/products/widerstand-set-30-werte-je-20-stuck-600-stuck-1-4w-1-tolerance-872159.jpg",
+      logicLevel: "BOTH" as const,
+      voltageMin: 0,
+      voltageMax: 50,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Begrenzt den Strom, damit die LED nicht durchbrennt.",
+      description_en:
+        "Limits current so the LED doesn't burn out.",
+      descriptionShort_de: "Bremse für Strom — schützt die LED.",
+      descriptionShort_en: "A brake for the current — protects the LED.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+    {
+      slug: "breadboard-half",
+      name: "Steckbrett (halb)",
+      category: "tool",
+      imageUrl:
+        "https://www.az-delivery.de/cdn/shop/products/mb-102-breadboard-830-pin-mit-2-stromschienen-und-jumper-wires-set.jpg",
+      logicLevel: "BOTH" as const,
+      voltageMin: 0,
+      voltageMax: 50,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Brett zum Stecken — Drähte und Bauteile ohne Löten verbinden.",
+      description_en:
+        "Plug-in board — connect wires and parts without soldering.",
+      descriptionShort_de: "Stecker statt löten.",
+      descriptionShort_en: "Plug instead of solder.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+    {
+      slug: "jumper-wires-mm",
+      name: "Jumper-Kabel (M/M)",
+      category: "tool",
+      imageUrl:
+        "https://www.az-delivery.de/cdn/shop/products/40x-jumper-wire-kabel-male-male-20cm-fuer-arduino-und-raspberry-pi-872133.jpg",
+      logicLevel: "BOTH" as const,
+      voltageMin: 0,
+      voltageMax: 50,
+      protocols: ["GPIO"] as const,
+      description_de: "Bunte Steckkabel zum Verbinden der Bauteile.",
+      description_en: "Colored jumper wires to connect parts.",
+      descriptionShort_de: "Bunte Kabel mit Steckern.",
+      descriptionShort_en: "Colored cables with pins.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+  ];
+  for (const c of components) {
+    await prisma.component.upsert({
+      where: { slug: c.slug },
+      create: c as never,
+      update: c as never,
+    });
+  }
+  console.log(`  ✓ ${components.length} components`);
+
+  // -----------------------------------------------------------------------
+  // Affiliate programs (alle aktiv für Test, später Admin-toggle)
   // -----------------------------------------------------------------------
   const programs = [
     {
       merchant: "AZ_DELIVERY" as const,
       displayName: "AZ-Delivery",
       urlTemplate: "https://www.az-delivery.de/products/{slug}?ref={trackingId}",
-      isActive: false,
+      isActive: true,
     },
     {
       merchant: "BERRYBASE" as const,
@@ -125,10 +226,77 @@ async function main() {
       update: p,
     });
   }
-  console.log(`  ✓ ${programs.length} affiliate programs (inactive)`);
+  console.log(`  ✓ ${programs.length} affiliate programs`);
+
+  // Affiliate links für unsere Bauteile (für die "Hier kaufen"-Buttons)
+  const azProgram = await prisma.affiliateProgram.findUniqueOrThrow({
+    where: { merchant: "AZ_DELIVERY" },
+  });
+
+  const ledComp = await prisma.component.findUniqueOrThrow({
+    where: { slug: "led-red-5mm" },
+  });
+  const resComp = await prisma.component.findUniqueOrThrow({
+    where: { slug: "resistor-220ohm" },
+  });
+  const bbComp = await prisma.component.findUniqueOrThrow({
+    where: { slug: "breadboard-half" },
+  });
+  const wireComp = await prisma.component.findUniqueOrThrow({
+    where: { slug: "jumper-wires-mm" },
+  });
+  const esp32Board = await prisma.board.findUniqueOrThrow({
+    where: { slug: "esp32-devkit-v1" },
+  });
+
+  const affLinks = [
+    {
+      componentId: ledComp.id,
+      productUrl: "https://www.az-delivery.de/products/100-x-led-rot",
+      productSlug: "100-x-led-rot",
+    },
+    {
+      componentId: resComp.id,
+      productUrl: "https://www.az-delivery.de/products/widerstands-sortiment",
+      productSlug: "widerstands-sortiment",
+    },
+    {
+      componentId: bbComp.id,
+      productUrl: "https://www.az-delivery.de/products/mb-102-breadboard",
+      productSlug: "mb-102-breadboard",
+    },
+    {
+      componentId: wireComp.id,
+      productUrl: "https://www.az-delivery.de/products/40-x-jumper-wire-kabel-male-male",
+      productSlug: "40-x-jumper-wire-kabel-male-male",
+    },
+    {
+      boardId: esp32Board.id,
+      productUrl: "https://www.az-delivery.de/products/esp32-developmentboard",
+      productSlug: "esp32-developmentboard",
+    },
+  ];
+  for (const link of affLinks) {
+    await prisma.affiliateLink.upsert({
+      where: { id: `${azProgram.id}-${link.componentId ?? link.boardId}` },
+      create: {
+        id: `${azProgram.id}-${link.componentId ?? link.boardId}`,
+        programId: azProgram.id,
+        productUrl: link.productUrl,
+        productSlug: link.productSlug,
+        componentId: link.componentId ?? null,
+        boardId: link.boardId ?? null,
+      },
+      update: {
+        productUrl: link.productUrl,
+        productSlug: link.productSlug,
+      },
+    });
+  }
+  console.log(`  ✓ ${affLinks.length} affiliate links (AZ-Delivery active)`);
 
   // -----------------------------------------------------------------------
-  // Learning paths (one per level)
+  // Learning paths
   // -----------------------------------------------------------------------
   const paths = [
     {
@@ -139,9 +307,9 @@ async function main() {
       title_de: "ESP32 Grundlagen",
       title_en: "ESP32 Basics",
       summary_de:
-        "Vom ersten Blink bis zum WLAN-Sensor. Schritt-für-Schritt mit Simulator.",
+        "Vom ersten Blink bis zum WLAN-Sensor. Schritt-für-Schritt im Step-Player.",
       summary_en:
-        "From your first blink to a WiFi sensor. Step-by-step with the simulator.",
+        "From your first blink to a WiFi sensor. Step-by-step in the player.",
       isPublished: true,
       publishedAt: new Date(),
     },
@@ -197,9 +365,7 @@ async function main() {
   }
   console.log(`  ✓ ${paths.length} learning paths`);
 
-  // -----------------------------------------------------------------------
-  // A starter badge
-  // -----------------------------------------------------------------------
+  // Starter badge
   await prisma.badge.upsert({
     where: { slug: "first-step" },
     create: {
@@ -216,208 +382,356 @@ async function main() {
   console.log("  ✓ starter badge");
 
   // -----------------------------------------------------------------------
-  // Demo course + lesson under ESP32 Basics path
+  // Demo Blink-Lesson — komplett als Step-Player
   // -----------------------------------------------------------------------
-  const esp32Path = await prisma.learningPath.findUnique({
+  const esp32Path = await prisma.learningPath.findUniqueOrThrow({
     where: { slug: "esp32-basics" },
   });
-  const esp32Board = await prisma.board.findUnique({
-    where: { slug: "esp32-devkit-v1" },
+
+  const course = await prisma.course.upsert({
+    where: { slug: "esp32-getting-started" },
+    create: {
+      slug: "esp32-getting-started",
+      pathId: esp32Path.id,
+      sortOrder: 1,
+      title_de: "Erste Schritte mit dem ESP32",
+      title_en: "Getting started with the ESP32",
+      summary_de:
+        "Setup, erstes Blinken einer LED, GPIO-Grundlagen, einfache WLAN-Basics.",
+      summary_en:
+        "Setup, blink your first LED, learn GPIO and simple WiFi basics.",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    update: {},
   });
 
-  if (esp32Path && esp32Board) {
-    const course = await prisma.course.upsert({
-      where: { slug: "esp32-getting-started" },
-      create: {
-        slug: "esp32-getting-started",
-        pathId: esp32Path.id,
-        sortOrder: 1,
-        title_de: "Erste Schritte mit dem ESP32",
-        title_en: "Getting started with the ESP32",
-        summary_de:
-          "Setup der Toolchain, erstes Blink, GPIO-Grundlagen und WLAN-Basics.",
-        summary_en:
-          "Set up your toolchain, blink your first LED, learn GPIO and WiFi basics.",
-        isPublished: true,
-        publishedAt: new Date(),
+  // Delete existing steps + BOM if lesson exists, then upsert
+  const existingLesson = await prisma.lesson.findUnique({
+    where: { slug: "esp32-blink-led" },
+  });
+  if (existingLesson) {
+    await prisma.lessonStep.deleteMany({ where: { lessonId: existingLesson.id } });
+    await prisma.bOMItem.deleteMany({ where: { lessonId: existingLesson.id } });
+  }
+
+  const blinkLesson = await prisma.lesson.upsert({
+    where: { slug: "esp32-blink-led" },
+    create: {
+      slug: "esp32-blink-led",
+      courseId: course.id,
+      sortOrder: 1,
+      kind: "PROJECT",
+      xpReward: 100,
+      estimatedMinutes: 15,
+      title_de: "Eine LED zum Blinken bringen",
+      title_en: "Make an LED blink",
+      summary_de:
+        "Wir bringen ein kleines rotes Lämpchen mit dem ESP32 zum Blinken — Schritt für Schritt.",
+      summary_en:
+        "We'll make a tiny red lamp blink with the ESP32 — step by step.",
+      body_de: "Step-Player-Lesson, siehe Steps.",
+      body_en: "Step-player lesson, see steps.",
+      safetyNotes_de:
+        "Wichtig: Steck die LED NIE direkt in den ESP32 ohne Widerstand — sonst geht sie kaputt. Wir benutzen einen 220-Ω-Widerstand als Bremse.",
+      safetyNotes_en:
+        "Important: NEVER plug the LED directly into the ESP32 without a resistor — it would burn out. We use a 220 Ω resistor as a brake.",
+      codeSnippet: null,
+      isPublished: true,
+      publishedAt: new Date(),
+      recommendedBoards: { connect: [{ id: esp32Board.id }] },
+    },
+    update: {
+      kind: "PROJECT",
+      xpReward: 100,
+      estimatedMinutes: 15,
+      summary_de:
+        "Wir bringen ein kleines rotes Lämpchen mit dem ESP32 zum Blinken — Schritt für Schritt.",
+      summary_en:
+        "We'll make a tiny red lamp blink with the ESP32 — step by step.",
+      isPublished: true,
+    },
+  });
+
+  // BOM
+  await prisma.bOMItem.createMany({
+    data: [
+      {
+        lessonId: blinkLesson.id,
+        boardId: esp32Board.id,
+        quantity: 1,
       },
-      update: {},
+      {
+        lessonId: blinkLesson.id,
+        componentId: bbComp.id,
+        quantity: 1,
+      },
+      {
+        lessonId: blinkLesson.id,
+        componentId: ledComp.id,
+        quantity: 1,
+      },
+      {
+        lessonId: blinkLesson.id,
+        componentId: resComp.id,
+        quantity: 1,
+      },
+      {
+        lessonId: blinkLesson.id,
+        componentId: wireComp.id,
+        quantity: 2,
+      },
+    ],
+  });
+
+  // attach affiliate links to BOM-Items
+  const bomItems = await prisma.bOMItem.findMany({
+    where: { lessonId: blinkLesson.id },
+    include: { component: true, board: true },
+  });
+  for (const bi of bomItems) {
+    const partId = bi.componentId ?? bi.boardId;
+    if (!partId) continue;
+    const link = await prisma.affiliateLink.findFirst({
+      where: bi.componentId
+        ? { componentId: bi.componentId, programId: azProgram.id }
+        : { boardId: bi.boardId!, programId: azProgram.id },
     });
+    if (link) {
+      await prisma.bOMItem.update({
+        where: { id: bi.id },
+        data: { affiliateLinkId: link.id },
+      });
+    }
+  }
 
-    const blinkLesson = await prisma.lesson.upsert({
-      where: { slug: "esp32-blink-led" },
-      create: {
-        slug: "esp32-blink-led",
-        courseId: course.id,
-        sortOrder: 1,
-        kind: "PROJECT",
-        xpReward: 100,
-        estimatedMinutes: 20,
-        wokwiProjectId: "336838716100935764",
-        title_de: "LED zum Blinken bringen",
-        title_en: "Make an LED blink",
-        body_de: `Wir starten klassisch: eine LED am ESP32 zum Blinken bringen.
-
-## Was du lernst
-- Wie der **GPIO-Pin** als Ausgang konfiguriert wird
-- Warum LEDs immer einen **Vorwiderstand** brauchen
-- Was \`delay(ms)\` macht und warum es für komplexere Programme keine gute Idee ist
-
-## Wie es funktioniert
-Der ESP32 hat 3,3 V Logikpegel. Eine typische rote LED hat eine Flussspannung von ~2 V und einen empfohlenen Strom von 10 mA. Damit ergibt sich der Vorwiderstand:
-
-\`R = (3,3 V - 2 V) / 0,01 A = 130 Ω\`
-
-In der Praxis nimmst du den nächstgrößeren Standardwert: **220 Ω**.
-`,
-        body_en: `We're starting with the classic: blinking an LED on the ESP32.
-
-## What you'll learn
-- How to configure a **GPIO pin** as an output
-- Why LEDs always need a **current-limiting resistor**
-- What \`delay(ms)\` does and why it's not a good idea for bigger programs
-
-## How it works
-The ESP32 runs at 3.3 V logic level. A typical red LED has a forward voltage of ~2 V and recommended current of 10 mA. So the resistor is:
-
-\`R = (3.3 V - 2 V) / 0.01 A = 130 Ω\`
-
-In practice pick the next standard value: **220 Ω**.
-`,
-        codeSnippet: `// ESP32 — Blink (DE: blinken / EN: blink)
-const int LED_PIN = 2; // onboard LED on most DevKit boards
+  // Steps — child-friendly, one idea per screen
+  const blinkCode = `// ESP32 — Eine LED blinken lassen
+const int LED_PIN = 2;   // Wir benutzen GPIO 2
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);
 }
 
 void loop() {
-  digitalWrite(LED_PIN, HIGH);
-  delay(500);
-  digitalWrite(LED_PIN, LOW);
-  delay(500);
-}
-`,
-        schematicNotes_de:
-          "Eine externe LED an GPIO 2 → 220 Ω → LED → GND. Anode (langes Bein) Richtung GPIO.",
-        schematicNotes_en:
-          "External LED on GPIO 2 → 220 Ω → LED → GND. Anode (long leg) towards GPIO.",
-        safetyNotes_de:
-          "Niemals eine LED **ohne Vorwiderstand** direkt an einen GPIO hängen — sonst Kurzschluss-Strom durch die LED und der ESP32 schaltet ab. Verwende immer min. 220 Ω.",
-        safetyNotes_en:
-          "Never connect an LED **without a current-limiting resistor** directly to a GPIO — you'd short-circuit through the LED and brown out the ESP32. Always use 220 Ω or more.",
-        isPublished: true,
-        publishedAt: new Date(),
-        recommendedBoards: { connect: [{ id: esp32Board.id }] },
-      },
-      update: {},
-    });
+  digitalWrite(LED_PIN, HIGH);  // LED an
+  delay(500);                   // 0,5 Sekunden warten
+  digitalWrite(LED_PIN, LOW);   // LED aus
+  delay(500);                   // 0,5 Sekunden warten
+}`;
 
-    await prisma.bOMItem.upsert({
-      where: { id: `${blinkLesson.id}-board` },
-      create: {
-        id: `${blinkLesson.id}-board`,
+  await prisma.lessonStep.createMany({
+    data: [
+      {
         lessonId: blinkLesson.id,
-        boardId: esp32Board.id,
-        quantity: 1,
-        note_de: "ESP32 DevKit V1 oder kompatibel.",
-        note_en: "ESP32 DevKit V1 or compatible.",
+        sortOrder: 0,
+        kind: "INTRO",
+        title_de: "Was bauen wir?",
+        title_en: "What are we building?",
+        body_de:
+          "Eine LED, die blinkt — wie ein Herzschlag. Du brauchst keine Vorkenntnisse.",
+        body_en:
+          "A blinking LED — like a heartbeat. No prior knowledge needed.",
+        payload: { coverPrompt: "blinking red LED on a breadboard, friendly cartoon style" },
       },
-      update: {},
-    });
-
-    // Mini-quiz
-    await prisma.quiz.upsert({
-      where: { id: `${blinkLesson.id}-mini` },
-      create: {
-        id: `${blinkLesson.id}-mini`,
+      {
         lessonId: blinkLesson.id,
-        kind: "MINI",
-        passScore: 60,
-        title_de: "Verstanden?",
-        title_en: "Got it?",
-        questions: [
-          {
-            id: "q1",
-            prompt_de: "Warum braucht eine LED am ESP32 einen Vorwiderstand?",
-            prompt_en: "Why does an LED on the ESP32 need a current-limiting resistor?",
-            options: [
-              {
-                key: "a",
-                label_de: "Damit sie blinkt",
-                label_en: "So that it blinks",
-              },
-              {
-                key: "b",
-                label_de:
-                  "Um den Strom durch die LED zu begrenzen — sonst geht sie kaputt",
-                label_en:
-                  "To limit the current through the LED — otherwise it burns out",
-              },
-              {
-                key: "c",
-                label_de: "Damit die Farbe stimmt",
-                label_en: "To set the right colour",
-              },
-              {
-                key: "d",
-                label_de: "Damit der ESP32 mehr Spannung liefert",
-                label_en: "So the ESP32 outputs more voltage",
-              },
-            ],
-            correctKey: "b",
-            weight: 1,
-          },
-        ],
+        sortOrder: 1,
+        kind: "PARTS",
+        title_de: "Das brauchst du",
+        title_en: "What you need",
+        body_de:
+          "Wenn du etwas davon nicht hast, kannst du es direkt bei AZ-Delivery bestellen.",
+        body_en:
+          "If you don't have something yet, you can order it from AZ-Delivery.",
+        payload: Prisma.JsonNull,
       },
-      update: {},
-    });
-
-    // Final quiz
-    await prisma.quiz.upsert({
-      where: { id: `${blinkLesson.id}-final` },
-      create: {
-        id: `${blinkLesson.id}-final`,
+      {
         lessonId: blinkLesson.id,
-        kind: "LESSON_FINAL",
-        passScore: 70,
-        title_de: "Abschluss-Quiz",
-        title_en: "Final quiz",
-        questions: [
-          {
-            id: "f1",
-            prompt_de: "Welcher Modus ist nötig, damit ein Pin eine LED ansteuern kann?",
-            prompt_en: "Which pin mode is needed to drive an LED?",
-            options: [
-              { key: "a", label_de: "INPUT", label_en: "INPUT" },
-              { key: "b", label_de: "INPUT_PULLUP", label_en: "INPUT_PULLUP" },
-              { key: "c", label_de: "OUTPUT", label_en: "OUTPUT" },
-              { key: "d", label_de: "ANALOG", label_en: "ANALOG" },
-            ],
-            correctKey: "c",
-            weight: 1,
-          },
-          {
-            id: "f2",
-            prompt_de: "Welche Spannung führt der ESP32 an seinen GPIOs?",
-            prompt_en: "What is the ESP32 GPIO logic voltage?",
-            options: [
-              { key: "a", label_de: "1,8 V", label_en: "1.8 V" },
-              { key: "b", label_de: "3,3 V", label_en: "3.3 V" },
-              { key: "c", label_de: "5 V", label_en: "5 V" },
-              { key: "d", label_de: "12 V", label_en: "12 V" },
-            ],
-            correctKey: "b",
-            weight: 1,
-          },
-        ],
+        sortOrder: 2,
+        kind: "SAFETY",
+        title_de: "Wichtig zur Sicherheit",
+        title_en: "Safety first",
+        body_de:
+          "Steck die LED NIE direkt an den ESP32. Der Widerstand muss immer dazwischen — er ist die Bremse für den Strom.",
+        body_en:
+          "Never plug the LED directly into the ESP32. Always use the resistor in between — it's the brake for the current.",
+        payload: Prisma.JsonNull,
       },
-      update: {},
-    });
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 3,
+        kind: "EXPLAIN",
+        title_de: "Was ist ein GPIO?",
+        title_en: "What is a GPIO?",
+        body_de:
+          "GPIO heißt „General Purpose Input/Output\". Das sind die kleinen Beinchen am ESP32, an die du etwas anschließen kannst — zum Beispiel eine LED.",
+        body_en:
+          "GPIO stands for \"General Purpose Input/Output\". These are the small pins on the ESP32 you can connect things to — for example an LED.",
+        payload: {
+          keyPoint_de: "Wir benutzen GPIO 2. Auf dem Board ist es so beschriftet.",
+          keyPoint_en: "We're using GPIO 2. It's labeled that way on the board.",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 4,
+        kind: "BUILD",
+        title_de: "Schritt 1: Widerstand stecken",
+        title_en: "Step 1: Plug in the resistor",
+        body_de:
+          "Steck einen Anschluss vom Widerstand neben GPIO 2 des ESP32. Den anderen Anschluss in eine freie Reihe weiter rechts.",
+        body_en:
+          "Plug one leg of the resistor next to GPIO 2 of the ESP32. The other leg into a free row to the right.",
+        payload: {
+          instruction_de:
+            "Der Widerstand hat keine Richtung — er kann beidseitig gesteckt werden.",
+          instruction_en:
+            "Resistors don't have a direction — either way works.",
+          ledColor: "red",
+          highlightWires: ["signal"],
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 5,
+        kind: "BUILD",
+        title_de: "Schritt 2: LED stecken",
+        title_en: "Step 2: Plug in the LED",
+        body_de:
+          "Das LANGE Beinchen der LED kommt an den Widerstand. Das KURZE Beinchen geht in die blaue Minus-Reihe (GND).",
+        body_en:
+          "The LONG leg of the LED goes to the resistor. The SHORT leg goes into the blue minus row (GND).",
+        payload: {
+          instruction_de: "Lang = Plus, Kurz = Minus. Wichtig: nicht verwechseln!",
+          instruction_en: "Long = plus, short = minus. Don't mix them up!",
+          ledColor: "red",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 6,
+        kind: "BUILD",
+        title_de: "Schritt 3: GND verbinden",
+        title_en: "Step 3: Connect GND",
+        body_de:
+          "Stecke ein Jumper-Kabel vom GND-Pin des ESP32 in die blaue Minus-Reihe.",
+        body_en:
+          "Run a jumper wire from the ESP32's GND pin into the blue minus rail.",
+        payload: {
+          instruction_de:
+            "GND ist das Minus. Ohne diese Verbindung leuchtet nichts.",
+          instruction_en:
+            "GND is the minus. Nothing lights up without this connection.",
+          ledColor: "red",
+          highlightWires: ["gnd"],
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 7,
+        kind: "CODE_WALK",
+        title_de: "Der Code — Zeile für Zeile",
+        title_en: "The code — line by line",
+        body_de:
+          "Klicke auf eine Zeile, dann erklärt sie sich selbst.",
+        body_en: "Tap a line and it'll explain itself.",
+        payload: {
+          code: blinkCode,
+          lines: [
+            {
+              from: 2,
+              to: 2,
+              explain_de:
+                "Wir geben dem Anschluss einen Namen, damit wir ihn später leicht wiederfinden: LED_PIN = 2.",
+              explain_en:
+                "We give the pin a name so we can find it easily later: LED_PIN = 2.",
+            },
+            {
+              from: 4,
+              to: 6,
+              explain_de:
+                "setup() läuft EINMAL beim Start. Wir sagen dem ESP32: „GPIO 2 ist ein Ausgang.\"",
+              explain_en:
+                "setup() runs ONCE at start. We tell the ESP32: \"GPIO 2 is an output.\"",
+            },
+            {
+              from: 8,
+              to: 13,
+              explain_de:
+                "loop() läuft IMMER. Hier: LED an → 0,5 s warten → LED aus → 0,5 s warten. Das ergibt das Blinken.",
+              explain_en:
+                "loop() runs FOREVER. Here: LED on → wait 0.5 s → LED off → wait 0.5 s. That's the blinking.",
+            },
+          ],
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 8,
+        kind: "SIMULATE",
+        title_de: "So sollte es aussehen",
+        title_en: "Here's what should happen",
+        body_de:
+          "Drücke „Programm starten\" und schau, wie die LED blinkt. Wenn deine echte LED auch blinkt — perfekt!",
+        body_en:
+          "Press \"Run program\" and watch the LED blink. If your real LED blinks too — perfect!",
+        payload: {
+          expectedBehavior_de: "Die LED blinkt im halben Sekundentakt.",
+          expectedBehavior_en: "The LED blinks every half second.",
+          animation: "blink",
+          ledColor: "red",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 9,
+        kind: "QUIZ",
+        title_de: "Kurze Frage",
+        title_en: "Quick question",
+        body_de: "Warum brauchen wir den Widerstand?",
+        body_en: "Why do we need the resistor?",
+        payload: {
+          prompt_de: "Warum brauchen wir den Widerstand?",
+          prompt_en: "Why do we need the resistor?",
+          options: [
+            {
+              key: "a",
+              label_de: "Damit die LED bunt wird",
+              label_en: "To make the LED colorful",
+            },
+            {
+              key: "b",
+              label_de:
+                "Damit nicht zu viel Strom durch die LED fließt — sie schützt die LED",
+              label_en:
+                "To stop too much current flowing through the LED — it protects the LED",
+            },
+            {
+              key: "c",
+              label_de: "Damit die LED schneller blinkt",
+              label_en: "To make the LED blink faster",
+            },
+          ],
+          correctKey: "b",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 10,
+        kind: "CELEBRATE",
+        title_de: "Geschafft!",
+        title_en: "Done!",
+        body_de:
+          "Du hast gerade dein erstes ESP32-Projekt gebaut. Klasse!",
+        body_en:
+          "You just built your first ESP32 project. Awesome!",
+        payload: { xpAward: 100 },
+      },
+    ],
+  });
 
-    console.log("  ✓ demo course + lesson + quizzes");
-  }
-
+  console.log("  ✓ demo lesson: 11 step-player steps");
   console.log("✅ done");
 }
 

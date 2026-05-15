@@ -100,6 +100,18 @@ enum QuizKind {
   LESSON_FINAL    // grants XP at the end of a lesson
 }
 
+enum StepKind {
+  INTRO           // "Was bauen wir?" — Cover + 1-2 sentences
+  PARTS           // BOM presentation
+  SAFETY          // safety warning step
+  BUILD           // breadboard build step (image + instruction)
+  CODE_WALK       // code walkthrough with line explanations
+  SIMULATE        // run-the-program preview (own simulator stub)
+  QUIZ            // mini quiz question
+  CELEBRATE       // success screen
+  EXPLAIN         // pure concept explanation with visual
+}
+
 enum BadgeCategory {
   MILESTONE
   STREAK
@@ -240,6 +252,8 @@ model Board {
   manufacturer    String?
   family          String?    // ESP32, AVR, RP2040, STM32, …
   imageUrl        String?
+  descriptionShort_de String?
+  descriptionShort_en String?
 
   logicLevel      LogicLevel
   voltageMin      Float
@@ -275,8 +289,13 @@ model Component {
   voltageMax      Float
   protocols       Protocol[] @default([])
 
-  description_de  String     @db.Text
-  description_en  String     @db.Text
+  description_de       String     @db.Text
+  description_en       String     @db.Text
+  // One-line, child-friendly summary used in BOM cards
+  descriptionShort_de  String?
+  descriptionShort_en  String?
+  // Beginner-suitability hint: which levels typically use this part
+  levelHint            LearnerLevel?
 
   affiliateLinks  AffiliateLink[]
   bomItems        BOMItem[]
@@ -404,18 +423,16 @@ model Lesson {
 
   title_de        String
   title_en        String
+  // Short "what will I build?" — shown on cover step
+  summary_de      String       @db.Text
+  summary_en      String       @db.Text
+  // Legacy long-form body, kept for expert level + fallback rendering
   body_de         String       @db.Text
   body_en         String       @db.Text
+  coverImage      String?
   codeSnippet     String?      @db.Text
-  schematicNotes_de String?    @db.Text
-  schematicNotes_en String?    @db.Text
   safetyNotes_de  String?      @db.Text
   safetyNotes_en  String?      @db.Text
-
-  // Wokwi integration: public project ID for iframe embedding;
-  // optional inline diagram JSON for self-hosted scenarios.
-  wokwiProjectId  String?
-  wokwiDiagram    Json?
 
   // Compatibility
   recommendedBoards Board[]    @relation("LessonRecommendedBoards")
@@ -424,6 +441,7 @@ model Lesson {
   scrapedSources    ScrapedContent[]
   review            ContentReview?
   progress          UserProgress[]
+  steps             LessonStep[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -432,6 +450,32 @@ model Lesson {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// One step within a lesson. Drives the Step-Player UI.
+model LessonStep {
+  id              String   @id @default(cuid())
+  lessonId        String
+  sortOrder       Int      @default(0)
+  kind            StepKind
+
+  // Bilingual content
+  title_de        String?
+  title_en        String?
+  body_de         String?  @db.Text
+  body_en         String?  @db.Text
+
+  // Optional visuals + payload — interpretation depends on `kind`
+  imageUrl        String?           // url to step image (breadboard photo etc.)
+  payload         Json?             // structured: { code, lineNotes, breadboard, animation, ... }
+
+  // Quiz steps reuse Quiz model
+  quizId          String?
+  quiz            Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
+
+  lesson          Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId, sortOrder])
 }
 
 model BOMItem {
@@ -551,6 +595,7 @@ model Quiz {
 
   lesson  Lesson?      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   results QuizResult[]
+  steps   LessonStep[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
