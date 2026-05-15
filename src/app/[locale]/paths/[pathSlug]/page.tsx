@@ -12,8 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { pickLocalized } from "@/lib/i18n-content";
-import { Check, Clock, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Clock, Lightbulb, Sparkles } from "lucide-react";
 import type { Locale } from "@/lib/utils";
+import {
+  isPathOutOfReach,
+  pickRecommendedPath,
+} from "@/lib/path-recommendation";
 
 export default async function PathDetailPage({
   params,
@@ -44,13 +48,37 @@ export default async function PathDetailPage({
 
   const session = await auth();
   const completedIds = new Set<string>();
+  let userLevel: typeof path.level | null = null;
+  let recommendedAlt: { slug: string; title_de: string; title_en: string } | null = null;
   if (session?.user?.id) {
-    const progress = await prisma.userProgress.findMany({
-      where: { userId: session.user.id, completedAt: { not: null } },
-      select: { lessonId: true },
-    });
+    const [progress, profile] = await Promise.all([
+      prisma.userProgress.findMany({
+        where: { userId: session.user.id, completedAt: { not: null } },
+        select: { lessonId: true },
+      }),
+      prisma.profile.findUnique({
+        where: { userId: session.user.id },
+        select: { currentLevel: true },
+      }),
+    ]);
     progress.forEach((p) => p.lessonId && completedIds.add(p.lessonId));
+    userLevel = profile?.currentLevel ?? null;
+    if (userLevel && isPathOutOfReach(path.level, userLevel)) {
+      const all = await prisma.learningPath.findMany({
+        where: { isPublished: true, slug: { not: path.slug } },
+        select: {
+          slug: true,
+          level: true,
+          sortOrder: true,
+          title_de: true,
+          title_en: true,
+        },
+      });
+      const rec = pickRecommendedPath(all, userLevel);
+      if (rec) recommendedAlt = rec;
+    }
   }
+  const isOutOfReach = !!userLevel && isPathOutOfReach(path.level, userLevel);
 
   return (
     <div className="container py-10 md:py-14">
@@ -74,6 +102,35 @@ export default async function PathDetailPage({
           </div>
         )}
       </header>
+
+      {isOutOfReach && (
+        <div className="mt-8 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/60 dark:bg-amber-900/15">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div>
+              <div className="font-semibold">{t("outOfReachBannerTitle")}</div>
+              <p className="text-sm text-muted-foreground">
+                {recommendedAlt
+                  ? t("outOfReachBannerWithSuggestion", {
+                      pathTitle:
+                        l === "de"
+                          ? recommendedAlt.title_de
+                          : recommendedAlt.title_en,
+                    })
+                  : t("outOfReachBannerGeneric")}
+              </p>
+            </div>
+          </div>
+          {recommendedAlt && (
+            <Button asChild>
+              <Link href={`/paths/${recommendedAlt.slug}`}>
+                {t("outOfReachBannerCta")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+        </div>
+      )}
 
       <div className="mt-10 space-y-6">
         {path.courses.map((course) => (

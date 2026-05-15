@@ -94,6 +94,9 @@
       "4": "Experte"
     },
     "resultCta": "Empfohlenen Lernpfad starten",
+    "resultRecommendLabel": "Wir empfehlen dir",
+    "resultStartPath": "Pfad starten",
+    "resultGoToDashboard": "Zum Dashboard",
     "questions": {
       "soldering": {
         "title": "Wie sicher bist du beim Löten?",
@@ -184,9 +187,13 @@
     "noBoards": "Wähle deine Mikrocontroller, um passende Projekte zu sehen.",
     "takeAssessment": "Einstufungstest machen",
     "retakeAssessment": "Test wiederholen",
-    "heroEyebrow": "Dein erstes Projekt",
+    "heroEyebrow": "Empfohlen für dich",
+    "heroContinueEyebrow": "Mach weiter",
     "heroSubtitle": "Keine Vorkenntnisse nötig. Wir bauen gemeinsam eine blinkende LED — Schritt für Schritt.",
-    "heroCta": "Los geht's",
+    "heroCta": "Pfad starten",
+    "heroContinueCta": "Lesson öffnen",
+    "heroNextLesson": "Als nächstes:",
+    "heroPathOverview": "Pfad ansehen",
     "boardSelectorHint": "Stell hier ein, welche Mikrocontroller du schon hast — wir schlagen dir dann passende Projekte vor.",
     "boardSave": "Speichern",
     "boardSaving": "Speichere…",
@@ -222,7 +229,13 @@
     "estimated": "{hours} Std.",
     "lessonsCount": "{count} Lektionen",
     "startPath": "Lernpfad starten",
-    "continuePath": "Weitermachen"
+    "continuePath": "Weitermachen",
+    "recommendedBadge": "Für dich",
+    "outOfReachHint": "Etwas anspruchsvoller als dein aktuelles Level. Wir empfehlen, vorher die Pfade davor durchzuspielen.",
+    "outOfReachBannerTitle": "Dieser Pfad ist anspruchsvoller als dein aktuelles Level.",
+    "outOfReachBannerWithSuggestion": "Wir empfehlen dir, zuerst „{pathTitle}\" durchzuspielen — dort lernst du die Grundlagen, die du hier brauchst.",
+    "outOfReachBannerGeneric": "Du kannst trotzdem reinschauen — aber leichtere Pfade legen das Fundament dafür.",
+    "outOfReachBannerCta": "Zum empfohlenen Pfad"
   },
   "lesson": {
     "duration": "{min} Min",

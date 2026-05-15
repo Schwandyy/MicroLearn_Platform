@@ -9,9 +9,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { Clock, BookOpen } from "lucide-react";
+import { Clock, BookOpen, Sparkles } from "lucide-react";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
+import { auth } from "@/server/auth";
+import {
+  isPathOutOfReach,
+  sortPathsByRelevance,
+} from "@/lib/path-recommendation";
 
 const LEVEL_LABEL: Record<string, { de: string; en: string }> = {
   L1_BEGINNER: { de: "Beginner", en: "Beginner" },
@@ -30,14 +35,27 @@ export default async function PathsPage({
   const t = await getTranslations("paths");
   const l = locale as Locale;
 
-  const paths = await prisma.learningPath.findMany({
-    where: { isPublished: true },
-    orderBy: { sortOrder: "asc" },
-    include: {
-      _count: { select: { courses: true } },
-      courses: { include: { _count: { select: { lessons: true } } } },
-    },
-  });
+  const session = await auth();
+
+  const [pathsRaw, profile] = await Promise.all([
+    prisma.learningPath.findMany({
+      where: { isPublished: true },
+      orderBy: { sortOrder: "asc" },
+      include: {
+        _count: { select: { courses: true } },
+        courses: { include: { _count: { select: { lessons: true } } } },
+      },
+    }),
+    session?.user?.id
+      ? prisma.profile.findUnique({
+          where: { userId: session.user.id },
+          select: { currentLevel: true },
+        })
+      : Promise.resolve(null),
+  ]);
+
+  const userLevel = profile?.currentLevel ?? null;
+  const paths = sortPathsByRelevance(pathsRaw, userLevel);
 
   return (
     <div className="container py-12 md:py-16">
@@ -47,21 +65,40 @@ export default async function PathsPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {paths.map((p) => {
+        {paths.map((p, idx) => {
           const lessonsCount = p.courses.reduce(
             (sum, c) => sum + c._count.lessons,
             0,
           );
+          const isRecommended = userLevel && idx === 0;
+          const outOfReach = isPathOutOfReach(p.level, userLevel);
           return (
-            <Card key={p.id} className="flex flex-col">
+            <Card
+              key={p.id}
+              className={`flex flex-col ${
+                isRecommended
+                  ? "border-primary shadow-md ring-2 ring-primary/20"
+                  : ""
+              } ${outOfReach ? "opacity-70" : ""}`}
+            >
               <CardHeader>
-                <div className="text-xs uppercase tracking-wide text-primary">
-                  {LEVEL_LABEL[p.level]?.[l] ?? p.level}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-xs uppercase tracking-wide text-primary">
+                    {LEVEL_LABEL[p.level]?.[l] ?? p.level}
+                  </div>
+                  {isRecommended && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
+                      <Sparkles className="h-3 w-3" />
+                      {t("recommendedBadge")}
+                    </span>
+                  )}
                 </div>
                 <CardTitle className="mt-1 text-xl">
                   {pickLocalized(p, "title", l)}
                 </CardTitle>
-                <CardDescription>{pickLocalized(p, "summary", l)}</CardDescription>
+                <CardDescription>
+                  {pickLocalized(p, "summary", l)}
+                </CardDescription>
               </CardHeader>
               <CardContent className="mt-auto space-y-4">
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -76,7 +113,16 @@ export default async function PathsPage({
                     {t("lessonsCount", { count: lessonsCount })}
                   </span>
                 </div>
-                <Button asChild className="w-full">
+                {outOfReach && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("outOfReachHint")}
+                  </p>
+                )}
+                <Button
+                  asChild
+                  variant={isRecommended ? "default" : "outline"}
+                  className="w-full"
+                >
                   <Link href={`/paths/${p.slug}`}>{t("startPath")}</Link>
                 </Button>
               </CardContent>

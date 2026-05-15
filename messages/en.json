@@ -94,6 +94,9 @@
       "4": "Expert"
     },
     "resultCta": "Start recommended path",
+    "resultRecommendLabel": "We recommend",
+    "resultStartPath": "Start path",
+    "resultGoToDashboard": "Go to dashboard",
     "questions": {
       "soldering": {
         "title": "How confident are you at soldering?",
@@ -184,9 +187,13 @@
     "noBoards": "Pick your microcontrollers to see matching projects.",
     "takeAssessment": "Take placement quiz",
     "retakeAssessment": "Retake quiz",
-    "heroEyebrow": "Your first project",
+    "heroEyebrow": "Recommended for you",
+    "heroContinueEyebrow": "Pick up where you left off",
     "heroSubtitle": "No prior knowledge needed. We'll build a blinking LED together — step by step.",
-    "heroCta": "Let's go",
+    "heroCta": "Start path",
+    "heroContinueCta": "Open lesson",
+    "heroNextLesson": "Up next:",
+    "heroPathOverview": "View path",
     "boardSelectorHint": "Tell us which microcontrollers you have — we'll suggest matching projects.",
     "boardSave": "Save",
     "boardSaving": "Saving…",
@@ -222,7 +229,13 @@
     "estimated": "{hours} h",
     "lessonsCount": "{count} lessons",
     "startPath": "Start path",
-    "continuePath": "Continue"
+    "continuePath": "Continue",
+    "recommendedBadge": "For you",
+    "outOfReachHint": "A bit beyond your current level. We recommend completing the paths below this one first.",
+    "outOfReachBannerTitle": "This path is more advanced than your current level.",
+    "outOfReachBannerWithSuggestion": "We recommend starting with \"{pathTitle}\" first — it lays the groundwork you'll need here.",
+    "outOfReachBannerGeneric": "You can still explore — but the easier paths build the foundation for this one.",
+    "outOfReachBannerCta": "Open recommended path"
   },
   "lesson": {
     "duration": "{min} min",

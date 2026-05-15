@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { scoreAssessment, type AssessmentAnswers } from "@/lib/assessment";
+import { pickRecommendedPath } from "@/lib/path-recommendation";
 
 const optionSchema = z.enum(["a", "b", "c", "d"]);
 const answerSchema = z
@@ -51,5 +52,22 @@ export async function POST(req: Request) {
     update: { currentLevel: verified.level },
   });
 
-  return NextResponse.json({ resultId: result.id, ...verified });
+  const publishedPaths = await prisma.learningPath.findMany({
+    where: { isPublished: true },
+    select: { slug: true, level: true, sortOrder: true, title_de: true, title_en: true },
+    orderBy: { sortOrder: "asc" },
+  });
+  const recommendedPath = pickRecommendedPath(publishedPaths, verified.level);
+
+  return NextResponse.json({
+    resultId: result.id,
+    ...verified,
+    recommendedPath: recommendedPath
+      ? {
+          slug: recommendedPath.slug,
+          title_de: recommendedPath.title_de,
+          title_en: recommendedPath.title_en,
+        }
+      : null,
+  });
 }

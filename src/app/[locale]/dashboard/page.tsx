@@ -21,6 +21,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { levelToNumber } from "@/lib/assessment";
+import { pickRecommendedPath } from "@/lib/path-recommendation";
 import { BoardSelector } from "@/components/dashboard/board-selector";
 
 export default async function DashboardPage({
@@ -99,7 +100,44 @@ export default async function DashboardPage({
   const name = user?.name ?? user?.username ?? "👋";
   const activePaths = user?.progress.filter((p) => p.path) ?? [];
   const isBeginnerMode = activePaths.length === 0 && totalXp === 0;
-  const firstPath = paths[0] ?? null;
+
+  // Hero-Pfad: aktiver Pfad (Progress) sonst empfohlener (Level-Match)
+  const activePath = activePaths.find((p) => p.path)?.path ?? null;
+  const recommendedPath = pickRecommendedPath(
+    paths,
+    user?.profile?.currentLevel,
+  );
+  const heroPath = activePath ?? recommendedPath;
+
+  // Nächste offene Lesson im Hero-Pfad finden (deep-link statt Pfad-Übersicht)
+  const nextLesson = heroPath
+    ? await prisma.lesson
+        .findMany({
+          where: {
+            isPublished: true,
+            course: { pathId: heroPath.id },
+          },
+          select: {
+            id: true,
+            slug: true,
+            title_de: true,
+            title_en: true,
+            estimatedMinutes: true,
+            sortOrder: true,
+            course: { select: { sortOrder: true } },
+            progress: {
+              where: { userId: session.user.id },
+              select: { completedAt: true },
+              take: 1,
+            },
+          },
+          orderBy: [{ course: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+        })
+        .then(
+          (ls) =>
+            ls.find((l) => !l.progress[0]?.completedAt) ?? ls[0] ?? null,
+        )
+    : null;
 
   return (
     <div className="container py-8 md:py-12">
@@ -114,31 +152,62 @@ export default async function DashboardPage({
         </Button>
       </div>
 
-      {/* Beginner-Mode: prominenter Hero-CTA statt leerer KPIs */}
-      {isBeginnerMode && firstPath ? (
+      {/* Hero: aktiver Pfad (Progress) oder empfohlener (Level-Match).
+          Verlinkt direkt auf die nächste offene Lesson statt auf die Pfad-Übersicht. */}
+      {heroPath && (
         <Card className="mb-10 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background">
           <CardContent className="grid gap-4 p-8 md:p-10">
             <div className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-primary">
               <Sparkles className="h-4 w-4" />
-              {t("heroEyebrow")}
+              {activePath ? t("heroContinueEyebrow") : t("heroEyebrow")}
             </div>
             <h2 className="text-2xl font-bold md:text-3xl">
-              {locale === "de" ? firstPath.title_de : firstPath.title_en}
+              {locale === "de" ? heroPath.title_de : heroPath.title_en}
             </h2>
+            {nextLesson && (
+              <p className="text-sm text-muted-foreground">
+                {t("heroNextLesson")}{" "}
+                <span className="font-medium text-foreground">
+                  {locale === "de" ? nextLesson.title_de : nextLesson.title_en}
+                </span>
+                {nextLesson.estimatedMinutes ? (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · {t("duration", { min: nextLesson.estimatedMinutes })}
+                  </span>
+                ) : null}
+              </p>
+            )}
             <p className="max-w-2xl text-base text-muted-foreground">
-              {t("heroSubtitle")}
+              {locale === "de"
+                ? heroPath.summary_de
+                : heroPath.summary_en}
             </p>
-            <div>
+            <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="mt-2">
-                <Link href={`/paths/${firstPath.slug}`}>
-                  {t("heroCta")} <ArrowRight className="ml-2 h-4 w-4" />
+                <Link
+                  href={
+                    nextLesson
+                      ? `/lessons/${nextLesson.slug}`
+                      : `/paths/${heroPath.slug}`
+                  }
+                >
+                  {activePath ? t("heroContinueCta") : t("heroCta")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="mt-2">
+                <Link href={`/paths/${heroPath.slug}`}>
+                  {t("heroPathOverview")}
                 </Link>
               </Button>
             </div>
           </CardContent>
         </Card>
-      ) : (
-        // Aktive Lerner: kompakte Stats-Leiste
+      )}
+
+      {/* Stats — bei aktiven Lernern unter dem Hero */}
+      {!isBeginnerMode && (
         <div className="mb-10 grid grid-cols-3 gap-3 rounded-xl border bg-card p-3 md:gap-4 md:p-4">
           <StatTile
             icon={<GraduationCap className="h-4 w-4 text-primary" />}

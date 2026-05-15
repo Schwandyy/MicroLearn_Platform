@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ASSESSMENT_QUESTIONS,
   OPTION_KEYS,
@@ -20,8 +20,15 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useToast } from "@/hooks/use-toast";
 
+type RecommendedPath = {
+  slug: string;
+  title_de: string;
+  title_en: string;
+};
+
 export function AssessmentWizard() {
   const t = useTranslations("assessment");
+  const locale = useLocale();
   const router = useRouter();
   const { toast } = useToast();
   const [step, setStep] = useState(0);
@@ -29,6 +36,7 @@ export function AssessmentWizard() {
   const [submitted, setSubmitted] = useState<{
     score: number;
     levelNumber: 1 | 2 | 3 | 4;
+    recommendedPath: RecommendedPath | null;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -51,13 +59,21 @@ export function AssessmentWizard() {
   const submit = () => {
     const { score, level } = scoreAssessment(answers);
     startTransition(async () => {
+      let recommendedPath: RecommendedPath | null = null;
       try {
         const res = await fetch("/api/assessment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers, score, level }),
         });
-        if (!res.ok && res.status !== 401) throw new Error("save_failed");
+        if (res.ok) {
+          const data = (await res.json()) as {
+            recommendedPath?: RecommendedPath | null;
+          };
+          recommendedPath = data.recommendedPath ?? null;
+        } else if (res.status !== 401) {
+          throw new Error("save_failed");
+        }
       } catch {
         // non-blocking: result is still shown to the user
         toast({
@@ -65,11 +81,21 @@ export function AssessmentWizard() {
           description: "Result saved locally.",
         });
       }
-      setSubmitted({ score, levelNumber: levelToNumber(level) });
+      setSubmitted({
+        score,
+        levelNumber: levelToNumber(level),
+        recommendedPath,
+      });
     });
   };
 
   if (submitted) {
+    const rec = submitted.recommendedPath;
+    const recTitle = rec
+      ? locale === "de"
+        ? rec.title_de
+        : rec.title_en
+      : null;
     return (
       <Card className="mx-auto w-full max-w-xl">
         <CardHeader>
@@ -89,9 +115,45 @@ export function AssessmentWizard() {
             <div className="text-4xl font-bold">{submitted.score} / 100</div>
             <Progress className="mt-3" value={submitted.score} />
           </div>
-          <Button onClick={() => router.push("/dashboard")} disabled={isPending}>
-            {t("resultCta")}
-          </Button>
+          {rec && recTitle && (
+            <div className="rounded-2xl border bg-gradient-to-br from-primary/10 to-transparent p-5">
+              <div className="text-xs uppercase tracking-wide text-primary">
+                {t("resultRecommendLabel")}
+              </div>
+              <div className="mt-1 text-xl font-semibold">{recTitle}</div>
+            </div>
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {rec ? (
+              <>
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => router.push(`/paths/${rec.slug}`)}
+                  disabled={isPending}
+                >
+                  {t("resultStartPath")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => router.push("/dashboard")}
+                  disabled={isPending}
+                >
+                  {t("resultGoToDashboard")}
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="lg"
+                onClick={() => router.push("/dashboard")}
+                disabled={isPending}
+              >
+                {t("resultCta")}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );
