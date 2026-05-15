@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingCart, ChevronDown } from "lucide-react";
+import { ShoppingCart, ChevronDown, CheckCircle2, Circle } from "lucide-react";
 import { PartIcon } from "./part-icon";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +70,7 @@ export function BomCards({ items }: { items: BomItemView[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {items.map((item) => (
         <BomCard
           key={item.id}
@@ -99,61 +98,84 @@ function BomCard({
 
   const primary = item.affiliates[0];
   const others = item.affiliates.slice(1);
+  const showImage = item.imageUrl && !imgFailed;
 
   return (
     <Card
       className={cn(
-        "transition",
-        owned && "border-emerald-400 bg-emerald-50/40 dark:bg-emerald-900/10",
+        "relative overflow-hidden transition",
+        owned && "border-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10",
       )}
     >
-      <CardContent className="grid gap-3 p-4">
-        {/* Habe-ich-Checkbox oben rechts */}
+      {/* Toggle: kleines Icon oben rechts */}
+      <button
+        type="button"
+        aria-label={owned ? t("haveItChecked") : t("haveItToggle")}
+        title={owned ? t("haveItChecked") : t("haveItToggle")}
+        onClick={onToggle}
+        className={cn(
+          "absolute right-2 top-2 z-10 rounded-full p-1.5 transition",
+          owned
+            ? "text-emerald-500 hover:bg-emerald-100/50"
+            : "text-muted-foreground/60 hover:bg-muted hover:text-foreground",
+        )}
+      >
+        {owned ? (
+          <CheckCircle2 className="h-6 w-6" />
+        ) : (
+          <Circle className="h-6 w-6" />
+        )}
+      </button>
+
+      <CardContent className="grid gap-3 p-4 pr-12">
+        {/* Header: Bild mit Quantity-Badge + Name */}
         <div className="flex items-start gap-3">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
-            {item.imageUrl && !imgFailed ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="h-full w-full rounded-lg object-cover"
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <PartIcon iconKey={item.iconKey} className="h-9 w-9 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-primary">
-                {item.quantity}×
-              </span>
-              <span className="break-words font-semibold">{item.name}</span>
+          <div className="relative h-16 w-16 flex-shrink-0">
+            <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-muted">
+              {showImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={item.imageUrl!}
+                  alt={item.name}
+                  className="h-full w-full object-contain"
+                  onError={() => setImgFailed(true)}
+                />
+              ) : (
+                <PartIcon
+                  iconKey={item.iconKey}
+                  className="h-8 w-8 text-muted-foreground"
+                />
+              )}
             </div>
+            {/* Quantity-Badge */}
+            <span className="absolute -bottom-1 -right-1 inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground shadow-md ring-2 ring-background">
+              {item.quantity}×
+            </span>
+          </div>
+          <div className="min-w-0 flex-1 pt-1">
+            <h3 className="break-words text-sm font-semibold leading-tight">
+              {item.name}
+            </h3>
             {item.descriptionShort && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
                 {item.descriptionShort}
               </p>
             )}
           </div>
-          <label className="flex flex-shrink-0 cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-1 transition hover:bg-muted">
-            <Checkbox checked={owned} onCheckedChange={onToggle} />
-            <span className="text-[10px] leading-tight text-muted-foreground">
-              {owned ? t("haveItChecked") : t("haveItToggle")}
-            </span>
-          </label>
         </div>
 
         {!owned && primary && (
-          <div className="grid gap-2">
-            <Button asChild className="w-full" size="sm">
+          <div className="grid gap-1.5">
+            <Button asChild size="sm" className="w-full">
               <a
                 href={primary.url}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                {t("buyNow")} — {primary.programDisplayName}
+                <span className="truncate">
+                  {t("buyNow")} · {primary.programDisplayName}
+                </span>
               </a>
             </Button>
 
@@ -162,7 +184,7 @@ function BomCard({
                 <button
                   type="button"
                   onClick={() => setMoreOpen((v) => !v)}
-                  className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  className="flex w-full items-center justify-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground"
                 >
                   <ChevronDown
                     className={cn(
@@ -173,14 +195,14 @@ function BomCard({
                   {t("moreOptions")} ({others.length})
                 </button>
                 {moreOpen && (
-                  <div className="mt-2 grid grid-cols-1 gap-1">
+                  <div className="mt-1 flex flex-wrap gap-1">
                     {others.map((opt) => (
                       <a
                         key={opt.programMerchant}
                         href={opt.url}
                         target="_blank"
                         rel="noopener noreferrer sponsored"
-                        className="rounded-md border bg-background px-2 py-1.5 text-center text-xs hover:border-primary hover:bg-primary/5"
+                        className="flex-1 rounded-md border bg-background px-2 py-1 text-center text-xs hover:border-primary hover:bg-primary/5"
                       >
                         {opt.programDisplayName}
                       </a>

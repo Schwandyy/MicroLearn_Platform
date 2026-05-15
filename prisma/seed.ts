@@ -15,8 +15,7 @@ async function main() {
       manufacturer: "Espressif",
       family: "ESP32",
       iconKey: "Cpu",
-      imageUrl:
-        "https://www.az-delivery.de/cdn/shop/products/esp32-nodemcu-module-wlan-wifi-development-board-mit-cp2102-nachfolgermodell-zum-esp8266-kompatibel-mit-arduino-872375.jpg",
+      imageUrl: "/parts/esp32-devkit.svg",
       logicLevel: "V3_3" as const,
       voltageMin: 3.0,
       voltageMax: 3.6,
@@ -119,7 +118,7 @@ async function main() {
       name: "LED rot 5 mm",
       category: "actuator",
       iconKey: "Lightbulb",
-      imageUrl: null,
+      imageUrl: "/parts/led-red.svg",
       logicLevel: "BOTH" as const,
       voltageMin: 1.8,
       voltageMax: 2.2,
@@ -135,7 +134,7 @@ async function main() {
       name: "Widerstand 220 Ω",
       category: "passive",
       iconKey: "Zap",
-      imageUrl: null,
+      imageUrl: "/parts/resistor-220.svg",
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -153,7 +152,7 @@ async function main() {
       name: "Steckbrett (halb)",
       category: "tool",
       iconKey: "Grid3x3",
-      imageUrl: null,
+      imageUrl: "/parts/breadboard.svg",
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -171,7 +170,7 @@ async function main() {
       name: "Jumper-Kabel (M/M)",
       category: "tool",
       iconKey: "Cable",
-      imageUrl: null,
+      imageUrl: "/parts/jumper-wires.svg",
       logicLevel: "BOTH" as const,
       voltageMin: 0,
       voltageMax: 50,
@@ -264,90 +263,111 @@ async function main() {
     where: { slug: "esp32-devkit-v1" },
   });
 
-  // Pro Bauteil eine "Such-Definition" — wird in URL-Template eingesetzt
+  // Direkte Produkt-URLs pro Bauteil pro Programm.
+  // Tracking-IDs werden merchant-spezifisch angehängt (Amazon: tag=, AZ-Delivery: ref=, etc.)
+  type Merchant = "AZ_DELIVERY" | "AMAZON_DE" | "BERRYBASE" | "REICHELT";
   interface PartLinks {
     componentId?: string;
     boardId?: string;
-    az: string;
-    amazon: string;
-    berry: string;
-    reichelt: string;
+    urls: Record<Merchant, string>;
   }
   const parts: PartLinks[] = [
     {
       componentId: ledComp.id,
-      az: "100-x-led-rot",
-      amazon: "LED+rot+5mm+100+Stueck",
-      berry: "LED+rot+5mm",
-      reichelt: "LED+5MM+ROT",
+      urls: {
+        AZ_DELIVERY: "https://www.az-delivery.de/products/100-x-led-rot",
+        AMAZON_DE: "https://www.amazon.de/dp/B07T7ZL9MZ",
+        BERRYBASE: "https://www.berrybase.de/led-5mm-rot",
+        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/led_5mm_2_ma_rot_2_mcd-19050.html",
+      },
     },
     {
       componentId: resComp.id,
-      az: "widerstands-sortiment",
-      amazon: "widerstand+220+ohm+1/4W",
-      berry: "widerstand+220",
-      reichelt: "widerstand+220+ohm",
+      urls: {
+        AZ_DELIVERY: "https://www.az-delivery.de/products/widerstand-220",
+        AMAZON_DE: "https://www.amazon.de/dp/B07KZF8Y56",
+        BERRYBASE: "https://www.berrybase.de/metallschicht-widerstaende-1-220-ohm",
+        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/metallschichtwiderstand_0_6_w_1_-_220_ohm-1956.html",
+      },
     },
     {
       componentId: bbComp.id,
-      az: "mb-102-breadboard",
-      amazon: "breadboard+830+pin+mb102",
-      berry: "breadboard+830",
-      reichelt: "steckboard+830",
+      urls: {
+        AZ_DELIVERY: "https://www.az-delivery.de/products/breadboard-400-pin",
+        AMAZON_DE: "https://www.amazon.de/dp/B01M2WTHWO",
+        BERRYBASE: "https://www.berrybase.de/breadboard-400-tie-points",
+        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/steckboard_400-300070.html",
+      },
     },
     {
       componentId: wireComp.id,
-      az: "40-x-jumper-wire-kabel-male-male",
-      amazon: "jumper+wire+male+male",
-      berry: "jumper+wire",
-      reichelt: "jumper+kabel+male",
+      urls: {
+        AZ_DELIVERY: "https://www.az-delivery.de/products/40-x-jumper-wire-kabel-male-male",
+        AMAZON_DE: "https://www.amazon.de/dp/B01EV70C78",
+        BERRYBASE: "https://www.berrybase.de/jumper-kabel-set-65-stueck-male-male-female-female-und-male-female",
+        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/jumperdraht_steckbruecke_40_stueck_male_male-153031.html",
+      },
     },
     {
       boardId: esp32Board.id,
-      az: "esp32-developmentboard",
-      amazon: "ESP32+DevKit+V1+CP2102",
-      berry: "ESP32+DevKit",
-      reichelt: "ESP32+DEVKITC",
+      urls: {
+        AZ_DELIVERY: "https://www.az-delivery.de/products/esp32-developmentboard",
+        AMAZON_DE: "https://www.amazon.de/dp/B071P98VTG",
+        BERRYBASE: "https://www.berrybase.de/esp32-nodemcu-development-board-mit-cp2102",
+        REICHELT: "https://www.reichelt.de/de/de/shop/produkt/espressif_esp32-devkitc-32d-298105.html",
+      },
     },
   ];
 
-  function buildUrl(template: string, slug: string, trackingId: string | null) {
-    return template
-      .replace("{slug}", slug)
-      .replace("{trackingId}", trackingId ?? "");
+  function appendTrackingTag(
+    url: string,
+    merchant: Merchant,
+    trackingId: string | null,
+  ): string {
+    if (!trackingId) return url;
+    const sep = url.includes("?") ? "&" : "?";
+    const param: Record<Merchant, string> = {
+      AMAZON_DE: "tag",
+      AZ_DELIVERY: "ref",
+      BERRYBASE: "ref",
+      REICHELT: "PROVID",
+    };
+    return `${url}${sep}${param[merchant]}=${encodeURIComponent(trackingId)}`;
   }
+
+  const allPrograms: { program: typeof azProgram; merchant: Merchant }[] = [
+    { program: azProgram, merchant: "AZ_DELIVERY" },
+    { program: amazonProgram, merchant: "AMAZON_DE" },
+    { program: berryProgram, merchant: "BERRYBASE" },
+    { program: reicheltProgram, merchant: "REICHELT" },
+  ];
 
   let linkCount = 0;
   for (const part of parts) {
     const ownerId = part.componentId ?? part.boardId;
-    const entries = [
-      { program: azProgram, slug: part.az, key: "az" },
-      { program: amazonProgram, slug: part.amazon, key: "amazon" },
-      { program: berryProgram, slug: part.berry, key: "berry" },
-      { program: reicheltProgram, slug: part.reichelt, key: "reichelt" },
-    ];
-    for (const e of entries) {
-      const url = buildUrl(e.program.urlTemplate, e.slug, e.program.trackingId);
-      const id = `${e.program.id}-${ownerId}`;
+    for (const { program, merchant } of allPrograms) {
+      const baseUrl = part.urls[merchant];
+      const url = appendTrackingTag(baseUrl, merchant, program.trackingId);
+      const id = `${program.id}-${ownerId}`;
       await prisma.affiliateLink.upsert({
         where: { id },
         create: {
           id,
-          programId: e.program.id,
+          programId: program.id,
           productUrl: url,
-          productSlug: e.slug,
+          productSlug: baseUrl,
           componentId: part.componentId ?? null,
           boardId: part.boardId ?? null,
         },
         update: {
           productUrl: url,
-          productSlug: e.slug,
+          productSlug: baseUrl,
         },
       });
       linkCount += 1;
     }
   }
-  console.log(`  ✓ ${linkCount} affiliate links across 4 programs`);
+  console.log(`  ✓ ${linkCount} direct product affiliate links across 4 programs`);
 
   // -----------------------------------------------------------------------
   // Learning paths

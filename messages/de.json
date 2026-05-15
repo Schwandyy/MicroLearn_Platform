@@ -27,6 +27,9 @@
     "featureBoards": "ESP32 · Arduino · Pi Pico · STM32"
   },
   "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "signOut": "Abmelden",
     "signInTitle": "Willkommen zurück",
     "signInSubtitle": "Melde dich an, um weiterzulernen.",
     "signUpTitle": "Konto erstellen",

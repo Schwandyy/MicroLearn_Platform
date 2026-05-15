@@ -18,6 +18,10 @@ export default async function LessonPage({
   const l = locale as Locale;
 
   const session = await auth();
+  console.log("[lesson]", slug, "session?", {
+    hasSession: Boolean(session),
+    userId: session?.user?.id,
+  });
   if (!session?.user?.id) redirect(`/${locale}/auth/sign-in`);
 
   const lesson = await prisma.lesson.findUnique({

@@ -25,6 +25,11 @@ export default async function DashboardPage({
   const t = await getTranslations("dashboard");
 
   const session = await auth();
+  console.log("[dashboard] session?", {
+    hasSession: Boolean(session),
+    userId: session?.user?.id,
+    role: session?.user?.role,
+  });
   if (!session?.user?.id) redirect(`/${locale}/auth/sign-in`);
 
   const [user, xpAgg, streak, paths, allBoards, lastAssessment] =
