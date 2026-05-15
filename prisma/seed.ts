@@ -1,0 +1,228 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log("🌱 Seeding MicroLearn dev data…");
+
+  // -----------------------------------------------------------------------
+  // Boards
+  // -----------------------------------------------------------------------
+  const boards = [
+    {
+      slug: "esp32-devkit-v1",
+      name: "ESP32 DevKit V1",
+      manufacturer: "Espressif",
+      family: "ESP32",
+      logicLevel: "V3_3" as const,
+      voltageMin: 3.0,
+      voltageMax: 3.6,
+      protocols: ["GPIO", "PWM", "ADC", "I2C", "SPI", "UART", "WIFI", "BLE", "MQTT"] as const,
+      description_de:
+        "Beliebter Dual-Core-Mikrocontroller mit WiFi und Bluetooth. 3,3 V Logikpegel — beim Anschluss von 5 V-Sensoren Pegelwandler verwenden.",
+      description_en:
+        "Popular dual-core MCU with WiFi and Bluetooth. 3.3 V logic level — use level shifters for 5 V sensors.",
+    },
+    {
+      slug: "arduino-uno-r3",
+      name: "Arduino Uno R3",
+      manufacturer: "Arduino",
+      family: "AVR",
+      logicLevel: "V5" as const,
+      voltageMin: 4.5,
+      voltageMax: 5.5,
+      protocols: ["GPIO", "PWM", "ADC", "I2C", "SPI", "UART"] as const,
+      description_de:
+        "Klassisches Einstiegsboard, robust und gut dokumentiert. 5 V Logikpegel.",
+      description_en:
+        "The classic beginner board — robust, well documented. 5 V logic level.",
+    },
+    {
+      slug: "raspberry-pi-pico",
+      name: "Raspberry Pi Pico",
+      manufacturer: "Raspberry Pi Foundation",
+      family: "RP2040",
+      logicLevel: "V3_3" as const,
+      voltageMin: 1.8,
+      voltageMax: 5.5,
+      protocols: ["GPIO", "PWM", "ADC", "I2C", "SPI", "UART"] as const,
+      description_de:
+        "Günstig, Dual-Core ARM Cortex-M0+, programmierbar mit MicroPython oder C/C++.",
+      description_en:
+        "Affordable dual-core ARM Cortex-M0+, programmable with MicroPython or C/C++.",
+    },
+    {
+      slug: "esp8266-nodemcu",
+      name: "ESP8266 NodeMCU",
+      manufacturer: "Espressif",
+      family: "ESP8266",
+      logicLevel: "V3_3" as const,
+      voltageMin: 3.0,
+      voltageMax: 3.6,
+      protocols: ["GPIO", "PWM", "ADC", "I2C", "SPI", "UART", "WIFI", "MQTT"] as const,
+      description_de:
+        "WiFi-Klassiker für IoT-Einsteiger. 3,3 V Logikpegel.",
+      description_en: "The classic WiFi IoT entry board. 3.3 V logic level.",
+    },
+    {
+      slug: "arduino-nano",
+      name: "Arduino Nano",
+      manufacturer: "Arduino",
+      family: "AVR",
+      logicLevel: "V5" as const,
+      voltageMin: 4.5,
+      voltageMax: 5.5,
+      protocols: ["GPIO", "PWM", "ADC", "I2C", "SPI", "UART"] as const,
+      description_de:
+        "Kompakte Uno-Variante, ideal für Steckbrett-Projekte.",
+      description_en:
+        "Compact Uno variant — perfect for breadboard projects.",
+    },
+  ];
+
+  for (const b of boards) {
+    await prisma.board.upsert({
+      where: { slug: b.slug },
+      create: b as never,
+      update: b as never,
+    });
+  }
+  console.log(`  ✓ ${boards.length} boards`);
+
+  // -----------------------------------------------------------------------
+  // Affiliate programs (seeded inactive — admin activates manually)
+  // -----------------------------------------------------------------------
+  const programs = [
+    {
+      merchant: "AZ_DELIVERY" as const,
+      displayName: "AZ-Delivery",
+      urlTemplate: "https://www.az-delivery.de/products/{slug}?ref={trackingId}",
+      isActive: false,
+    },
+    {
+      merchant: "BERRYBASE" as const,
+      displayName: "BerryBase",
+      urlTemplate: "https://www.berrybase.de/{slug}",
+      isActive: false,
+    },
+    {
+      merchant: "REICHELT" as const,
+      displayName: "Reichelt Elektronik",
+      urlTemplate: "https://www.reichelt.de/{slug}",
+      isActive: false,
+    },
+    {
+      merchant: "AMAZON_DE" as const,
+      displayName: "Amazon DE",
+      urlTemplate: "https://www.amazon.de/dp/{slug}?tag={trackingId}",
+      isActive: false,
+    },
+  ];
+  for (const p of programs) {
+    await prisma.affiliateProgram.upsert({
+      where: { merchant: p.merchant },
+      create: p,
+      update: p,
+    });
+  }
+  console.log(`  ✓ ${programs.length} affiliate programs (inactive)`);
+
+  // -----------------------------------------------------------------------
+  // Learning paths (one per level)
+  // -----------------------------------------------------------------------
+  const paths = [
+    {
+      slug: "esp32-basics",
+      level: "L1_BEGINNER" as const,
+      estimatedHours: 6,
+      sortOrder: 1,
+      title_de: "ESP32 Grundlagen",
+      title_en: "ESP32 Basics",
+      summary_de:
+        "Vom ersten Blink bis zum WLAN-Sensor. Schritt-für-Schritt mit Simulator.",
+      summary_en:
+        "From your first blink to a WiFi sensor. Step-by-step with the simulator.",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: "arduino-first-projects",
+      level: "L2_NOVICE" as const,
+      estimatedHours: 8,
+      sortOrder: 2,
+      title_de: "Arduino — erste Projekte",
+      title_en: "Arduino — First Projects",
+      summary_de:
+        "Sensoren, Aktoren, kleine Automatisierungen mit Arduino Uno.",
+      summary_en:
+        "Sensors, actuators, small automation projects with the Arduino Uno.",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: "iot-with-mqtt",
+      level: "L3_INTERMEDIATE" as const,
+      estimatedHours: 10,
+      sortOrder: 3,
+      title_de: "IoT mit MQTT",
+      title_en: "IoT with MQTT",
+      summary_de:
+        "Mehrere ESP32 sprechen miteinander — Home Assistant inklusive.",
+      summary_en:
+        "Multiple ESP32s talking to each other — Home Assistant included.",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: "embedded-rtos",
+      level: "L4_EXPERT" as const,
+      estimatedHours: 16,
+      sortOrder: 4,
+      title_de: "Embedded RTOS",
+      title_en: "Embedded RTOS",
+      summary_de:
+        "FreeRTOS, Tasks, Queues, Interrupts — produktive Firmware-Architektur.",
+      summary_en:
+        "FreeRTOS, tasks, queues, interrupts — productive firmware architecture.",
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+  ];
+  for (const p of paths) {
+    await prisma.learningPath.upsert({
+      where: { slug: p.slug },
+      create: p,
+      update: p,
+    });
+  }
+  console.log(`  ✓ ${paths.length} learning paths`);
+
+  // -----------------------------------------------------------------------
+  // A starter badge
+  // -----------------------------------------------------------------------
+  await prisma.badge.upsert({
+    where: { slug: "first-step" },
+    create: {
+      slug: "first-step",
+      category: "MILESTONE",
+      xpReward: 25,
+      title_de: "Erster Schritt",
+      title_en: "First Step",
+      description_de: "Du hast deinen Einstufungstest abgeschlossen.",
+      description_en: "You completed your placement quiz.",
+    },
+    update: {},
+  });
+  console.log("  ✓ starter badge");
+
+  console.log("✅ done");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

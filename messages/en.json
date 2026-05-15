@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "appName": "MicroLearn",
+    "tagline": "Learn microelectronics, structured.",
+    "description": "Structured learning paths for ESP32, Arduino, Raspberry Pi Pico and more. Projects, simulator, AI mentor."
+  },
+  "nav": {
+    "home": "Home",
+    "paths": "Paths",
+    "projects": "Projects",
+    "community": "Community",
+    "pricing": "Pricing",
+    "dashboard": "Dashboard",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "languageSwitch": "Language"
+  },
+  "home": {
+    "heroTitle": "From your first LED blink to your own IoT project.",
+    "heroSubtitle": "Structured learning paths with an in-browser simulator, AI mentor, and an active community — in English and German.",
+    "ctaStart": "Start free",
+    "ctaSeePaths": "See learning paths",
+    "featureSimulator": "Wokwi simulator in the browser",
+    "featureAi": "AI mentor for every project",
+    "featureLevels": "4 levels — beginner to expert",
+    "featureBoards": "ESP32 · Arduino · Pi Pico · STM32"
+  },
+  "auth": {
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to keep learning.",
+    "signUpTitle": "Create an account",
+    "signUpSubtitle": "Ready in 30 seconds.",
+    "email": "Email",
+    "password": "Password",
+    "continueWith": "Continue with {provider}",
+    "or": "or",
+    "studentCodeLabel": "Class code",
+    "studentCodeTitle": "Sign in with a class code",
+    "studentCodeHint": "No email. No password. Just your class code and a username.",
+    "studentUsername": "Username",
+    "submit": "Continue",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "studentCodeAccess": "Student? Use your class code"
+  },
+  "assessment": {
+    "title": "Where are you today?",
+    "subtitle": "8 quick questions — we'll recommend a learning path.",
+    "question": "Question {current} of {total}",
+    "next": "Next",
+    "back": "Back",
+    "finish": "See result",
+    "resultTitle": "Your level: {level}",
+    "resultLevel": {
+      "1": "Beginner",
+      "2": "Novice",
+      "3": "Intermediate",
+      "4": "Expert"
+    },
+    "resultCta": "Start recommended path",
+    "questions": {
+      "soldering": {
+        "title": "How confident are you at soldering?",
+        "options": {
+          "a": "Never soldered before",
+          "b": "First tries — sometimes cold joints",
+          "c": "Clean joints, regularly",
+          "d": "SMD and fine pitches no problem"
+        }
+      },
+      "coding": {
+        "title": "How are your coding skills?",
+        "options": {
+          "a": "I haven't programmed yet",
+          "b": "I understand simple examples",
+          "c": "I write my own functions and classes",
+          "d": "I develop complex firmware (FreeRTOS, interrupts)"
+        }
+      },
+      "circuits": {
+        "title": "How familiar are you with circuits?",
+        "options": {
+          "a": "What is plus, what is minus?",
+          "b": "I can size a resistor for an LED",
+          "c": "Voltage dividers, I2C pull-ups, level shifters — fine",
+          "d": "Designing my own PCBs is routine"
+        }
+      },
+      "boards": {
+        "title": "Which boards have you used?",
+        "options": {
+          "a": "None yet",
+          "b": "Arduino Uno / Nano",
+          "c": "ESP8266 / ESP32 / Pi Pico",
+          "d": "STM32 / Teensy / Custom hardware"
+        }
+      },
+      "protocols": {
+        "title": "Which protocols have you worked with?",
+        "options": {
+          "a": "None",
+          "b": "Digital IO and PWM",
+          "c": "I2C, SPI, UART",
+          "d": "CAN, BLE, MQTT, RTOS IPC"
+        }
+      },
+      "goal": {
+        "title": "What's your goal?",
+        "options": {
+          "a": "See something blink for the first time",
+          "b": "Build a small home project",
+          "c": "Ship an IoT device",
+          "d": "Work as an embedded engineer"
+        }
+      },
+      "context": {
+        "title": "What's the context for your learning?",
+        "options": {
+          "a": "Hobby at home",
+          "b": "School or vocational training",
+          "c": "University",
+          "d": "Work"
+        }
+      },
+      "age": {
+        "title": "Age group (so we serve the right content)",
+        "options": {
+          "a": "Under 14",
+          "b": "14 to 18",
+          "c": "19 to 35",
+          "d": "Over 35"
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "welcome": "Hi, {name}",
+    "yourLevel": "Your level",
+    "xp": "XP",
+    "streak": "Streak",
+    "streakDays": "{days} days",
+    "continueLearning": "Continue learning",
+    "myPaths": "My learning paths",
+    "noPaths": "You haven't started a learning path yet.",
+    "browseAll": "Browse all paths",
+    "myBoards": "My boards",
+    "selectBoards": "Select boards",
+    "noBoards": "Pick your microcontrollers to see matching projects.",
+    "takeAssessment": "Take placement quiz",
+    "retakeAssessment": "Retake quiz"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "offline": {
+    "title": "You're offline",
+    "subtitle": "This page isn't available right now. Find completed lessons in your dashboard.",
+    "retry": "Retry"
+  }
+}

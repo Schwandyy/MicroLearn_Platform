@@ -1,0 +1,747 @@
+// =============================================================================
+// MicroLearn — Prisma Schema
+// PostgreSQL, two-language content fields (DE + EN) on every public artefact.
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  STUDENT       // default end-user
+  STUDENT_CODE  // class-code user (no PII, see Schüler-Code system)
+  INSTRUCTOR    // verified content creator
+  TEACHER       // classroom owner
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  INSTITUTION
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum LearnerLevel {
+  L1_BEGINNER
+  L2_NOVICE
+  L3_INTERMEDIATE
+  L4_EXPERT
+}
+
+enum LogicLevel {
+  V3_3
+  V5
+  BOTH
+}
+
+enum Protocol {
+  GPIO
+  PWM
+  ADC
+  DAC
+  I2C
+  SPI
+  UART
+  ONEWIRE
+  CAN
+  BLE
+  WIFI
+  MQTT
+  ETHERNET
+}
+
+enum ContentSource {
+  HACKSTER
+  AZ_DELIVERY
+  ARDUINO_OFFICIAL
+  RANDOM_NERD_TUTORIALS
+  ADAFRUIT_LEARN
+  GITHUB_README
+  USER_GENERATED
+  EDITORIAL
+}
+
+enum ReviewStatus {
+  PENDING
+  AI_FLAGGED
+  IN_REVIEW
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  PUBLISHED
+}
+
+enum ProjectKind {
+  CONCEPT
+  PROJECT
+}
+
+enum QuizKind {
+  MINI            // inside a lesson, low stakes
+  ASSESSMENT      // initial 8-question placement
+  LESSON_FINAL    // grants XP at the end of a lesson
+}
+
+enum BadgeCategory {
+  MILESTONE
+  STREAK
+  COMMUNITY
+  MASTERY
+}
+
+enum AffiliateMerchant {
+  AZ_DELIVERY
+  BERRYBASE
+  REICHELT
+  AMAZON_DE
+}
+
+// -----------------------------------------------------------------------------
+// Auth & Identity
+// -----------------------------------------------------------------------------
+
+model User {
+  id                String   @id @default(cuid())
+  email             String?  @unique
+  emailVerified     DateTime?
+  name              String?
+  username          String?  @unique
+  image             String?
+  passwordHash      String?
+  role              UserRole @default(STUDENT)
+  preferredLocale   String   @default("de")
+  marketingOptIn    Boolean  @default(false)
+
+  // Schüler-Code-System
+  classroomMember   ClassroomMember?
+
+  // Relations
+  profile           Profile?
+  accounts          Account[]
+  sessions          Session[]
+  subscription      Subscription?
+  progress          UserProgress[]
+  assessments       AssessmentResult[]
+  quizResults       QuizResult[]
+  badges            UserBadge[]
+  streak            Streak?
+  xp                XPTransaction[]
+  certificates      Certificate[]
+  projects          Project[]
+  comments          Comment[]
+  classroomsTaught  Classroom[]   @relation("ClassroomTeacher")
+  reviewsAuthored   ContentReview[] @relation("ReviewAuthor")
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  @@index([deletedAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  bio             String?
+  country         String?
+  birthYear       Int?
+  currentLevel    LearnerLevel @default(L1_BEGINNER)
+  favoriteBoardIds String[]   @default([])
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// Subscriptions
+// -----------------------------------------------------------------------------
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  tier                 SubscriptionTier   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  trialEndsAt          DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// Hardware catalog
+// -----------------------------------------------------------------------------
+
+model Board {
+  id              String     @id @default(cuid())
+  slug            String     @unique
+  name            String
+  manufacturer    String?
+  family          String?    // ESP32, AVR, RP2040, STM32, …
+  imageUrl        String?
+
+  logicLevel      LogicLevel
+  voltageMin      Float
+  voltageMax      Float
+  protocols       Protocol[] @default([])
+
+  // i18n content
+  description_de  String     @db.Text
+  description_en  String     @db.Text
+
+  // Catalog links
+  affiliateLinks  AffiliateLink[]
+
+  bomItems        BOMItem[]
+  components      ComponentBoardCompat[]
+  lessons         Lesson[]   @relation("LessonRecommendedBoards")
+  projects        Project[]  @relation("ProjectBoards")
+
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Component {
+  id              String     @id @default(cuid())
+  slug            String     @unique
+  name            String
+  category        String     // sensor, actuator, display, power, …
+  imageUrl        String?
+
+  logicLevel      LogicLevel
+  voltageMin      Float
+  voltageMax      Float
+  protocols       Protocol[] @default([])
+
+  description_de  String     @db.Text
+  description_en  String     @db.Text
+
+  affiliateLinks  AffiliateLink[]
+  bomItems        BOMItem[]
+  boards          ComponentBoardCompat[]
+
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model ComponentBoardCompat {
+  componentId String
+  boardId     String
+  // Explicit verified compatibility; absence ≠ incompatible, but UI prefers verified
+  notes_de    String?
+  notes_en    String?
+
+  component Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  board     Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@id([componentId, boardId])
+}
+
+// -----------------------------------------------------------------------------
+// Affiliate
+// -----------------------------------------------------------------------------
+
+model AffiliateProgram {
+  id                   String            @id @default(cuid())
+  merchant             AffiliateMerchant @unique
+  displayName          String
+  urlTemplate          String            // e.g. https://www.az-delivery.de/products/{slug}?ref={trackingId}
+  trackingId           String?
+  isActive             Boolean           @default(true)
+  lastCheckedAt        DateTime?
+  notes                String?
+
+  links AffiliateLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AffiliateLink {
+  id           String            @id @default(cuid())
+  programId    String
+  productUrl   String            // canonical product URL on merchant
+  productSlug  String?
+  priceCents   Int?
+  currency     String?           @default("EUR")
+  inStock      Boolean?
+  lastSyncedAt DateTime?
+
+  program   AffiliateProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  componentId String?
+  component   Component? @relation(fields: [componentId], references: [id])
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id])
+
+  bomItems BOMItem[]
+
+  @@index([componentId])
+  @@index([boardId])
+}
+
+// -----------------------------------------------------------------------------
+// Learning content
+// -----------------------------------------------------------------------------
+
+model LearningPath {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  level           LearnerLevel
+  estimatedHours  Int?
+  coverImage      String?
+  sortOrder       Int          @default(0)
+
+  title_de        String
+  title_en        String
+  summary_de      String       @db.Text
+  summary_en      String       @db.Text
+
+  courses         Course[]
+  userProgress    UserProgress[]
+  certificates    Certificate[]
+
+  isPublished     Boolean      @default(false)
+  publishedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Course {
+  id              String       @id @default(cuid())
+  pathId          String
+  slug            String       @unique
+  sortOrder       Int          @default(0)
+
+  title_de        String
+  title_en        String
+  summary_de      String       @db.Text
+  summary_en      String       @db.Text
+
+  path     LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lesson {
+  id              String       @id @default(cuid())
+  courseId        String
+  slug            String       @unique
+  sortOrder       Int          @default(0)
+  kind            ProjectKind  @default(CONCEPT)
+  xpReward        Int          @default(50)
+
+  title_de        String
+  title_en        String
+  body_de         String       @db.Text
+  body_en         String       @db.Text
+  codeSnippet     String?      @db.Text
+  schematicNotes_de String?    @db.Text
+  schematicNotes_en String?    @db.Text
+  safetyNotes_de  String?      @db.Text
+  safetyNotes_en  String?      @db.Text
+
+  // Compatibility
+  recommendedBoards Board[]    @relation("LessonRecommendedBoards")
+  bom               BOMItem[]
+  quizzes           Quiz[]
+  scrapedSources    ScrapedContent[]
+  review            ContentReview?
+  progress          UserProgress[]
+
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BOMItem {
+  id              String   @id @default(cuid())
+  lessonId        String?
+  projectId       String?
+  quantity        Int      @default(1)
+  note_de         String?
+  note_en         String?
+
+  componentId     String?
+  component       Component? @relation(fields: [componentId], references: [id])
+
+  boardId         String?
+  board           Board?     @relation(fields: [boardId], references: [id])
+
+  affiliateLinkId String?
+  affiliateLink   AffiliateLink? @relation(fields: [affiliateLinkId], references: [id])
+
+  lesson  Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// Scraping + Review pipeline
+// -----------------------------------------------------------------------------
+
+model ScrapedContent {
+  id              String        @id @default(cuid())
+  source          ContentSource
+  sourceUrl       String        @unique
+  fetchedAt       DateTime      @default(now())
+  rawHtml         String        @db.Text
+  parsedTitle     String?
+  parsedMarkdown  String?       @db.Text
+  language        String?       // ISO 639-1, detected
+  notes           String?
+
+  lessonId        String?
+  lesson          Lesson?       @relation(fields: [lessonId], references: [id])
+
+  review ContentReview?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContentReview {
+  id             String       @id @default(cuid())
+  status         ReviewStatus @default(PENDING)
+
+  lessonId       String?      @unique
+  scrapedId      String?      @unique
+
+  // AI pre-check report (logic, safety, compatibility, language quality)
+  aiFlags        Json?
+  aiSummary_de   String?      @db.Text
+  aiSummary_en   String?      @db.Text
+
+  // Reviewer
+  authorId       String?
+  reviewerNotes  String?      @db.Text
+  decidedAt      DateTime?
+
+  lesson         Lesson?         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  scraped        ScrapedContent? @relation(fields: [scrapedId], references: [id], onDelete: Cascade)
+  author         User?           @relation("ReviewAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// Progress / gamification
+// -----------------------------------------------------------------------------
+
+model UserProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  pathId        String?
+  lessonId      String?
+
+  percentage    Int      @default(0)
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  lastSeenAt    DateTime @default(now())
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path   LearningPath? @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  lesson Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId, pathId])
+}
+
+model AssessmentResult {
+  id        String       @id @default(cuid())
+  userId    String
+  score     Int          // 0..100
+  level     LearnerLevel
+  answers   Json
+  takenAt   DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, takenAt])
+}
+
+model Quiz {
+  id         String   @id @default(cuid())
+  lessonId   String?
+  kind       QuizKind @default(LESSON_FINAL)
+  title_de   String
+  title_en   String
+  questions  Json     // [{id, prompt_de, prompt_en, options:[{key,label_de,label_en}], correctKey, weight}]
+  passScore  Int      @default(70)
+
+  lesson  Lesson?      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  results QuizResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizResult {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  score     Int
+  passed    Boolean
+  answers   Json
+  takenAt   DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, takenAt])
+}
+
+model Badge {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  category    BadgeCategory
+  iconUrl     String?
+  xpReward    Int           @default(0)
+  title_de    String
+  title_en    String
+  description_de String     @db.Text
+  description_en String     @db.Text
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+}
+
+model Streak {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  currentDays     Int      @default(0)
+  longestDays     Int      @default(0)
+  lastActiveDay   DateTime?
+  freezesRemaining Int     @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model XPTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String   // 'LESSON_COMPLETE', 'QUIZ_PERFECT', 'STREAK_BONUS', …
+  refId     String?  // optional pointer to lesson/quiz/project
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  userId          String
+  pathId          String
+  pdfUrl          String?
+  issuedAt        DateTime @default(now())
+  publicSlug      String   @unique
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pathId])
+}
+
+// -----------------------------------------------------------------------------
+// User-generated content (Pro)
+// -----------------------------------------------------------------------------
+
+model Project {
+  id              String   @id @default(cuid())
+  authorId        String
+  slug            String   @unique
+  title_de        String
+  title_en        String
+  body_de         String   @db.Text
+  body_en         String   @db.Text
+  coverImage      String?
+  isPublic        Boolean  @default(false)
+
+  bom             BOMItem[]
+  showcase        ProjectShowcase?
+  comments        Comment[]
+  boards          Board[]  @relation("ProjectBoards")
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+}
+
+model ProjectShowcase {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  featuredAt  DateTime @default(now())
+  rank        Int?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  authorId    String
+  projectId   String?
+  body        String   @db.Text
+
+  author  User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// Institutions / classrooms
+// -----------------------------------------------------------------------------
+
+model Institution {
+  id          String   @id @default(cuid())
+  name        String
+  country     String?
+  state       String?  // BW, BY, NRW, …
+  contactEmail String?
+
+  classrooms  Classroom[]
+  saml        SAMLConfig?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SAMLConfig {
+  id            String   @id @default(cuid())
+  institutionId String   @unique
+  metadataXml   String   @db.Text
+  acsUrl        String
+  entityId      String
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+}
+
+model Classroom {
+  id            String   @id @default(cuid())
+  institutionId String?
+  teacherId     String
+  name          String
+  curriculumTag String?  // e.g. "BW-MINT-9"
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  teacher     User         @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  members ClassroomMember[]
+  codes   ClassroomCode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClassroomCode {
+  id            String   @id @default(cuid())
+  classroomId   String
+  code          String   @unique
+  expiresAt     DateTime
+  maxUses       Int      @default(50)
+  uses          Int      @default(0)
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+}
+
+model ClassroomMember {
+  id            String   @id @default(cuid())
+  classroomId   String
+  userId        String   @unique
+  joinedAt      DateTime @default(now())
+  isActive      Boolean  @default(true)
+
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([classroomId])
+}

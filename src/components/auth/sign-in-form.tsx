@@ -1,0 +1,173 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
+import { signIn } from "next-auth/react";
+import { useRouter } from "@/i18n/routing";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Github, Mail, KeyRound } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+export function SignInForm() {
+  const t = useTranslations("auth");
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const [mode, setMode] = useState<"email" | "student">("email");
+
+  const onEmailSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const res = await signIn("credentials", {
+        email: data.get("email"),
+        password: data.get("password"),
+        redirect: false,
+      });
+      if (res?.error) {
+        toast({
+          title: t("signInTitle"),
+          description: "Invalid credentials.",
+          variant: "destructive",
+        });
+        return;
+      }
+      router.push("/dashboard");
+    });
+  };
+
+  const onStudentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const res = await signIn("student-code", {
+        code: data.get("code"),
+        username: data.get("username"),
+        redirect: false,
+      });
+      if (res?.error) {
+        toast({
+          title: t("studentCodeTitle"),
+          description: "Code invalid or username taken.",
+          variant: "destructive",
+        });
+        return;
+      }
+      router.push("/dashboard");
+    });
+  };
+
+  return (
+    <div className="grid gap-6">
+      {mode === "email" ? (
+        <>
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              {t("continueWith", { provider: "Google" })}
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+            >
+              <Github className="mr-2 h-4 w-4" />
+              {t("continueWith", { provider: "GitHub" })}
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => signIn("apple", { callbackUrl: "/dashboard" })}
+            >
+              <KeyRound className="mr-2 h-4 w-4" />
+              {t("continueWith", { provider: "Apple" })}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+            <Separator className="flex-1" />
+            {t("or")}
+            <Separator className="flex-1" />
+          </div>
+
+          <form onSubmit={onEmailSubmit} className="grid gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input id="email" name="email" type="email" autoComplete="email" required />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="password">{t("password")}</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={isPending}>
+              {t("submit")}
+            </Button>
+          </form>
+
+          <button
+            type="button"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            onClick={() => setMode("student")}
+          >
+            {t("studentCodeAccess")}
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold">{t("studentCodeTitle")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("studentCodeHint")}
+            </p>
+          </div>
+          <form onSubmit={onStudentSubmit} className="grid gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="code">{t("studentCodeLabel")}</Label>
+              <Input
+                id="code"
+                name="code"
+                inputMode="text"
+                autoCapitalize="characters"
+                maxLength={12}
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="username">{t("studentUsername")}</Label>
+              <Input
+                id="username"
+                name="username"
+                autoComplete="off"
+                required
+                pattern="[A-Za-z0-9_\-]{3,40}"
+              />
+            </div>
+            <Button type="submit" disabled={isPending}>
+              {t("submit")}
+            </Button>
+          </form>
+          <button
+            type="button"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            onClick={() => setMode("email")}
+          >
+            ← {t("signInTitle")}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
