@@ -135,14 +135,14 @@ export function StepPlayer({
             <X className="h-4 w-4" />
           </button>
           <Progress value={progressPct} className="h-3 flex-1" />
-          <span className="hidden text-xs text-muted-foreground md:inline">
-            {t("step", { current: stepIndex + 1, total })}
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {stepIndex + 1}/{total}
           </span>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="container max-w-2xl py-8">
+        <div className="container max-w-2xl py-6 md:py-8">
           {!current ? (
             <p>—</p>
           ) : (
@@ -164,16 +164,18 @@ export function StepPlayer({
         </div>
       </main>
 
-      <footer className="border-t bg-card px-4 py-4">
-        <div className="container flex max-w-2xl items-center justify-between">
+      <footer className="border-t bg-card px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] md:py-4">
+        <div className="container flex max-w-2xl items-center justify-between gap-3">
           <Button
             type="button"
             variant="ghost"
             onClick={goBack}
             disabled={stepIndex === 0 || isPending}
+            aria-label={t("back")}
+            className="px-2 sm:px-4"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("back")}
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t("back")}</span>
           </Button>
           <NextButton
             stepKind={current?.kind ?? "INTRO"}
@@ -478,6 +480,8 @@ function QuizStep({
               type="button"
               disabled={!answer}
               onClick={() => setSubmitted(true)}
+              size="lg"
+              className="w-full sm:w-auto sm:self-end"
             >
               {t("checkAnswer")}
             </Button>
