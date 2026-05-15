@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +16,12 @@ import {
   AlertTriangle,
   Trophy,
   X,
+  Download,
+  Monitor,
+  Usb,
+  Cable,
+  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Breadboard } from "./breadboard-svg";
@@ -33,7 +39,8 @@ export type StepKind =
   | "SIMULATE"
   | "QUIZ"
   | "CELEBRATE"
-  | "EXPLAIN";
+  | "EXPLAIN"
+  | "SETUP";
 
 export interface StepView {
   id: string;
@@ -138,7 +145,9 @@ export function StepPlayer({
               xpReward={xpReward}
               locale={locale}
               onQuizPass={() =>
-                setQuizPassed((prev) => ({ ...prev, [current.id]: true }))
+                setQuizPassed((prev) =>
+                  prev[current.id] ? prev : { ...prev, [current.id]: true },
+                )
               }
             />
           )}
@@ -329,15 +338,28 @@ function StepBody({
           </p>
         </div>
       );
+    case "SETUP":
+      return (
+        <SetupStep
+          title={step.title}
+          body={step.body}
+          payload={payload as Record<string, unknown>}
+          locale={locale}
+        />
+      );
     case "EXPLAIN": {
       const highlightPin = (payload as { highlightPin?: "GPIO2" | "GND" | "3V3" })
         .highlightPin;
+      const showBreadboardExplainer = Boolean(
+        (payload as { showBreadboardExplainer?: boolean }).showBreadboardExplainer,
+      );
       return (
         <div className="space-y-5">
           <header>
             <h2 className="text-2xl font-bold">{step.title}</h2>
           </header>
           {highlightPin && <Esp32PinVisual highlightPin={highlightPin} />}
+          {showBreadboardExplainer && <Breadboard explainerMode buildStage="all" />}
           <Card>
             <CardContent className="p-6">
               <p className="text-base leading-relaxed">{step.body}</p>
@@ -383,9 +405,13 @@ function QuizStep({
   const correctKey = payload.correctKey as string | undefined;
   const isCorrect = submitted && answer === correctKey;
   const isWrong = submitted && answer !== correctKey;
+  const firedRef = useRef(false);
 
   useEffect(() => {
-    if (isCorrect) onPass();
+    if (isCorrect && !firedRef.current) {
+      firedRef.current = true;
+      onPass();
+    }
   }, [isCorrect, onPass]);
 
   return (
@@ -500,6 +526,114 @@ function NextButton({
       {disabled && hintWhenDisabled && (
         <span className="text-xs text-muted-foreground">{hintWhenDisabled}</span>
       )}
+    </div>
+  );
+}
+
+interface SetupChecklistItem {
+  iconKey?: "download" | "usb" | "monitor" | "cable" | "check";
+  label_de: string;
+  label_en: string;
+  hint_de?: string;
+  hint_en?: string;
+  link?: {
+    label_de: string;
+    label_en: string;
+    url: string;
+  };
+}
+
+const SETUP_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  download: Download,
+  usb: Usb,
+  monitor: Monitor,
+  cable: Cable,
+  check: CheckCircle2,
+};
+
+function SetupStep({
+  title,
+  body,
+  payload,
+  locale,
+}: {
+  title: string;
+  body: string;
+  payload: Record<string, unknown>;
+  locale: "de" | "en";
+}) {
+  const t = useTranslations("lesson");
+  const items = (payload.checklist as SetupChecklistItem[] | undefined) ?? [];
+  const platformNotice =
+    (payload[`platformNotice_${locale}`] as string | undefined) ?? null;
+  return (
+    <div className="space-y-5">
+      <header>
+        <h2 className="text-2xl font-bold">{title}</h2>
+        {body && <p className="mt-2 text-muted-foreground">{body}</p>}
+      </header>
+
+      {platformNotice && (
+        <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-900/20">
+          <CardContent className="flex items-start gap-3 p-4">
+            <Monitor className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700 dark:text-amber-300" />
+            <p className="text-sm font-medium leading-relaxed text-amber-900 dark:text-amber-100">
+              {platformNotice}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <ol className="grid gap-3">
+        {items.map((item, idx) => {
+          const Icon = SETUP_ICON_MAP[item.iconKey ?? "check"] ?? CheckCircle2;
+          const label = locale === "de" ? item.label_de : item.label_en;
+          const hint = locale === "de" ? item.hint_de : item.hint_en;
+          return (
+            <li key={idx}>
+              <Card>
+                <CardContent className="flex items-start gap-3 p-4">
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <p className="flex items-center gap-2 text-base font-semibold leading-snug">
+                      <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
+                      {label}
+                    </p>
+                    {hint && (
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {hint}
+                      </p>
+                    )}
+                    {item.link && (
+                      <a
+                        href={item.link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {locale === "de" ? item.link.label_de : item.link.label_en}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </li>
+          );
+        })}
+      </ol>
+
+      {(payload[`keyPoint_${locale}`] as string | undefined) && (
+        <p className="rounded-md bg-primary/10 p-3 text-sm font-medium">
+          💡 {payload[`keyPoint_${locale}`] as string}
+        </p>
+      )}
+      <p className="text-center text-xs text-muted-foreground">
+        {t("setupFooterNote")}
+      </p>
     </div>
   );
 }

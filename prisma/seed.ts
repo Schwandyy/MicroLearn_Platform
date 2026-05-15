@@ -24,8 +24,8 @@ async function main() {
         "Beliebter Dual-Core-Mikrocontroller mit WiFi und Bluetooth. 3,3 V Logikpegel — beim Anschluss von 5 V-Sensoren Pegelwandler verwenden.",
       description_en:
         "Popular dual-core MCU with WiFi and Bluetooth. 3.3 V logic level — use level shifters for 5 V sensors.",
-      descriptionShort_de: "Mini-Computer mit WLAN und Bluetooth.",
-      descriptionShort_en: "Tiny computer with WiFi and Bluetooth.",
+      descriptionShort_de: "Mini-Computer mit WLAN & Bluetooth.",
+      descriptionShort_en: "Tiny computer with WiFi & Bluetooth.",
     },
     {
       slug: "arduino-uno-r3",
@@ -149,7 +149,7 @@ async function main() {
     },
     {
       slug: "breadboard-half",
-      name: "Steckbrett (halb)",
+      name: "Steckbrett MB-102",
       category: "tool",
       iconKey: "Grid3x3",
       imageUrl: "/parts/breadboard.svg",
@@ -158,11 +158,11 @@ async function main() {
       voltageMax: 50,
       protocols: ["GPIO"] as const,
       description_de:
-        "Brett zum Stecken — Drähte und Bauteile ohne Löten verbinden.",
+        "830 Kontakte zum Stecken — Bauteile und Drähte ohne Löten verbinden.",
       description_en:
-        "Plug-in board — connect wires and parts without soldering.",
-      descriptionShort_de: "Stecker statt löten.",
-      descriptionShort_en: "Plug instead of solder.",
+        "830-contact plug-in board — connect parts and wires without soldering.",
+      descriptionShort_de: "830 Löcher zum Stecken, ohne Löten.",
+      descriptionShort_en: "830 holes to plug into — no soldering.",
       levelHint: "L1_BEGINNER" as const,
     },
     {
@@ -264,87 +264,132 @@ async function main() {
   });
 
   // -----------------------------------------------------------------------
-  // Affiliate-Direktlinks pro Bauteil pro Programm — AUTO-DISCOVERY.
-  // Pro Bauteil: Such-Begriff je Anbieter → Anbieter-API/HTML wird live
-  // abgefragt → erstes plausibles Produkt wird übernommen → URL verifiziert.
-  // Findet ein Anbieter nichts, taucht er bei diesem Bauteil nicht auf.
-  // Für Amazon (keine offene API) sind ASINs manuell konfiguriert.
+  // Affiliate-Direktlinks — KURATIERT (keine Auto-Discovery mehr).
+  // Pro Bauteil und Anbieter werden hier nur ECHTE Einzelteile mit echten
+  // Preisen gepflegt. Wo ein Anbieter kein passendes Einzelteil führt
+  // (z.B. AZ-Delivery hat nur Widerstands-Sortimente, keine 220-Ohm-Einzel),
+  // wird dort GAR KEIN Link gesetzt — lieber weniger Anbieter als
+  // irreführende Sets/eBooks.
   // -----------------------------------------------------------------------
   type Merchant = "AZ_DELIVERY" | "AMAZON_DE" | "BERRYBASE" | "REICHELT";
 
-  interface PartDiscoveryConfig {
+  interface ManualLink {
+    /** Volle, geprüfte Direkt-URL. */
+    url: string;
+    /** Aktueller Brutto-Stückpreis in Cent (EUR). */
+    priceCents: number;
+    /** Optionales Hinweis-Label, z.B. „65er M/M-Set". */
+    packLabel_de?: string;
+    packLabel_en?: string;
+  }
+
+  interface PartLinkConfig {
     componentId?: string;
     boardId?: string;
     label: string;
-    /** Default-Such-Begriff (deutsch). */
-    searchQuery: string;
-    /** Pro Anbieter überschreibbarer Such-Begriff. */
-    queryPerMerchant?: Partial<Record<Merchant, string>>;
-    /** Schließt Treffer aus, deren Titel/URL diese Substrings enthalten. */
-    excludes?: string[];
-    /** Manuelle URLs (z.B. Amazon-ASINs — keine offene Such-API). */
-    manualUrls?: Partial<Record<Merchant, string>>;
+    /** Stückzahl pro Pack — wird für Pro-Stück-Anzeige genutzt. */
+    pieces?: number;
+    links: Partial<Record<Merchant, ManualLink>>;
   }
 
-  const partConfigs: PartDiscoveryConfig[] = [
+  // Hinweis: Preise sind ein Snapshot — können mit der Zeit drift,
+  // wir markieren sie clientseitig als „ca."-Wert.
+  const partConfigs: PartLinkConfig[] = [
+    {
+      boardId: esp32Board.id,
+      label: "ESP32 DevKit V1",
+      links: {
+        AZ_DELIVERY: {
+          url: "https://www.az-delivery.de/products/esp32-developmentboard",
+          priceCents: 1099,
+        },
+        AMAZON_DE: {
+          url: "https://www.amazon.de/dp/B071P98VTG",
+          priceCents: 1199,
+        },
+        REICHELT: {
+          url: "https://www.reichelt.de/de/de/shop/produkt/nodemcu_esp32_wifi-_und_bluetooth-modul-219897",
+          priceCents: 899,
+        },
+      },
+    },
+    {
+      componentId: bbComp.id,
+      label: "Steckbrett MB-102 (830 Kontakte)",
+      links: {
+        AZ_DELIVERY: {
+          url: "https://www.az-delivery.de/products/breadboard",
+          priceCents: 599,
+        },
+        REICHELT: {
+          url: "https://www.reichelt.de/de/de/shop/produkt/experimentier-steckboard_830_kontakte-282600",
+          priceCents: 499,
+        },
+        AMAZON_DE: {
+          url: "https://www.amazon.de/dp/B07LFD4LT6",
+          priceCents: 599,
+        },
+      },
+    },
     {
       componentId: ledComp.id,
       label: "LED rot 5 mm",
-      searchQuery: "LED 5mm rot",
-      // Module/Strips/SMD-Varianten sind keine bedrahteten Standard-LEDs
-      excludes: [
-        "smd",
-        "0805",
-        "0603",
-        "matrix",
-        "strip",
-        "modul",
-        "ws28",
-        "neopixel",
-        "panel",
-      ],
+      links: {
+        // AZ-Delivery hat KEINE 5mm-Einzel-LED — nur 11€-Sortimente. Lieber weglassen.
+        REICHELT: {
+          url: "https://www.reichelt.de/de/de/shop/produkt/flat-led_5mm_rot_350_mcd_120_-363941",
+          priceCents: 9,
+        },
+        AMAZON_DE: {
+          // 100er Set rot/grün/gelb/blau/weiß — günstigste Einzelpreis-Quelle
+          url: "https://www.amazon.de/dp/B01N7OXKEJ",
+          priceCents: 599,
+          packLabel_de: "100er-Set",
+          packLabel_en: "100-pack",
+        },
+      },
     },
     {
       componentId: resComp.id,
       label: "Widerstand 220 Ω",
-      searchQuery: "Widerstand 220 ohm",
-      excludes: [
-        "smd",
-        "0805",
-        "0603",
-        "modul",
-        "sensor",
-        "kohm",
-        "kΩ",
-        "ntc",
-        "ldr",
-        "potentio",
-      ],
-    },
-    {
-      componentId: bbComp.id,
-      label: "Steckbrett (halb)",
-      searchQuery: "Breadboard",
-      // 170-Kontakte und Mini-Boards sind für unsere Lektion zu klein
-      excludes: ["mini", "170"],
+      links: {
+        // AZ-Delivery hat KEINEN 220-Ohm-Einzelwiderstand (das „Resistor Kit
+        // 525 Stück" ist tatsächlich nur ein kostenloses eBook). → weglassen.
+        REICHELT: {
+          url: "https://www.reichelt.de/de/de/shop/produkt/widerstand_metallschicht_220_ohm_0207_0_6_0_1_-12875",
+          priceCents: 10,
+        },
+        AMAZON_DE: {
+          // Sortiment 600 Stück 30 Werte
+          url: "https://www.amazon.de/dp/B07X9XPF4N",
+          priceCents: 999,
+          packLabel_de: "600er-Set, 30 Werte",
+          packLabel_en: "600-pack, 30 values",
+        },
+      },
     },
     {
       componentId: wireComp.id,
       label: "Jumper-Kabel (M/M)",
-      searchQuery: "Jumper Kabel Steckbrücken",
-      excludes: ["kodier", "modul", "ribbon", "anschlusskabel", "sen5x", "patch"],
-      manualUrls: {
-        AMAZON_DE: "https://www.amazon.de/dp/B01EV70C78",
-      },
-    },
-    {
-      boardId: esp32Board.id,
-      label: "ESP32 DevKit V1",
-      searchQuery: "ESP32 DevKit",
-      // S2/S3/C3 sind andere Chip-Generationen, Camera-Variante ist anders
-      excludes: ["s2-wroom", "s3", "c3", "camera", "lite"],
-      manualUrls: {
-        AMAZON_DE: "https://www.amazon.de/dp/B071P98VTG",
+      links: {
+        AZ_DELIVERY: {
+          url: "https://www.az-delivery.de/products/steckbrucken-m-m-jumper-kabel",
+          priceCents: 449,
+          packLabel_de: "65er M/M-Set",
+          packLabel_en: "65× M/M set",
+        },
+        AMAZON_DE: {
+          url: "https://www.amazon.de/dp/B01EV70C78",
+          priceCents: 699,
+          packLabel_de: "120er Set (M/M, M/F, F/F)",
+          packLabel_en: "120-pack (M/M, M/F, F/F)",
+        },
+        REICHELT: {
+          url: "https://www.reichelt.de/de/de/shop/produkt/entwicklerboards_-_steckbrueckenkabel_10cm_3x_40_kabel-280594",
+          priceCents: 459,
+          packLabel_de: "3× 40 Kabel (10 cm)",
+          packLabel_en: "3× 40 wires (10 cm)",
+        },
       },
     },
   ];
@@ -365,65 +410,69 @@ async function main() {
     return `${url}${sep}${param[merchant]}=${encodeURIComponent(trackingId)}`;
   }
 
-  const allPrograms: { program: typeof azProgram; merchant: Merchant }[] = [
-    { program: azProgram, merchant: "AZ_DELIVERY" },
-    { program: amazonProgram, merchant: "AMAZON_DE" },
-    { program: berryProgram, merchant: "BERRYBASE" },
-    { program: reicheltProgram, merchant: "REICHELT" },
-  ];
+  const programByMerchant: Record<Merchant, typeof azProgram> = {
+    AZ_DELIVERY: azProgram,
+    AMAZON_DE: amazonProgram,
+    BERRYBASE: berryProgram,
+    REICHELT: reicheltProgram,
+  };
 
-  // Auto-Discovery — Import erst hier, damit der Seed auch lädt wenn das
-  // Modul Probleme hat (z.B. Build-Probleme).
-  const { discoverFor } = await import("../src/server/affiliate/discovery");
+  // Alle alten AffiliateLinks für diese Bauteile wegwerfen (Stale Links aus
+  // früheren Discovery-Läufen). So bleibt die DB sauber.
+  const allOwnerIds = partConfigs
+    .map((p) => p.componentId ?? p.boardId)
+    .filter((v): v is string => Boolean(v));
+  await prisma.affiliateLink.deleteMany({
+    where: {
+      OR: [
+        { componentId: { in: allOwnerIds } },
+        { boardId: { in: allOwnerIds } },
+      ],
+    },
+  });
 
-  console.log("  → Auto-Discovery für Affiliate-Direktlinks (kann ~1 Min dauern)…");
   let directLinks = 0;
   for (const part of partConfigs) {
-    const ownerId = part.componentId ?? part.boardId;
-    if (!ownerId) continue;
-    for (const { program, merchant } of allPrograms) {
-      let foundUrl: string | null = part.manualUrls?.[merchant] ?? null;
-      if (!foundUrl) {
-        const query =
-          part.queryPerMerchant?.[merchant] ?? part.searchQuery;
-        foundUrl = await discoverFor(merchant, {
-          query,
-          excludes: part.excludes,
-        });
-      }
-      if (!foundUrl) continue; // kein Treffer → Programm erscheint für dieses Bauteil nicht
-      const trackedUrl = appendTrackingTag(foundUrl, merchant, program.trackingId);
-      directLinks += 1;
+    for (const [merchant, link] of Object.entries(part.links) as Array<
+      [Merchant, ManualLink]
+    >) {
+      const program = programByMerchant[merchant];
+      const trackedUrl = appendTrackingTag(link.url, merchant, program.trackingId);
+      const ownerId = part.componentId ?? part.boardId!;
       const id = `${program.id}-${ownerId}`;
+      directLinks += 1;
       await prisma.affiliateLink.upsert({
         where: { id },
         create: {
           id,
           programId: program.id,
           productUrl: trackedUrl,
-          productSlug: foundUrl,
+          productSlug: link.url,
+          priceCents: link.priceCents,
+          currency: "EUR",
+          packageNote_de: link.packLabel_de ?? null,
+          packageNote_en: link.packLabel_en ?? null,
           componentId: part.componentId ?? null,
           boardId: part.boardId ?? null,
+          lastSyncedAt: new Date(),
         },
         update: {
           productUrl: trackedUrl,
-          productSlug: foundUrl,
+          productSlug: link.url,
+          priceCents: link.priceCents,
+          currency: "EUR",
+          packageNote_de: link.packLabel_de ?? null,
+          packageNote_en: link.packLabel_en ?? null,
+          lastSyncedAt: new Date(),
         },
       });
-      console.log(`    ✓ ${merchant.padEnd(12)} ${part.label}: ${foundUrl}`);
+      console.log(
+        `    ✓ ${merchant.padEnd(12)} ${part.label.padEnd(36)} ${(link.priceCents / 100).toFixed(2)} €`,
+      );
     }
-    // Stale AffiliateLinks für diesen Owner entfernen, wo Discovery
-    // diesmal nichts geliefert hat
-    const wantedProgramIds = new Set<string>();
-    for (const { program, merchant } of allPrograms) {
-      if (part.manualUrls?.[merchant]) wantedProgramIds.add(program.id);
-    }
-    // (Vereinfachung: Wir cleanen Stale-Links hier nicht — DB-IDs sind
-    // deterministisch, also überschreibt upsert die "guten". Veraltete
-    // Links können bei Bedarf manuell gelöscht werden.)
   }
   console.log(
-    `  ✓ ${directLinks} Affiliate-Direktlinks via Auto-Discovery (keine Such-URLs)`,
+    `  ✓ ${directLinks} kuratierte Affiliate-Direktlinks mit Preisen`,
   );
 
   // -----------------------------------------------------------------------
@@ -714,14 +763,15 @@ void loop() {
         title_de: "Wie funktioniert das Steckbrett?",
         title_en: "How does the breadboard work?",
         body_de:
-          "Ein Steckbrett verbindet Drähte ohne Löten. Die Löcher in einer waagerechten Reihe sind innen verbunden — alles in derselben Reihe gehört zusammen. Die roten und blauen Streifen oben/unten sind Strom-Schienen (Plus und Minus) und gehen über das ganze Brett durch.",
+          "Schau dir das Bild an: Das Steckbrett hat Löcher in einem Raster. Die Löcher in einer kurzen Spalte (5 Löcher übereinander, gelb markiert) sind innen miteinander verbunden — du kannst dort mehrere Beinchen reinstecken und sie sind elektrisch eins. Oben läuft die rote Plus-Schiene durch, unten die blaue Minus-Schiene — jeweils über das ganze Brett.",
         body_en:
-          "A breadboard lets you connect wires without soldering. Holes in a horizontal row are internally connected — everything in the same row is one big connection. The red and blue stripes on top/bottom are power rails (plus/minus) running across the whole board.",
+          "Look at the picture: the breadboard has holes in a grid. Holes in a short column (5 holes in a stack, highlighted yellow) are internally connected — you can plug multiple legs into them and they are electrically one. The red plus-rail runs across the top, the blue minus-rail across the bottom.",
         payload: {
+          showBreadboardExplainer: true,
           keyPoint_de:
-            "Merk dir: gleiche Reihe = verbunden. Die blaue Schiene unten benutzen wir gleich als „Minus\".",
+            "Merk dir: gleiche kurze Spalte = verbunden. Rote Schiene oben = Plus, blaue Schiene unten = Minus.",
           keyPoint_en:
-            "Remember: same row = connected. The blue rail at the bottom is our \"minus\".",
+            "Remember: same short column = connected. Red rail on top = plus, blue rail at the bottom = minus.",
         },
       },
       {
@@ -731,14 +781,14 @@ void loop() {
         title_de: "Schritt 1: Widerstand stecken",
         title_en: "Step 1: Plug in the resistor",
         body_de:
-          "Verbinde GPIO 2 mit einem freien Reihen-Loch und steck den Widerstand mit einem Bein in dieselbe Reihe. Das andere Bein in eine andere freie Reihe rechts daneben.",
+          "Schau im Bild auf den gelb pulsierenden Punkt: das ist Reihe c, Spalte 4. Steck dort ein Beinchen des Widerstands rein. Das andere Beinchen steckst du in Reihe c, Spalte 7. Beide Löcher sind in derselben kurzen Spalte → der Strom kann durchfließen. Das grüne Kabel verbindet GPIO 2 mit dem linken Beinchen.",
         body_en:
-          "Connect GPIO 2 to a free row and plug one leg of the resistor into that same row. The other leg goes into a different free row to the right.",
+          "Look at the yellow pulsing dot in the picture: that's row c, column 4. Plug one leg of the resistor there. Put the other leg into row c, column 7. Both holes are in the same short column → current can flow through. The green wire connects GPIO 2 to the left leg.",
         payload: {
           instruction_de:
-            "Der Widerstand hat keine Richtung — egal wie rum du ihn steckst.",
+            "Der Widerstand hat keine Richtung — egal wie rum du ihn steckst. Buchstaben (a–e) stehen am linken Rand, Zahlen (1–14) oben am Brett.",
           instruction_en:
-            "The resistor has no direction — either way works.",
+            "The resistor has no direction — either way works. Letters (a–e) are along the left edge, numbers (1–14) at the top of the board.",
           ledColor: "red",
           highlightWires: ["signal"],
           buildStage: 1,
@@ -751,13 +801,14 @@ void loop() {
         title_de: "Schritt 2: LED stecken",
         title_en: "Step 2: Plug in the LED",
         body_de:
-          "Das LANGE Beinchen der LED steckst du in dieselbe Reihe wie das rechte Ende des Widerstands. Das KURZE Beinchen kommt in die blaue Minus-Schiene unten.",
+          "Die LED hat zwei verschieden lange Beinchen. Das LANGE Beinchen (= Plus) steckst du in Reihe c, Spalte 7 — also dieselbe kurze Spalte wie das rechte Widerstandsbeinchen. Das KURZE Beinchen (= Minus) steckst du in Reihe a, Spalte 9. Die LED steht jetzt aufrecht zwischen zwei Löchern — nicht in die Löcher des Widerstands oder Kabels.",
         body_en:
-          "Plug the LONG leg of the LED into the same row as the right leg of the resistor. The SHORT leg goes into the blue minus rail at the bottom.",
+          "The LED has two legs of different length. The LONG leg (= plus) goes into row c, column 7 — the same short column as the right leg of the resistor. The SHORT leg (= minus) goes into row a, column 9. The LED stands upright between two holes — not into the resistor or wire holes.",
         payload: {
           instruction_de:
-            "Lang = Plus, Kurz = Minus. Verwechseln = LED bleibt dunkel.",
-          instruction_en: "Long = plus, short = minus. Mix them up = LED stays dark.",
+            "Lang = Plus (+), Kurz = Minus (−). Vertauscht: LED bleibt dunkel. Im Bild siehst du die zwei pulsierenden Ziellöcher.",
+          instruction_en:
+            "Long = plus (+), short = minus (−). Swapped: LED stays dark. The picture shows the two pulsing target holes.",
           ledColor: "red",
           buildStage: 2,
         },
@@ -769,9 +820,9 @@ void loop() {
         title_de: "Schritt 3: GND verbinden",
         title_en: "Step 3: Connect GND",
         body_de:
-          "Jetzt brauchst du ein Jumper-Kabel: vom GND-Pin am ESP32 in irgendein Loch der blauen Minus-Schiene unten. Damit ist der Stromkreis geschlossen.",
+          "Nimm ein Jumper-Kabel. Das eine Ende steckst du an den GND-Pin am ESP32. Das andere Ende in irgendein Loch der blauen Minus-Schiene ganz unten (das pulsierende Loch im Bild). Damit fließt der Strom: GPIO 2 → Widerstand → LED → Minus-Schiene → GND → Stromkreis geschlossen.",
         body_en:
-          "Now grab a jumper wire: from the ESP32's GND pin to any hole on the blue minus rail. That closes the circuit.",
+          "Grab a jumper wire. Plug one end into the GND pin on the ESP32. Plug the other end into any hole on the blue minus rail at the bottom (the pulsing hole in the picture). Now current can flow: GPIO 2 → resistor → LED → minus rail → GND → circuit closed.",
         payload: {
           instruction_de:
             "GND = Minus. Ohne diese Verbindung passiert nichts — Strom braucht einen Rückweg.",
@@ -802,6 +853,84 @@ void loop() {
       {
         lessonId: blinkLesson.id,
         sortOrder: 9,
+        kind: "SETUP",
+        title_de: "Bevor du Code schreibst: das brauchst du am Computer",
+        title_en: "Before you write code: what you need on your computer",
+        body_de:
+          "Den Code schreiben und auf den ESP32 hochladen geht NUR am Computer (Windows, Mac oder Linux) — am Handy oder Tablet leider nicht. Hier ist alles, was du brauchst:",
+        body_en:
+          "Writing the code and uploading it to the ESP32 only works on a computer (Windows, Mac, or Linux) — phones and tablets won't work. Here's what you need:",
+        payload: {
+          platformNotice_de:
+            "Du brauchst einen Computer mit USB-Port. Smartphone/Tablet funktionieren leider nicht.",
+          platformNotice_en:
+            "You need a computer with a USB port. Phones and tablets don't work for this.",
+          checklist: [
+            {
+              iconKey: "download",
+              label_de: "Arduino IDE installieren",
+              label_en: "Install the Arduino IDE",
+              hint_de:
+                "Das ist das Programm, in das du den Code reinkopierst und mit dem du ihn auf den ESP32 hochlädst. Komplett kostenlos.",
+              hint_en:
+                "This is the program where you paste the code and upload it to the ESP32. Completely free.",
+              link: {
+                label_de: "Arduino IDE herunterladen",
+                label_en: "Download the Arduino IDE",
+                url: "https://www.arduino.cc/en/software",
+              },
+            },
+            {
+              iconKey: "usb",
+              label_de: "USB-Treiber CP210x installieren",
+              label_en: "Install the CP210x USB driver",
+              hint_de:
+                "Damit dein Computer den ESP32 über USB überhaupt erkennt. Auf manchen Macs/PCs schon vorhanden — wenn der ESP32 später nicht in der Arduino IDE auftaucht, fehlt dieser Treiber.",
+              hint_en:
+                "So your computer can recognize the ESP32 via USB. Some Macs/PCs already have it — if the ESP32 doesn't show up in the Arduino IDE later, this driver is missing.",
+              link: {
+                label_de: "CP210x-Treiber bei Silicon Labs",
+                label_en: "CP210x driver from Silicon Labs",
+                url: "https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers",
+              },
+            },
+            {
+              iconKey: "monitor",
+              label_de: "ESP32-Boards-Paket in Arduino IDE hinzufügen",
+              label_en: "Add the ESP32 boards package to the Arduino IDE",
+              hint_de:
+                "Arduino IDE öffnen → Datei → Einstellungen → unter „Zusätzliche Boardverwalter-URLs\" eintragen: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json — dann Werkzeuge → Board → Boardverwalter → „esp32\" suchen → Installieren.",
+              hint_en:
+                "Open Arduino IDE → File → Preferences → in \"Additional Board Manager URLs\" enter: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json — then Tools → Board → Boards Manager → search \"esp32\" → Install.",
+            },
+            {
+              iconKey: "cable",
+              label_de: "ESP32 per USB-Kabel anschließen",
+              label_en: "Plug in your ESP32 via USB cable",
+              hint_de:
+                "Manche USB-Kabel sind nur „Ladekabel\" und übertragen keine Daten — wenn dein PC den ESP32 nicht erkennt, ist oft das Kabel das Problem. Probier ein anderes.",
+              hint_en:
+                "Some USB cables are charge-only and don't carry data — if your PC doesn't recognize the ESP32, the cable is often the issue. Try another one.",
+            },
+            {
+              iconKey: "check",
+              label_de: "In Arduino IDE: Board und Port auswählen",
+              label_en: "In the Arduino IDE: select board and port",
+              hint_de:
+                "Werkzeuge → Board → ESP32 Arduino → „ESP32 Dev Module\". Danach Werkzeuge → Port → den richtigen Port wählen (am Mac meist /dev/cu.SLAB_USBtoUART oder ähnlich, am PC ein COM-Port).",
+              hint_en:
+                "Tools → Board → ESP32 Arduino → \"ESP32 Dev Module\". Then Tools → Port → pick the correct port (on Mac usually /dev/cu.SLAB_USBtoUART or similar, on PC a COM port).",
+            },
+          ],
+          keyPoint_de:
+            "Wenn alles installiert ist, brauchst du das nur EINMAL einrichten — für alle zukünftigen Projekte ist es dann da.",
+          keyPoint_en:
+            "Once installed, this is a one-time setup — it'll be ready for all your future projects.",
+        },
+      },
+      {
+        lessonId: blinkLesson.id,
+        sortOrder: 10,
         kind: "CODE_WALK",
         title_de: "Der Code — Zeile für Zeile",
         title_en: "The code — line by line",
@@ -836,23 +965,6 @@ void loop() {
                 "loop() runs FOREVER. Here: LED on → wait 0.5 s → LED off → wait 0.5 s. That's the blinking.",
             },
           ],
-        },
-      },
-      {
-        lessonId: blinkLesson.id,
-        sortOrder: 10,
-        kind: "EXPLAIN",
-        title_de: "So lädst du den Code auf den ESP32",
-        title_en: "How to upload the code to the ESP32",
-        body_de:
-          "Zum Hochladen brauchst du am Computer ein kostenloses Programm. Wir empfehlen die „Arduino IDE\" (für Windows, Mac und Linux). Installiere sie, öffne sie und füg unter „Boards-Verwalter\" das ESP32-Paket hinzu (Suche: „esp32 by Espressif\"). Dann: ESP32 per USB-Kabel an den Computer, Board und Port auswählen, Code reinkopieren, auf den Pfeil-Button (↑ Upload) klicken — fertig.",
-        body_en:
-          "To upload, you need a free program on your computer. We recommend the Arduino IDE (Windows, Mac, Linux). Install it, open it, and add the ESP32 package via Boards Manager (search: \"esp32 by Espressif\"). Then: connect the ESP32 via USB, select board and port, paste the code, click the arrow upload button — done.",
-        payload: {
-          keyPoint_de:
-            "Wenn dein ESP32 nicht erkannt wird, fehlt oft der USB-Treiber CP210x (Google: „CP210x Treiber\"). Im nächsten Schritt zeigen wir dir nur, wie es im Simulator aussehen sollte.",
-          keyPoint_en:
-            "If your ESP32 isn't detected, the CP210x USB driver is often missing (Google: \"CP210x driver\"). The next step shows what it should look like in the simulator.",
         },
       },
       {

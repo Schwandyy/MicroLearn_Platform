@@ -87,7 +87,18 @@ export default async function LessonPage({
       programMerchant: link.program.merchant,
       programDisplayName: link.program.displayName,
       url: link.productUrl,
+      priceCents: link.priceCents,
+      currency: link.currency ?? "EUR",
+      packageNote:
+        (locale === "de" ? link.packageNote_de : link.packageNote_en) ?? null,
     }));
+
+    // Günstigster Anbieter zuerst (für „ab x €" Anzeige + Default-Button)
+    affiliates.sort((a, b) => {
+      const pa = a.priceCents ?? Number.POSITIVE_INFINITY;
+      const pb = b.priceCents ?? Number.POSITIVE_INFINITY;
+      return pa - pb;
+    });
 
     return {
       id: item.id,

@@ -17,6 +17,9 @@ export interface BomAffiliateOption {
   programMerchant: string;
   programDisplayName: string;
   url: string;
+  priceCents: number | null;
+  currency: string;
+  packageNote: string | null;
 }
 
 export interface BomItemView {
@@ -48,6 +51,20 @@ function saveHave(state: Record<string, boolean>) {
   }
 }
 
+function formatPrice(priceCents: number, currency: string): string {
+  const symbol = currency === "EUR" ? "€" : currency;
+  return `${(priceCents / 100).toFixed(2).replace(".", ",")} ${symbol}`;
+}
+
+function cheapestPriceCents(item: BomItemView): number | null {
+  let min: number | null = null;
+  for (const a of item.affiliates) {
+    if (a.priceCents == null) continue;
+    if (min == null || a.priceCents < min) min = a.priceCents;
+  }
+  return min;
+}
+
 export function BomCards({ items }: { items: BomItemView[] }) {
   const t = useTranslations("lesson");
   const [have, setHave] = useState<Record<string, boolean>>({});
@@ -74,16 +91,87 @@ export function BomCards({ items }: { items: BomItemView[] }) {
     );
   }
 
+  // Gesamtsumme = Summe(min-Preis × Stückzahl) über alle NICHT-besessenen Bauteile.
+  // „Hab ich" markierte Teile zählen nicht.
+  let totalCents = 0;
+  let missingCents = 0;
+  let hasUnknownPrice = false;
+  let currency = "EUR";
+  for (const item of items) {
+    const cheap = cheapestPriceCents(item);
+    if (cheap == null) {
+      hasUnknownPrice = true;
+      continue;
+    }
+    if (item.affiliates[0]) currency = item.affiliates[0].currency;
+    const cost = cheap * item.quantity;
+    totalCents += cost;
+    if (!have[item.id]) missingCents += cost;
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {items.map((item) => (
-        <BomCard
-          key={item.id}
-          item={item}
-          owned={Boolean(have[item.id])}
-          onToggle={() => toggle(item.id)}
-        />
-      ))}
+    <div className="grid gap-4">
+      <SummaryBar
+        totalCents={totalCents}
+        missingCents={missingCents}
+        hasUnknownPrice={hasUnknownPrice}
+        currency={currency}
+      />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {items.map((item) => (
+          <BomCard
+            key={item.id}
+            item={item}
+            owned={Boolean(have[item.id])}
+            onToggle={() => toggle(item.id)}
+          />
+        ))}
+      </div>
+      <p className="text-center text-xs text-muted-foreground">
+        {t("priceDisclaimer")}
+      </p>
+    </div>
+  );
+}
+
+function SummaryBar({
+  totalCents,
+  missingCents,
+  hasUnknownPrice,
+  currency,
+}: {
+  totalCents: number;
+  missingCents: number;
+  hasUnknownPrice: boolean;
+  currency: string;
+}) {
+  const t = useTranslations("lesson");
+  if (totalCents === 0) return null;
+  return (
+    <div className="rounded-lg border bg-muted/30 p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            {t("bomTotalLabel")}
+          </p>
+          <p className="text-2xl font-bold tabular-nums">
+            ~ {formatPrice(missingCents, currency)}
+          </p>
+          {missingCents !== totalCents && (
+            <p className="text-xs text-muted-foreground">
+              {t("bomTotalAll")}: {formatPrice(totalCents, currency)}
+            </p>
+          )}
+        </div>
+        <p className="max-w-[12rem] text-right text-xs text-muted-foreground">
+          {t("bomTotalHint")}
+          {hasUnknownPrice && (
+            <span className="block text-amber-700 dark:text-amber-400">
+              {t("bomTotalUnknown")}
+            </span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
@@ -171,16 +259,29 @@ function BomCard({
 
         {!owned && primary && (
           <div className="grid gap-1.5">
-            <Button asChild size="sm" className="w-full">
+            <Button asChild size="sm" className="h-auto w-full py-2">
               <a
                 href={primary.url}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
+                className="flex flex-col items-start gap-0.5"
               >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                <span className="truncate">
-                  {t("buyNow")} · {primary.programDisplayName}
+                <span className="flex w-full items-center gap-2">
+                  <ShoppingCart className="h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1 truncate text-left">
+                    {primary.programDisplayName}
+                  </span>
+                  {primary.priceCents != null && (
+                    <span className="tabular-nums font-bold">
+                      {formatPrice(primary.priceCents, primary.currency)}
+                    </span>
+                  )}
                 </span>
+                {primary.packageNote && (
+                  <span className="ml-6 text-[10px] font-normal opacity-80">
+                    {primary.packageNote}
+                  </span>
+                )}
               </a>
             </Button>
 
@@ -200,16 +301,30 @@ function BomCard({
                   {t("moreOptions")} ({others.length})
                 </button>
                 {moreOpen && (
-                  <div className="mt-1 flex flex-wrap gap-1">
+                  <div className="mt-1 grid gap-1">
                     {others.map((opt) => (
                       <a
                         key={opt.programMerchant}
                         href={opt.url}
                         target="_blank"
                         rel="noopener noreferrer sponsored"
-                        className="flex-1 rounded-md border bg-background px-2 py-1 text-center text-xs hover:border-primary hover:bg-primary/5"
+                        className="flex items-center justify-between gap-2 rounded-md border bg-background px-2 py-1.5 text-xs hover:border-primary hover:bg-primary/5"
                       >
-                        {opt.programDisplayName}
+                        <span className="flex flex-col text-left">
+                          <span className="font-medium">
+                            {opt.programDisplayName}
+                          </span>
+                          {opt.packageNote && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {opt.packageNote}
+                            </span>
+                          )}
+                        </span>
+                        {opt.priceCents != null && (
+                          <span className="tabular-nums font-semibold">
+                            {formatPrice(opt.priceCents, opt.currency)}
+                          </span>
+                        )}
                       </a>
                     ))}
                   </div>

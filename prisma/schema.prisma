@@ -110,6 +110,7 @@ enum StepKind {
   QUIZ            // mini quiz question
   CELEBRATE       // success screen
   EXPLAIN         // pure concept explanation with visual
+  SETUP           // software setup with download links and ordered checklist
 }
 
 enum BadgeCategory {
@@ -350,6 +351,9 @@ model AffiliateLink {
   currency     String?           @default("EUR")
   inStock      Boolean?
   lastSyncedAt DateTime?
+  // Optional pack-size note (e.g. "65er M/M-Set") shown under the buy-button
+  packageNote_de String?
+  packageNote_en String?
 
   program   AffiliateProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
 
