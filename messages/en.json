@@ -418,5 +418,17 @@
     "view": "View",
     "share": "Share",
     "linkCopied": "Link copied"
+  },
+  "errors": {
+    "error500Title": "Something went wrong",
+    "error500Body": "We couldn't load this page right now. Try again — or head back to the home page.",
+    "error404Title": "Nothing to see here",
+    "error404Body": "The page you're looking for doesn't exist (yet). One of these might help:",
+    "tryAgain": "Try again",
+    "backHome": "Back to home",
+    "goDashboard": "To dashboard",
+    "browsePaths": "Browse paths",
+    "browseProjects": "Browse projects",
+    "loading": "Loading …"
   }
 }

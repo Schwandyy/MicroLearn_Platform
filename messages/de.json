@@ -418,5 +418,17 @@
     "view": "Ansehen",
     "share": "Teilen",
     "linkCopied": "Link kopiert"
+  },
+  "errors": {
+    "error500Title": "Hier ist etwas schiefgegangen",
+    "error500Body": "Wir konnten diese Seite gerade nicht laden. Versuch es noch einmal — oder geh zurück zur Startseite.",
+    "error404Title": "Hier ist nichts zu finden",
+    "error404Body": "Die Seite, die du suchst, gibt es (vielleicht noch) nicht. Vielleicht hilft dir eine dieser Stellen weiter:",
+    "tryAgain": "Erneut versuchen",
+    "backHome": "Zur Startseite",
+    "goDashboard": "Zum Dashboard",
+    "browsePaths": "Lernpfade entdecken",
+    "browseProjects": "Projekte anschauen",
+    "loading": "Lädt …"
   }
 }
