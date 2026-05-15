@@ -164,7 +164,15 @@
     "boardSaveError": "Speichern fehlgeschlagen.",
     "boardUnsavedHint": "Du hast Änderungen — klick „Speichern\" damit wir sie übernehmen.",
     "boardSelectedCount": "{count, plural, =1 {1 Board ausgewählt.} other {# Boards ausgewählt.}}",
-    "boardEmptyHint": "Wähle mindestens ein Board, um passende Projekte vorgeschlagen zu bekommen."
+    "boardEmptyHint": "Wähle mindestens ein Board, um passende Projekte vorgeschlagen zu bekommen.",
+    "recommendedEyebrow": "Empfohlen für dich",
+    "recommendedTitle": "Mit {boards} kannst du diese Projekte direkt starten",
+    "recommendedSubtitle": "{count, plural, =1 {1 Projekt} other {# Projekte}} aktuell freigeschaltet.",
+    "recommendedEmpty": "Aktuell gibt es noch keine fertigen Projekte für diese Boards — wir arbeiten daran.",
+    "recommendedStart": "Loslegen",
+    "recommendedReplay": "Nochmal",
+    "duration": "{min} Min",
+    "xp": "{xp} XP"
   },
   "common": {
     "loading": "Lädt…",

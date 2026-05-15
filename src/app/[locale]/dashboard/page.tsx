@@ -11,7 +11,16 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { Flame, GraduationCap, Trophy, Cpu, ArrowRight, Sparkles } from "lucide-react";
+import {
+  Flame,
+  GraduationCap,
+  Trophy,
+  Cpu,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  Wand2,
+} from "lucide-react";
 import { levelToNumber } from "@/lib/assessment";
 import { BoardSelector } from "@/components/dashboard/board-selector";
 
@@ -63,6 +72,32 @@ export default async function DashboardPage({
     ? levelToNumber(user.profile.currentLevel)
     : 1;
   const favoriteBoardIds = user?.profile?.favoriteBoardIds ?? [];
+
+  // Welche Lessons passen zu den gewählten Boards? Many-to-many filtern.
+  const recommendedLessons =
+    favoriteBoardIds.length > 0
+      ? await prisma.lesson.findMany({
+          where: {
+            isPublished: true,
+            recommendedBoards: { some: { id: { in: favoriteBoardIds } } },
+          },
+          include: {
+            recommendedBoards: { select: { id: true, name: true } },
+            progress: {
+              where: { userId: session.user.id },
+              select: { completedAt: true },
+              take: 1,
+            },
+          },
+          orderBy: { sortOrder: "asc" },
+          take: 12,
+        })
+      : [];
+
+  // Namen der ausgewählten Boards (für Überschrift)
+  const favoriteBoards = allBoards.filter((b) =>
+    favoriteBoardIds.includes(b.id),
+  );
   const tA = await getTranslations("assessment");
 
   const name = user?.name ?? user?.username ?? "👋";
@@ -192,6 +227,83 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
       </section>
+
+      {favoriteBoards.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-primary">
+            <Wand2 className="h-4 w-4" />
+            {t("recommendedEyebrow")}
+          </div>
+          <h2 className="mb-1 text-xl font-semibold">
+            {t("recommendedTitle", {
+              boards: favoriteBoards.map((b) => b.name).join(", "),
+            })}
+          </h2>
+          <p className="mb-5 text-sm text-muted-foreground">
+            {recommendedLessons.length === 0
+              ? t("recommendedEmpty")
+              : t("recommendedSubtitle", { count: recommendedLessons.length })}
+          </p>
+
+          {recommendedLessons.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {recommendedLessons.map((lesson) => {
+                const done = lesson.progress[0]?.completedAt != null;
+                return (
+                  <Card
+                    key={lesson.id}
+                    className={
+                      done
+                        ? "border-emerald-300 bg-emerald-50/30 dark:bg-emerald-900/10"
+                        : undefined
+                    }
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-base leading-snug">
+                          {locale === "de"
+                            ? lesson.title_de
+                            : lesson.title_en}
+                        </CardTitle>
+                        {done && (
+                          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <CardDescription className="line-clamp-2 leading-snug">
+                        {locale === "de"
+                          ? lesson.summary_de
+                          : lesson.summary_en}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-between gap-2 pt-0">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        {lesson.estimatedMinutes && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {t("duration", { min: lesson.estimatedMinutes })}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Trophy className="h-3 w-3" />
+                          {t("xp", { xp: lesson.xpReward })}
+                        </span>
+                      </div>
+                      <Button asChild size="sm">
+                        <Link href={`/lessons/${lesson.slug}`}>
+                          {done ? t("recommendedReplay") : t("recommendedStart")}
+                          <ArrowRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

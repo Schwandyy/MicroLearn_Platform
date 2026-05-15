@@ -164,7 +164,15 @@
     "boardSaveError": "Saving failed.",
     "boardUnsavedHint": "You have unsaved changes — click „Save\" to apply them.",
     "boardSelectedCount": "{count, plural, =1 {1 board selected.} other {# boards selected.}}",
-    "boardEmptyHint": "Pick at least one board so we can suggest matching projects."
+    "boardEmptyHint": "Pick at least one board so we can suggest matching projects.",
+    "recommendedEyebrow": "Recommended for you",
+    "recommendedTitle": "With {boards} you can start these projects right away",
+    "recommendedSubtitle": "{count, plural, =1 {1 project} other {# projects}} unlocked.",
+    "recommendedEmpty": "We don't have ready projects for these boards yet — we're working on it.",
+    "recommendedStart": "Start",
+    "recommendedReplay": "Replay",
+    "duration": "{min} min",
+    "xp": "{xp} XP"
   },
   "common": {
     "loading": "Loading…",
