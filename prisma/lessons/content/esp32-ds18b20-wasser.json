@@ -1,0 +1,126 @@
+{
+  "slug": "esp32-ds18b20-wasser",
+  "title_de": "Wassertemperatur: DS18B20 wasserdicht",
+  "title_en": "Water temperature: DS18B20 waterproof",
+  "summary_de": "Der DS18B20 ist ein wasserdichter Temperatur-Fühler an einem Kabel — du kannst ihn ins Aquarium, in den Pool oder in ein Glas Wasser hängen. Erstes Projekt mit dem 1-Wire-Bus.",
+  "summary_en": "The DS18B20 is a waterproof temperature probe on a cable — you can stick it in an aquarium, a pool or a glass of water. Your first project with the 1-Wire bus.",
+  "estimatedMinutes": 15,
+  "xpReward": 120,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein wasserdichtes Thermometer: hänge den Fühler ins Wasser und lies die Temperatur auf 0,1 °C genau im seriellen Monitor ab.",
+      "body_en": "A waterproof thermometer: dip the probe into water and read the temperature to 0.1 °C precision in the serial monitor.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Du brauchst den wasserdichten DS18B20-Fühler (Metallhülse mit Kabel, drei Adern: rot, schwarz, gelb/weiß) und einen 4,7-kΩ-Widerstand — oder zwei 10-kΩ-Widerstände als Notlösung.",
+      "body_en": "You need the waterproof DS18B20 probe (metal tip on a cable, three wires: red, black, yellow/white) and a 4.7 kΩ resistor — or two 10 kΩ resistors as a fallback.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was ist der 1-Wire-Bus?",
+      "title_en": "What is the 1-Wire bus?",
+      "body_de": "1-Wire ist ein Protokoll von Dallas Semiconductors: viele Sensoren teilen sich EINE Datenleitung. Jeder Sensor hat eine einmalige ID — der ESP32 spricht sie einzeln an. Die Datenleitung braucht einen Pull-Up-Widerstand, sonst hängt sie in der Luft und der Bus funktioniert nicht.",
+      "body_en": "1-Wire is a protocol from Dallas Semiconductors: many sensors share ONE data line. Each sensor has a unique ID — the ESP32 addresses them individually. The data line needs a pull-up resistor, otherwise it floats and the bus won't work.",
+      "payload": {
+        "keyPoint_de": "Kein Pull-Up-Widerstand = kein Signal: die 4,7 kΩ zwischen Datenleitung und VCC sind Pflicht.",
+        "keyPoint_en": "No pull-up resistor = no signal: the 4.7 kΩ between data and VCC is mandatory."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Rotes Kabel des Fühlers an 3,3 V, schwarzes Kabel an GND, gelbes (Daten-)Kabel an GPIO 4. Jetzt der wichtige Part: einen 4,7-kΩ-Widerstand zwischen GPIO 4 und 3,3 V ins Breadboard stecken.",
+      "body_en": "Red wire of the probe to 3.3 V, black wire to GND, yellow (data) wire to GPIO 4. Now the critical part: insert a 4.7 kΩ resistor between GPIO 4 and 3.3 V on the breadboard.",
+      "payload": {
+        "instruction_de": "Keinen 4,7-kΩ-Widerstand zur Hand? Stecke zwei 10-kΩ-Widerstände parallel ins Breadboard — das ergibt zusammen 5 kΩ und funktioniert einwandfrei.",
+        "instruction_en": "No 4.7 kΩ resistor handy? Put two 10 kΩ resistors in parallel on the breadboard — that gives 5 kΩ combined and works just fine."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Installiere im Library Manager: „OneWire\" und „DallasTemperature\".",
+      "body_en": "Install via Library Manager: \"OneWire\" and \"DallasTemperature\".",
+      "payload": {
+        "code": "// ESP32 — DS18B20 Wassertemperatur\n#include <OneWire.h>\n#include <DallasTemperature.h>\n\n#define ONE_WIRE_PIN 4\n\nOneWire oneWire(ONE_WIRE_PIN);\nDallasTemperature sensors(&oneWire);\n\nvoid setup() {\n  Serial.begin(115200);\n  sensors.begin();\n  Serial.println(\"DS18B20 bereit\");\n}\n\nvoid loop() {\n  sensors.requestTemperatures();\n  float c = sensors.getTempCByIndex(0);\n  if (c == DEVICE_DISCONNECTED_C) {\n    Serial.println(\"Sensor nicht gefunden!\");\n  } else {\n    Serial.print(\"Wassertemperatur: \");\n    Serial.print(c, 1);\n    Serial.println(\" °C\");\n  }\n  delay(2000);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 8,
+            "explain_de": "Beide Libraries laden, den Datenpin festlegen, OneWire-Bus und DallasTemperature-Objekt erstellen.",
+            "explain_en": "Load both libraries, define the data pin, create the OneWire bus and the DallasTemperature object."
+          },
+          {
+            "from": 10,
+            "to": 14,
+            "explain_de": "setup(): seriellen Monitor starten, Sensoren auf dem Bus suchen und initialisieren.",
+            "explain_en": "setup(): start the serial monitor, scan for sensors on the bus and initialize them."
+          },
+          {
+            "from": 16,
+            "to": 17,
+            "explain_de": "requestTemperatures() schickt den Mess-Befehl an alle Sensoren. Danach liest getTempCByIndex(0) den ersten (hier einzigen) Sensor aus.",
+            "explain_en": "requestTemperatures() triggers a measurement on all sensors. Then getTempCByIndex(0) reads the first (here only) sensor."
+          },
+          {
+            "from": 18,
+            "to": 25,
+            "explain_de": "DEVICE_DISCONNECTED_C ist ein Sonder-Rückgabewert — damit erkennst du, ob das Kabel locker ist. Sonst Ausgabe mit einer Dezimalstelle.",
+            "explain_en": "DEVICE_DISCONNECTED_C is a special return value — it tells you if the cable is loose. Otherwise print with one decimal place."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum braucht der 1-Wire-Bus einen Pull-Up-Widerstand?",
+      "body_en": "Why does the 1-Wire bus need a pull-up resistor?",
+      "payload": {
+        "prompt_de": "Warum braucht der 1-Wire-Bus einen Pull-Up-Widerstand?",
+        "prompt_en": "Why does the 1-Wire bus need a pull-up resistor?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Damit der Sensor schneller wird und öfter misst.",
+            "label_en": "To make the sensor faster and measure more often."
+          },
+          {
+            "key": "b",
+            "label_de": "Die Datenleitung hängt sonst „in der Luft\" — kein definierter Pegel, kein gültiges Signal.",
+            "label_en": "Without it the data line floats — no defined level, no valid signal."
+          },
+          {
+            "key": "c",
+            "label_de": "Er schützt den Sensor vor zu hoher Spannung.",
+            "label_en": "It protects the sensor from too high a voltage."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Sauber gemessen!",
+      "title_en": "Clean measurement!",
+      "body_de": "Dein ESP32 liest jetzt Wassertemperatur aus — pack den Fühler ins Aquarium oder teste ihn mit Eiswasser. Als Nächstes: mehrere Sensoren an einem Bus.",
+      "body_en": "Your ESP32 is now reading water temperature — drop the probe into an aquarium or test it with ice water. Next up: multiple sensors on one bus.",
+      "payload": {
+        "xpAward": 120
+      }
+    }
+  ]
+}

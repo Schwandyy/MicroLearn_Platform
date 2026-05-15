@@ -1,0 +1,143 @@
+{
+  "slug": "esp32-dc-motor",
+  "title_de": "DC-Motor: drehen mit Kraft",
+  "title_en": "DC motor: spin with power",
+  "summary_de": "Ein Gleichstrommotor ist die Basis fast jedes beweglichen Projekts — vom Ventilator bis zum Spielzeugauto. Du lernst, warum der ESP32 ihn NICHT direkt steuern darf, und nutzt einen MOSFET-Transistor als Schalter.",
+  "summary_en": "A DC motor is the foundation of almost every moving project — from a fan to a toy car. You'll learn why the ESP32 CAN'T drive it directly, and use a MOSFET as a switch instead.",
+  "estimatedMinutes": 18,
+  "xpReward": 130,
+  "safetyNotes_de": "Motoren ziehen viel mehr Strom als eine LED. Niemals direkt am ESP32-Pin betreiben — der Pin brennt durch. Immer Transistor/Treiber + externe Stromquelle nutzen. Freilaufdiode parallel zum Motor schützt vor Spannungsspitzen.",
+  "safetyNotes_en": "Motors draw much more current than an LED. Never drive directly from an ESP32 pin — the pin burns out. Always use a transistor/driver + external power source. A flyback diode across the motor protects against voltage spikes.",
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Dein ESP32 fährt einen DC-Motor sanft hoch, hält ihn kurz auf Vollgas — und bremst ihn wieder ab. Alles per PWM, sicher über einen MOSFET.",
+      "body_en": "Your ESP32 ramps a DC motor up smoothly, holds it at full speed for a moment, then slows it back down — all via PWM through a MOSFET.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Empfohlen: ein Logic-Level-MOSFET wie den IRLZ44N (funktioniert direkt mit 3,3-V-Signal), ein kleiner DC-Motor (3–6 V), eine 1N4007-Freilaufdiode und eine externe Stromquelle (3,7-V-LiPo oder 4×AA). Als Alternative geht auch ein L298N-Motortreibermodul — dann brauchst du weder MOSFET noch Diode separat.",
+      "body_en": "Recommended: a logic-level MOSFET like the IRLZ44N (works directly with 3.3 V signals), a small DC motor (3–6 V), a 1N4007 flyback diode, and an external supply (3.7 V LiPo or 4×AA). A L298N motor driver module works as an alternative — no separate MOSFET or diode needed.",
+      "payload": null
+    },
+    {
+      "kind": "SAFETY",
+      "title_de": "Sicherheit zuerst",
+      "title_en": "Safety first",
+      "body_de": "Ein GPIO-Pin des ESP32 liefert maximal 12 mA — ein Motor braucht das Zehnfache oder mehr. Der Pin würde sofort durchbrennen. Deshalb schaltet der MOSFET den Motorstrom — der ESP32 steuert nur das Gate.",
+      "body_en": "An ESP32 GPIO can supply at most 12 mA — a motor needs ten times that or more. The pin would burn out instantly. The MOSFET switches the motor current; the ESP32 only controls the gate.",
+      "payload": {
+        "instruction_de": "Externe Stromversorgung IMMER mit dem GND des ESP32 verbinden (gemeinsame Masse). Ohne das funktioniert der MOSFET nicht korrekt.",
+        "instruction_en": "Always connect the external power supply GND to the ESP32 GND (common ground). Without this, the MOSFET won't switch correctly."
+      }
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "MOSFET: der unsichtbare Lichtschalter",
+      "title_en": "MOSFET: the invisible light switch",
+      "body_de": "Stell dir den MOSFET wie einen Wasserhahn vor: das Gate ist der Griff. Legst du 3,3 V ans Gate, öffnet sich der Hahn — Strom fließt von Drain durch den Motor zu Source und weiter zu GND. PWM macht den Hahn schnell auf und zu: je länger „auf\", desto mehr mittlerer Strom, desto schneller dreht der Motor.",
+      "body_en": "Think of the MOSFET as a water tap: the Gate is the handle. Apply 3.3 V to the Gate and the tap opens — current flows from Drain through the motor to Source and on to GND. PWM opens and closes the tap rapidly: the longer it stays open each cycle, the more average current flows, the faster the motor spins.",
+      "payload": {
+        "keyPoint_de": "Der ESP32 steuert nur das Gate-Signal (winziger Strom) — der MOSFET schaltet den echten Motorstrom.",
+        "keyPoint_en": "The ESP32 only controls the gate signal (tiny current) — the MOSFET switches the actual motor current."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "MOSFET ins Breadboard stecken (flache Seite nach vorne). Gate an GPIO 25 (ESP32), Source an GND (ESP32). Motor-Minus an Drain, Motor-Plus an + der externen Stromquelle. 1N4007-Diode parallel zum Motor: Kathode (Streifen) an Motor-Plus, Anode an Motor-Minus. GND der externen Quelle an denselben GND-Rail wie ESP32.",
+      "body_en": "Insert the MOSFET into the breadboard (flat side facing you). Gate to GPIO 25 (ESP32), Source to GND (ESP32). Motor minus to Drain, motor plus to + of the external supply. 1N4007 diode across the motor: cathode (stripe) to motor plus, anode to motor minus. External supply GND to the same GND rail as the ESP32.",
+      "payload": {
+        "instruction_de": "L298N-Alternative: IN1 an GPIO 25, ENA auf HIGH oder per Jumper gebrückt, VM an externe Quelle, GND gemeinsam. Motor an OUT1/OUT2.",
+        "instruction_en": "L298N alternative: IN1 to GPIO 25, ENA high or jumpered, VM to external supply, GND shared. Motor to OUT1/OUT2."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Kein zusätzliches Library-Install nötig — PWM ist im ESP32-Arduino-Framework eingebaut.",
+      "body_en": "No extra library needed — PWM is built into the ESP32 Arduino framework.",
+      "payload": {
+        "code": "// ESP32 — DC-Motor per MOSFET + PWM\n#define MOTOR_PIN 25\n#define PWM_CHANNEL 0\n#define PWM_FREQ 1000\n#define PWM_RESOLUTION 8\n\nvoid setup() {\n  Serial.begin(115200);\n  ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);\n  ledcAttachPin(MOTOR_PIN, PWM_CHANNEL);\n}\n\nvoid loop() {\n  // Sanft hochfahren: 0 → 255 in ca. 3 Sekunden\n  Serial.println(\"Motor läuft hoch ...\");\n  for (int duty = 0; duty <= 255; duty++) {\n    ledcWrite(PWM_CHANNEL, duty);\n    delay(12);\n  }\n\n  // Vollgas halten: 2 Sekunden\n  Serial.println(\"Vollgas!\");\n  delay(2000);\n\n  // Sanft bremsen: 255 → 0 in ca. 3 Sekunden\n  Serial.println(\"Motor bremst ...\");\n  for (int duty = 255; duty >= 0; duty--) {\n    ledcWrite(PWM_CHANNEL, duty);\n    delay(12);\n  }\n\n  // Pause: 2 Sekunden\n  Serial.println(\"Stop.\");\n  delay(2000);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 5,
+            "explain_de": "Konstanten: GPIO-Pin, PWM-Kanal (0–15 beim ESP32), Frequenz 1 kHz, 8-Bit-Auflösung (0–255).",
+            "explain_en": "Constants: GPIO pin, PWM channel (0–15 on ESP32), 1 kHz frequency, 8-bit resolution (0–255)."
+          },
+          {
+            "from": 7,
+            "to": 10,
+            "explain_de": "ledcSetup konfiguriert den Kanal, ledcAttachPin verbindet ihn mit dem physischen Pin.",
+            "explain_en": "ledcSetup configures the channel, ledcAttachPin connects it to the physical pin."
+          },
+          {
+            "from": 14,
+            "to": 18,
+            "explain_de": "for-Schleife erhöht den Duty-Cycle schrittweise — delay(12) × 256 Schritte ≈ 3 Sekunden.",
+            "explain_en": "The for-loop increases duty cycle step by step — delay(12) × 256 steps ≈ 3 seconds."
+          },
+          {
+            "from": 20,
+            "to": 22,
+            "explain_de": "duty = 255 bedeutet 100 % Einschaltdauer — der Motor läuft auf Vollgas.",
+            "explain_en": "duty = 255 means 100% on-time — the motor runs at full speed."
+          },
+          {
+            "from": 24,
+            "to": 28,
+            "explain_de": "Dieselbe Schleife rückwärts: Duty von 255 auf 0 — Motor bremst sanft.",
+            "explain_en": "Same loop in reverse: duty 255 down to 0 — motor brakes smoothly."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum darfst du den Motor nicht direkt an einen ESP32-GPIO-Pin anschließen?",
+      "body_en": "Why can't you connect the motor directly to an ESP32 GPIO pin?",
+      "payload": {
+        "prompt_de": "Warum darfst du den Motor nicht direkt an einen ESP32-GPIO-Pin anschließen?",
+        "prompt_en": "Why can't you connect the motor directly to an ESP32 GPIO pin?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Der Pin liefert zu wenig Spannung für den Motor.",
+            "label_en": "The pin doesn't supply enough voltage for the motor."
+          },
+          {
+            "key": "b",
+            "label_de": "Der Motor braucht mehr Strom als der Pin liefern kann — der Pin würde durchbrennen.",
+            "label_en": "The motor needs more current than the pin can supply — the pin would burn out."
+          },
+          {
+            "key": "c",
+            "label_de": "Der ESP32 unterstützt kein PWM für Motoren.",
+            "label_en": "The ESP32 doesn't support PWM for motors."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Bewegung — check!",
+      "title_en": "Motion — check!",
+      "body_de": "Dein ESP32 dreht jetzt echte Motoren. Als nächstes lernst du, die Richtung zu wechseln — damit wird aus dem Motor ein echter Antrieb für Roboter und Fahrzeuge.",
+      "body_en": "Your ESP32 now drives real motors. Up next: reversing direction — that's what turns this into a proper drive system for robots and vehicles.",
+      "payload": {
+        "xpAward": 130
+      }
+    }
+  ]
+}

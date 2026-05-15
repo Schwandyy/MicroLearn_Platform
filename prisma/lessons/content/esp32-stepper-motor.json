@@ -1,0 +1,143 @@
+{
+  "slug": "esp32-stepper-motor",
+  "title_de": "Schrittmotor: präzise auf den Winkel",
+  "title_en": "Stepper: precise to the angle",
+  "summary_de": "Ein Schrittmotor dreht sich in winzigen, exakten Schritten — perfekt für 3D-Drucker, CNC-Fräsen oder einen automatischen Vorhang. Du steuerst den 28BYJ-48 über die mitgelieferte ULN2003-Platine.",
+  "summary_en": "A stepper motor turns in tiny, exact steps — perfect for 3D printers, CNC machines or an automatic curtain. You'll control the 28BYJ-48 via its included ULN2003 board.",
+  "estimatedMinutes": 20,
+  "xpReward": 140,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Der Schrittmotor dreht sich exakt 90° vor — macht eine kurze Pause — und dreht wieder zurück. Kein Schritt geht verloren.",
+      "body_en": "The stepper motor turns exactly 90° forward, pauses briefly, then turns back. Not a single step gets lost."
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Wir nutzen den 28BYJ-48 im Set mit der ULN2003-Treiberplatine — die kommen fast immer zusammen, und der Stecker passt direkt drauf.",
+      "body_en": "We're using the 28BYJ-48 together with the ULN2003 driver board — they almost always come as a set, and the connector plugs right in."
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Wie funktioniert ein Schrittmotor?",
+      "title_en": "How does a stepper motor work?",
+      "body_de": "Ein normaler Motor dreht einfach durch. Ein Schrittmotor hat drinnen mehrere Elektromagnete. Die werden nacheinander angesteuert — so „klickt\" sich die Welle Schritt für Schritt weiter. Beim 28BYJ-48 ergeben 2048 solcher Schritte genau eine volle Umdrehung. Das heißt: 512 Schritte = 90°. Kein Messen nötig — du zählst einfach.",
+      "body_en": "A regular motor just spins. A stepper has several electromagnets inside. They're activated one after another — so the shaft \"clicks\" forward step by step. With the 28BYJ-48, 2048 steps equal one full rotation. That means 512 steps = 90°. No measuring needed — you just count.",
+      "payload": {
+        "keyPoint_de": "Schrittmotor = Winkel durch Zählen: 512 Schritte vorwärts bedeutet immer genau 90°.",
+        "keyPoint_en": "Stepper = angle by counting: 512 steps forward always means exactly 90°."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Steck den Motor-Stecker direkt auf die ULN2003-Platine. Dann verbindest du die Platine mit dem ESP32: IN1 an GPIO 19, IN2 an GPIO 18, IN3 an GPIO 5, IN4 an GPIO 17. Versorgung: 5 V vom ESP32 an VCC der Platine, GND an GND.",
+      "body_en": "Plug the motor connector straight onto the ULN2003 board. Then connect the board to the ESP32: IN1 to GPIO 19, IN2 to GPIO 18, IN3 to GPIO 5, IN4 to GPIO 17. Power: 5 V from the ESP32 to the board's VCC, GND to GND.",
+      "payload": {
+        "instruction_de": "USB-Versorgung reicht für den 28BYJ-48. Willst du später einen stärkeren Motor, brauchst du ein eigenes Netzteil — dann GND aber gemeinsam verbinden.",
+        "instruction_en": "USB power is enough for the 28BYJ-48. For a stronger motor later you'll need a separate supply — just make sure the GNDs share a common connection."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Die Stepper-Library steckt bereits in der Arduino-IDE — du brauchst nichts zu installieren.",
+      "body_en": "The Stepper library is already built into the Arduino IDE — nothing to install.",
+      "payload": {
+        "code": "// ESP32 — 28BYJ-48 Schrittmotor mit ULN2003\n#include <Stepper.h>\n\n// 2048 Schritte pro Umdrehung (Full-Step)\nconst int STEPS_PER_REV = 2048;\n\n// Achtung: Reihenfolge IN1, IN3, IN2, IN4 — nicht IN1-4 der Reihe nach!\nStepper myStepper(STEPS_PER_REV, 19, 5, 18, 17);\n\nvoid setup() {\n  Serial.begin(115200);\n  myStepper.setSpeed(10);  // ca. 10 U/min — ruhig und zuverlässig\n  Serial.println(\"Stepper bereit.\");\n}\n\nvoid loop() {\n  Serial.println(\"90 Grad vorwaerts\");\n  myStepper.step(512);    // 512 Schritte = 90 Grad\n  delay(1000);\n\n  Serial.println(\"90 Grad zurueck\");\n  myStepper.step(-512);   // negatives Vorzeichen = Rueckwaerts\n  delay(1000);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 2,
+            "explain_de": "Die eingebaute Stepper-Library laden — keine Installation nötig.",
+            "explain_en": "Load the built-in Stepper library — no installation needed."
+          },
+          {
+            "from": 5,
+            "to": 5,
+            "explain_de": "2048 Schritte pro Umdrehung im Full-Step-Modus des 28BYJ-48.",
+            "explain_en": "2048 steps per revolution in full-step mode for the 28BYJ-48."
+          },
+          {
+            "from": 8,
+            "to": 8,
+            "explain_de": "Die Pin-Reihenfolge lautet IN1, IN3, IN2, IN4 — nicht IN1 bis IN4 der Reihe nach! Falsche Reihenfolge = Motor ruckelt oder dreht sich nicht richtig.",
+            "explain_en": "The pin order is IN1, IN3, IN2, IN4 — not IN1 through IN4 in sequence! Wrong order = motor judders or won't turn properly."
+          },
+          {
+            "from": 11,
+            "to": 11,
+            "explain_de": "setSpeed(10) setzt die Drehzahl auf ca. 10 U/min — langsam genug für sicheren Betrieb.",
+            "explain_en": "setSpeed(10) sets roughly 10 RPM — slow enough for reliable operation."
+          },
+          {
+            "from": 17,
+            "to": 17,
+            "explain_de": "step(512) dreht den Motor 512 Schritte vorwärts — das sind genau 90°.",
+            "explain_en": "step(512) turns the motor 512 steps forward — exactly 90°."
+          },
+          {
+            "from": 21,
+            "to": 21,
+            "explain_de": "step(-512) dreht dieselben 512 Schritte zurück. Negatives Vorzeichen = Gegenrichtung.",
+            "explain_en": "step(-512) turns back the same 512 steps. Negative value = opposite direction."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was passiert auf dem Board?",
+      "title_en": "What happens on the board?",
+      "body_de": "Die vier LEDs auf der ULN2003-Platine laufen im Muster durch — du siehst direkt, wie die Spulen nacheinander schalten. Im seriellen Monitor wechseln sich „90 Grad vorwaerts\" und „90 Grad zurueck\" im Sekundentakt ab.",
+      "body_en": "The four LEDs on the ULN2003 board cycle through a pattern — you can literally watch the coils switching in sequence. In the serial monitor, \"90 Grad vorwaerts\" and \"90 Grad zurueck\" alternate every second."
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Du willst den Motor um 180° drehen. Wie viele Schritte übergibst du an step()?",
+      "body_en": "You want to rotate the motor 180°. How many steps do you pass to step()?",
+      "payload": {
+        "prompt_de": "Du willst den Motor um 180° drehen. Wie viele Schritte übergibst du an step()?",
+        "prompt_en": "You want to rotate the motor 180°. How many steps do you pass to step()?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "180 — weil 180° auch 180 Schritte sind.",
+            "label_en": "180 — because 180° equals 180 steps."
+          },
+          {
+            "key": "b",
+            "label_de": "1024 — weil 2048 Schritte eine volle Runde sind und 180° die Hälfte davon.",
+            "label_en": "1024 — because 2048 steps is a full turn and 180° is half of that."
+          },
+          {
+            "key": "c",
+            "label_de": "2048 — weil das die Schrittzahl pro Umdrehung ist.",
+            "label_en": "2048 — because that's the steps-per-revolution value."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Saubere Arbeit!",
+      "title_en": "Clean work!",
+      "body_de": "Du weißt jetzt, wie du einen Schrittmotor auf den Winkel genau ansteuerst. Das ist die Basis von 3D-Druckern, Plottern und Roboterarmen. Als nächstes: Servo-Motoren — die brauchen noch weniger Code.",
+      "body_en": "You now know how to drive a stepper to an exact angle. That's the foundation of 3D printers, plotters and robot arms. Up next: servo motors — they need even less code.",
+      "payload": {
+        "xpAward": 140
+      }
+    }
+  ]
+}

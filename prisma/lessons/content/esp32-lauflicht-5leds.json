@@ -1,0 +1,134 @@
+{
+  "slug": "esp32-lauflicht-5leds",
+  "title_de": "Lauflicht: 5 LEDs jagen sich",
+  "title_en": "Light chase: 5 LEDs in motion",
+  "summary_de": "Du baust ein klassisches Lauflicht — wie an einem Spielautomaten. Fünf LEDs leuchten nacheinander hin und her. Dein erster Schritt in saubere Code-Struktur mit Schleifen und Arrays.",
+  "summary_en": "You build a classic running-light chaser — like a slot-machine border. Five LEDs light up one after another, back and forth. Your first step into clean code with loops and arrays.",
+  "estimatedMinutes": 15,
+  "xpReward": 120,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Fünf LEDs leuchten nacheinander auf — erst von links nach rechts, dann zurück. Ein echtes Lauflicht, wie du es von Spielautomaten oder alten Diskotheken kennst.",
+      "body_en": "Five LEDs light up one after another — left to right, then back again. A real light chaser, just like on arcade machines or old discos.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Fünf rote LEDs, fünf 220-Ω-Widerstände (rot-rot-braun-gold), ein Steckbrett und ein paar Verbindungskabel. Andere LED-Farben funktionieren genauso.",
+      "body_en": "Five red LEDs, five 220 Ω resistors (red-red-brown-gold), a breadboard and a few jumper wires. Other LED colors work just as well.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Arrays und Schleifen — was steckt dahinter?",
+      "title_en": "Arrays and loops — what's the idea?",
+      "body_de": "Stell dir vor, du hättest fünf Schubladen, nummeriert 0 bis 4. In jeder liegt eine Pin-Nummer. Ein Array ist genau das: eine Liste von Werten unter einem einzigen Namen. Die for-Schleife geht eine Schublade nach der anderen auf — du schreibst den Code nur einmal, er läuft fünfmal.",
+      "body_en": "Imagine five drawers, numbered 0 to 4. Each one holds a pin number. An array is exactly that: a list of values under one name. The for-loop opens one drawer after another — you write the code once, it runs five times.",
+      "payload": {
+        "keyPoint_de": "Ein Array + eine for-Schleife ersetzen fünf einzelne Variablen und fünf kopierte Code-Blöcke.",
+        "keyPoint_en": "One array + one for-loop replaces five separate variables and five copy-pasted code blocks."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Baue fünf identische Mini-Schaltungen nebeneinander auf dem Steckbrett:\n1. LED-Anode (langes Bein) an GPIO 25, 26, 27, 32, 33 — je eine pro LED.\n2. LED-Kathode (kurzes Bein) an einen 220-Ω-Widerstand.\n3. Anderes Ende des Widerstands an GND.\nEin GND-Kabel vom ESP32 reicht, wenn du die GND-Schiene des Steckbretts nutzt.",
+      "body_en": "Build five identical mini-circuits side by side on the breadboard:\n1. LED anode (long leg) to GPIO 25, 26, 27, 32, 33 — one per LED.\n2. LED cathode (short leg) to a 220 Ω resistor.\n3. Other end of the resistor to GND.\nOne GND wire from the ESP32 is enough if you use the breadboard's GND rail.",
+      "payload": {
+        "instruction_de": "GPIOs 32 und 33 am ESP32-DevKit haben keinen internen Pull-Up — für digitale Ausgänge ist das kein Problem.",
+        "instruction_en": "GPIOs 32 and 33 on the ESP32-DevKit have no internal pull-up — for digital output that's no issue at all."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Keine externe Bibliothek nötig — nur sauberes C++ mit Arrays und Schleifen.",
+      "body_en": "No external library needed — just clean C++ with arrays and loops.",
+      "payload": {
+        "code": "// ESP32 — Lauflicht mit 5 LEDs\nconst int LEDS[] = {25, 26, 27, 32, 33};\nconst int NUM_LEDS = 5;\nconst int SPEED_MS = 120;\n\nvoid setup() {\n  for (int i = 0; i < NUM_LEDS; i++) {\n    pinMode(LEDS[i], OUTPUT);\n  }\n}\n\nvoid loop() {\n  // Vorwaerts: LED 0 → 4\n  for (int i = 0; i < NUM_LEDS; i++) {\n    digitalWrite(LEDS[i], HIGH);\n    delay(SPEED_MS);\n    digitalWrite(LEDS[i], LOW);\n  }\n  // Rueckwaerts: LED 3 → 0 (Enden nicht doppelt)\n  for (int i = NUM_LEDS - 2; i > 0; i--) {\n    digitalWrite(LEDS[i], HIGH);\n    delay(SPEED_MS);\n    digitalWrite(LEDS[i], LOW);\n  }\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 4,
+            "explain_de": "Array mit den 5 Pin-Nummern, Anzahl der LEDs und Geschwindigkeit als Konstanten — nur hier anpassen, nie tief im Code suchen.",
+            "explain_en": "Array with 5 pin numbers, LED count and speed as constants — change them here, never hunt through the code."
+          },
+          {
+            "from": 6,
+            "to": 9,
+            "explain_de": "setup(): for-Schleife setzt alle 5 Pins auf OUTPUT — kein Copy-Paste, eine Zeile erledigt alles.",
+            "explain_en": "setup(): for-loop sets all 5 pins to OUTPUT — no copy-paste, one loop does it all."
+          },
+          {
+            "from": 13,
+            "to": 17,
+            "explain_de": "Vorwärts-Lauf: LED einschalten, kurz warten, wieder ausschalten — dann die nächste.",
+            "explain_en": "Forward pass: switch LED on, wait a moment, switch it off — then move to the next one."
+          },
+          {
+            "from": 19,
+            "to": 23,
+            "explain_de": "Rückwärts-Lauf: startet bei Index 3 (nicht 4) und endet bei 1 (nicht 0) — so blinken die Enden nicht doppelt.",
+            "explain_en": "Backward pass: starts at index 3 (not 4) and stops at 1 (not 0) — so the end LEDs don't flash twice."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was passiert auf dem Board?",
+      "title_en": "What happens on the board?",
+      "body_de": "Sobald du den Code hochlädst, wandert ein Lichtpunkt von links nach rechts durch alle fünf LEDs — und springt sofort wieder zurück. Ändere SPEED_MS auf 50 für ein wildes Rennen oder auf 400 für einen gemütlichen Pendler.",
+      "body_en": "As soon as you upload the code, a spot of light travels left to right across all five LEDs — then bounces straight back. Change SPEED_MS to 50 for a frantic race or 400 for a lazy bounce.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum startet die Rückwärts-Schleife bei Index 3 statt bei 4?",
+      "body_en": "Why does the backward loop start at index 3 instead of 4?",
+      "payload": {
+        "prompt_de": "Warum startet die Rückwärts-Schleife bei Index 3 statt bei 4?",
+        "prompt_en": "Why does the backward loop start at index 3 instead of 4?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Weil GPIO 33 defekt ist und übersprungen werden soll.",
+            "label_en": "Because GPIO 33 is broken and should be skipped."
+          },
+          {
+            "key": "b",
+            "label_de": "Damit die letzte LED (Index 4) nicht zweimal kurz hintereinander aufleuchtet — einmal am Ende von vorwärts, einmal am Anfang von rückwärts.",
+            "label_en": "So the last LED (index 4) doesn't flash twice in a row — once at the end of the forward pass and once at the start of the backward pass."
+          },
+          {
+            "key": "c",
+            "label_de": "Arrays in C++ hören immer bei Index 3 auf.",
+            "label_en": "Arrays in C++ always end at index 3."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Lauflicht läuft!",
+      "title_en": "Chaser is chasing!",
+      "body_de": "Du hast dein erstes Array und deine erste for-Schleife gebaut — das ist echte Programmierstruktur. In der nächsten Lesson nutzen wir genau das, um LEDs mit einem Taster zu steuern.",
+      "body_en": "You've used your first array and your first for-loop — that's real programming structure. In the next lesson we'll use exactly this to control LEDs with a button.",
+      "payload": {
+        "xpAward": 120
+      }
+    }
+  ]
+}

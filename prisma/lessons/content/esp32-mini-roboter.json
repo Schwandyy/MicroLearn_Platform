@@ -1,0 +1,140 @@
+{
+  "slug": "esp32-mini-roboter",
+  "title_de": "Mini-Roboter: alles zusammen",
+  "title_en": "Mini-robot: bring it all together",
+  "summary_de": "Du kombinierst Ultraschall + Servo + LED zu einem Roboter-Auge: Der Servo schwenkt einen Ultraschall-Sensor nach links und rechts, sucht das nächstgelegene Hindernis und lässt eine LED je nach Entfernung schneller oder langsamer blinken. Dein erster richtiger Maker-Roboter-Baustein.",
+  "summary_en": "You combine ultrasonic + servo + LED into a robot eye: the servo sweeps an ultrasonic sensor left and right, finds the nearest obstacle, and blinks an LED faster or slower depending on distance. Your first real maker-robot building block.",
+  "estimatedMinutes": 25,
+  "xpReward": 180,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein Roboter-Radar-Auge: Ein Servo schwenkt deinen Ultraschall-Sensor von links nach rechts, findet das nächste Hindernis — und eine LED blinkt umso schneller, je näher es ist.",
+      "body_en": "A robot radar eye: a servo sweeps your ultrasonic sensor left and right, finds the nearest obstacle — and an LED blinks faster the closer it is.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Ein SG90-Servo (der klassische blaue Einsteiger-Servo), ein HC-SR04-Ultraschallsensor, eine rote LED, ein 220-Ω-Widerstand und ein paar Jumper-Kabel.",
+      "body_en": "An SG90 servo (the classic blue beginner servo), an HC-SR04 ultrasonic sensor, a red LED, a 220 Ω resistor, and some jumper wires.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Warum Funktionen statt einem riesigen loop()?",
+      "title_en": "Why functions instead of one giant loop()?",
+      "body_de": "Sobald du mehrere Bauteile kombinierst, wird loop() schnell unlesbar. Deshalb teilen wir den Code in kleine Aufgaben auf: eine Funktion misst den Abstand, eine andere lässt die LED blinken, loop() koordiniert nur noch. Das nennt sich modularer Code — und genau so arbeiten echte Entwickler.",
+      "body_en": "Once you combine multiple components, loop() gets messy fast. So we split the code into small jobs: one function measures distance, another blinks the LED, loop() just coordinates. That's called modular code — and it's exactly how real developers work.",
+      "payload": {
+        "keyPoint_de": "Kleine Funktionen machen Code lesbar, testbar und wiederverwendbar.",
+        "keyPoint_en": "Small functions make code readable, testable, and reusable."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Servo: rotes Kabel an 5 V, braunes Kabel an GND, oranges Signal-Kabel an GPIO 13. Ultraschallsensor: VCC an 5 V, GND an GND, Trig an GPIO 5, Echo an GPIO 18. LED: Anode (langes Bein) über den 220-Ω-Widerstand an GPIO 12, Kathode (kurzes Bein) an GND.",
+      "body_en": "Servo: red wire to 5 V, brown wire to GND, orange signal wire to GPIO 13. Ultrasonic sensor: VCC to 5 V, GND to GND, Trig to GPIO 5, Echo to GPIO 18. LED: anode (long leg) through the 220 Ω resistor to GPIO 12, cathode (short leg) to GND.",
+      "payload": {
+        "instruction_de": "Der Servo braucht 5 V — nicht 3,3 V, sonst dreht er sich ruckartig oder gar nicht. Nutze den 5V-Pin des ESP32-DevKit.",
+        "instruction_en": "The servo needs 5 V — not 3.3 V, otherwise it judders or doesn't move at all. Use the 5 V pin on the ESP32 DevKit."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Schritt für Schritt",
+      "title_en": "The code — step by step",
+      "body_de": "Installiere einmalig die Bibliothek „ESP32Servo\" über den Arduino-Bibliotheksmanager.",
+      "body_en": "Install the \"ESP32Servo\" library once via the Arduino Library Manager.",
+      "payload": {
+        "code": "// ESP32 Mini-Roboter: Servo + Ultraschall + LED\n#include <ESP32Servo.h>\n\n// --- Pin-Definitionen ---\n#define SERVO_PIN  13\n#define TRIG_PIN   5\n#define ECHO_PIN   18\n#define LED_PIN    12\n\nServo radarServo;\n\n// --- Abstand messen ---\nfloat measureDistance() {\n  digitalWrite(TRIG_PIN, LOW);\n  delayMicroseconds(2);\n  digitalWrite(TRIG_PIN, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(TRIG_PIN, LOW);\n  long duration = pulseIn(ECHO_PIN, HIGH, 25000); // Timeout 25 ms\n  if (duration == 0) return 999.0; // kein Echo → sehr weit\n  return duration * 0.0343 / 2.0;\n}\n\n// --- LED blinken ---\nvoid blinkLED(int delayMs) {\n  digitalWrite(LED_PIN, HIGH);\n  delay(delayMs);\n  digitalWrite(LED_PIN, LOW);\n  delay(delayMs);\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  radarServo.attach(SERVO_PIN);\n  pinMode(TRIG_PIN, OUTPUT);\n  pinMode(ECHO_PIN, INPUT);\n  pinMode(LED_PIN, OUTPUT);\n}\n\nvoid loop() {\n  float minDist = 999.0;\n  int   minAngle = 0;\n\n  // --- Sweep 0° → 180° ---\n  for (int angle = 0; angle <= 180; angle += 10) {\n    radarServo.write(angle);\n    delay(50);\n    float d = measureDistance();\n    Serial.print(\"Winkel: \");\n    Serial.print(angle);\n    Serial.print(\"°  Abstand: \");\n    Serial.print(d);\n    Serial.println(\" cm\");\n    if (d < minDist) {\n      minDist  = d;\n      minAngle = angle;\n    }\n  }\n\n  Serial.print(\">>> Nächstes Hindernis: \");\n  Serial.print(minDist);\n  Serial.print(\" cm bei \");\n  Serial.print(minAngle);\n  Serial.println(\"°\");\n\n  // Entfernung (5..100 cm) → Blink-Tempo (50..500 ms)\n  int blinkDelay = (int)map((long)minDist, 5, 100, 50, 500);\n  blinkDelay = constrain(blinkDelay, 50, 500);\n  blinkLED(blinkDelay);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 9,
+            "explain_de": "Library laden und alle drei Pins benennen — so musst du nie Magic Numbers im Code suchen.",
+            "explain_en": "Load the library and name all three pins — no magic numbers scattered through the code."
+          },
+          {
+            "from": 13,
+            "to": 22,
+            "explain_de": "measureDistance(): kurzer Trigger-Impuls → Wartezeit des Echo-Pulses messen → Formel: Zeit × 0,0343 / 2 = cm.",
+            "explain_en": "measureDistance(): short trigger pulse → measure echo pulse duration → formula: time × 0.0343 / 2 = cm."
+          },
+          {
+            "from": 25,
+            "to": 29,
+            "explain_de": "blinkLED(): LED an, warten, LED aus, warten — je kleiner delayMs, desto schneller blinkt sie.",
+            "explain_en": "blinkLED(): LED on, wait, LED off, wait — the smaller delayMs, the faster it blinks."
+          },
+          {
+            "from": 40,
+            "to": 55,
+            "explain_de": "Der Sweep: Servo dreht in 10°-Schritten von 0° bis 180°, misst bei jedem Schritt den Abstand und merkt sich den kleinsten Wert samt Winkel.",
+            "explain_en": "The sweep: servo steps from 0° to 180° in 10° increments, measures distance at each step, and remembers the smallest value with its angle."
+          },
+          {
+            "from": 58,
+            "to": 61,
+            "explain_de": "map() rechnet den minimalen Abstand (5–100 cm) in eine Blink-Pause (50–500 ms) um. constrain() verhindert Werte außerhalb des Bereichs.",
+            "explain_en": "map() converts the minimum distance (5–100 cm) into a blink delay (50–500 ms). constrain() prevents values outside the range."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du?",
+      "title_en": "What do you see?",
+      "body_de": "Im seriellen Monitor erscheinen alle Winkel-Abstand-Paare des Sweeps, danach die Zeile „>>> Nächstes Hindernis: X cm bei Y°\". Die LED blinkt danach schnell (Hindernis nah) oder langsam (Hindernis weit weg).",
+      "body_en": "The serial monitor shows all angle-distance pairs during the sweep, then the line \">>> Nearest obstacle: X cm at Y°\". Afterwards the LED blinks fast (obstacle close) or slowly (obstacle far away).",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Was macht map(minDist, 5, 100, 50, 500) in diesem Code?",
+      "body_en": "What does map(minDist, 5, 100, 50, 500) do in this code?",
+      "payload": {
+        "prompt_de": "Was macht map(minDist, 5, 100, 50, 500) in diesem Code?",
+        "prompt_en": "What does map(minDist, 5, 100, 50, 500) do in this code?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Es zeichnet eine Karte der Hindernisse.",
+            "label_en": "It draws a map of the obstacles."
+          },
+          {
+            "key": "b",
+            "label_de": "Es rechnet einen Abstand (5–100 cm) proportional in eine Blink-Pause (50–500 ms) um.",
+            "label_en": "It proportionally converts a distance (5–100 cm) into a blink delay (50–500 ms)."
+          },
+          {
+            "key": "c",
+            "label_de": "Es begrenzt den Servo-Winkel auf maximal 100°.",
+            "label_en": "It limits the servo angle to a maximum of 100°."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Dein erstes Roboter-Auge läuft!",
+      "title_en": "Your first robot eye is alive!",
+      "body_de": "Du hast drei Bauteile zu einem echten System zusammengeführt, den Code sauber in Funktionen aufgeteilt und Messwerte intelligent verarbeitet. Das ist kein Blink-LED-Experiment mehr — das ist Robotik. Als Nächstes kannst du die Sweep-Daten als ASCII-Radar im seriellen Monitor visualisieren.",
+      "body_en": "You combined three components into a real system, split the code cleanly into functions, and processed sensor data intelligently. This isn't a blink-LED experiment anymore — this is robotics. Next up: visualise the sweep data as an ASCII radar in the serial monitor.",
+      "payload": {
+        "xpAward": 180
+      }
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "esp32-oled-display",
+  "title_de": "OLED-Display: erstes eigenes Bild",
+  "title_en": "OLED display: your first screen",
+  "summary_de": "128×64 Pixel auf einem winzigen OLED-Bildschirm — über I²C an den ESP32. Du zeigst Text, einen Zähler und ein einfaches Smiley. Das ist die Bühne für jede spätere IoT-Anzeige.",
+  "summary_en": "128×64 pixels on a tiny OLED screen — connected to the ESP32 via I²C. You'll display text, a counter and a simple smiley. This is the stage for every later IoT readout.",
+  "estimatedMinutes": 18,
+  "xpReward": 130,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein winziges OLED-Display zeigt einen laufenden Zähler, deinen Text und ein Smiley — alles live auf dem ESP32.",
+      "body_en": "A tiny OLED screen shows a live counter, your text and a smiley face — all running on the ESP32.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Wir nutzen ein 0,96-Zoll-OLED-Modul mit SSD1306-Chip und I²C-Anschluss (4 Pins: VCC, GND, SCL, SDA) — das günstigste und verbreitetste Modell.",
+      "body_en": "We use a 0.96-inch OLED module with SSD1306 chip and I²C interface (4 pins: VCC, GND, SCL, SDA) — the most common and affordable option.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was ist ein Display-Buffer?",
+      "title_en": "What is a display buffer?",
+      "body_de": "Das Display hat keinen Direktzugriff auf einzelne Pixel. Stattdessen malst du alles zuerst in einen unsichtbaren Speicherbereich im RAM — den Buffer. Erst wenn du display.display() aufrufst, schickt der ESP32 den gesamten Buffer auf einmal ans Display. Kein Flimmern, kein halb-gezeichnetes Bild.",
+      "body_en": "The display doesn't let you update individual pixels on the fly. Instead you draw everything into an invisible area in RAM — the buffer. Only when you call display.display() does the ESP32 send the whole buffer to the screen at once. No flickering, no half-drawn images.",
+      "payload": {
+        "keyPoint_de": "Erst im Buffer malen, dann alles mit display.display() auf einmal sichtbar machen.",
+        "keyPoint_en": "Draw into the buffer first, then make everything visible at once with display.display()."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "OLED-Modul: VCC an 3,3 V am ESP32, GND an GND, SDA an GPIO 21, SCL an GPIO 22. Vier Kabel — fertig.",
+      "body_en": "OLED module: VCC to 3.3 V on the ESP32, GND to GND, SDA to GPIO 21, SCL to GPIO 22. Four wires — done.",
+      "payload": {
+        "instruction_de": "Manche Module beschriften die Pins als „SDA/SCL\", andere als „D/C\" — schau kurz auf die Platinen-Aufschrift. Die I²C-Adresse ist fast immer 0x3C; falls das Display dunkel bleibt, kann 0x3D die Alternative sein.",
+        "instruction_en": "Some modules label the pins \"SDA/SCL\", others \"D/C\" — check the board silkscreen. The I²C address is almost always 0x3C; if the display stays dark, try 0x3D."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Installiere vorher in der Arduino IDE: „Adafruit SSD1306\" und „Adafruit GFX Library\" (beide im Library Manager).",
+      "body_en": "First install in the Arduino IDE: \"Adafruit SSD1306\" and \"Adafruit GFX Library\" (both in the Library Manager).",
+      "payload": {
+        "code": "#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n\n#define SCREEN_WIDTH 128\n#define SCREEN_HEIGHT 64\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);\n\nint counter = 0;\n\nvoid setup() {\n  Serial.begin(115200);\n  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {\n    Serial.println(\"Display nicht gefunden!\");\n    while (true);\n  }\n  display.clearDisplay();\n  display.display();\n}\n\nvoid loop() {\n  display.clearDisplay();\n\n  // Grosser Text oben\n  display.setTextColor(SSD1306_WHITE);\n  display.setTextSize(2);\n  display.setCursor(0, 0);\n  display.println(\"MicroLearn\");\n\n  // Kleiner Zähler darunter\n  display.setTextSize(1);\n  display.setCursor(0, 20);\n  display.print(\"count: \");\n  display.println(counter++);\n\n  // Smiley: Gesicht\n  display.drawCircle(100, 40, 14, SSD1306_WHITE);\n  // Augen\n  display.fillCircle(95, 36, 2, SSD1306_WHITE);\n  display.fillCircle(105, 36, 2, SSD1306_WHITE);\n  // Mund\n  display.drawLine(94, 46, 106, 46, SSD1306_WHITE);\n\n  display.display();\n  delay(500);\n}",
+        "lines": [
+          {
+            "from": 1,
+            "to": 8,
+            "explain_de": "Libraries laden: Wire für I²C, Adafruit GFX für Zeichenbefehle, Adafruit SSD1306 für den Display-Treiber. Display-Objekt mit 128×64 Pixeln anlegen.",
+            "explain_en": "Load libraries: Wire for I²C, Adafruit GFX for drawing commands, Adafruit SSD1306 for the display driver. Create the display object sized 128×64."
+          },
+          {
+            "from": 12,
+            "to": 19,
+            "explain_de": "setup(): Display starten. Wenn begin() false zurückgibt, steckt ein Hardware-Fehler — wir stoppen mit while(true), damit der Fehler nicht still ignoriert wird.",
+            "explain_en": "setup(): start the display. If begin() returns false there's a hardware problem — we stop with while(true) so the error isn't silently ignored."
+          },
+          {
+            "from": 21,
+            "to": 31,
+            "explain_de": "Jeden Durchlauf zuerst alles löschen. Dann Text in zwei Größen: setTextSize(2) für die Überschrift, setTextSize(1) für den kleinen Zähler. counter++ erhöht den Zähler bei jedem Aufruf.",
+            "explain_en": "Every loop: clear first. Then text in two sizes — setTextSize(2) for the heading, setTextSize(1) for the small counter. counter++ increments on each call."
+          },
+          {
+            "from": 33,
+            "to": 41,
+            "explain_de": "Smiley zeichnen: ein großer Kreis als Gesicht, zwei gefüllte Kreise als Augen, eine Linie als Mund. Koordinaten sind Pixel-Positionen (0,0 = oben links).",
+            "explain_en": "Draw the smiley: one large circle for the face, two filled circles for eyes, one line for the mouth. Coordinates are pixel positions (0,0 = top left)."
+          },
+          {
+            "from": 43,
+            "to": 44,
+            "explain_de": "display.display() schickt den fertigen Buffer ans OLED. Ohne diesen Aufruf siehst du nichts. delay(500) wartet 0,5 Sekunden bis zur nächsten Aktualisierung.",
+            "explain_en": "display.display() sends the finished buffer to the OLED. Without this call you see nothing. delay(500) waits half a second until the next update."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du?",
+      "title_en": "What do you see?",
+      "body_de": "Das OLED zeigt oben „MicroLearn\" in großer Schrift, darunter einen hochzählenden Zähler, und rechts daneben ein kleines Smiley-Gesicht — alles aktualisiert sich alle 0,5 Sekunden.",
+      "body_en": "The OLED shows \"MicroLearn\" in large text at the top, a counting number below it, and a small smiley face on the right — everything refreshes every 0.5 seconds.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum muss man display.display() am Ende des loop() aufrufen?",
+      "body_en": "Why do you need to call display.display() at the end of loop()?",
+      "payload": {
+        "prompt_de": "Warum muss man display.display() am Ende des loop() aufrufen?",
+        "prompt_en": "Why do you need to call display.display() at the end of loop()?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Weil der ESP32 sonst abstürzt.",
+            "label_en": "Because the ESP32 will crash otherwise."
+          },
+          {
+            "key": "b",
+            "label_de": "Weil alle Zeichenbefehle nur den RAM-Buffer verändern — erst display.display() überträgt den Buffer sichtbar aufs Display.",
+            "label_en": "Because all drawing commands only change the RAM buffer — display.display() is what actually transfers it to the screen."
+          },
+          {
+            "key": "c",
+            "label_de": "Damit der Zähler hochgezählt wird.",
+            "label_en": "To make the counter increment."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Großartig!",
+      "title_en": "Awesome!",
+      "body_de": "Dein ESP32 hat jetzt eine eigene Anzeige. Als Nächstes kombinierst du das mit einem Sensor — und zeigst Temperatur direkt auf dem Display.",
+      "body_en": "Your ESP32 now has its own screen. Next up: combine this with a sensor and show live temperature right on the display.",
+      "payload": {
+        "xpAward": 130
+      }
+    }
+  ]
+}

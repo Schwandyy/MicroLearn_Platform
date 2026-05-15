@@ -1,0 +1,140 @@
+{
+  "slug": "esp32-webserver",
+  "title_de": "Webserver: dein ESP32 als Webseite",
+  "title_en": "Web server: your ESP32 as a website",
+  "summary_de": "Du bringst dem ESP32 bei, eine echte HTML-Seite auszuliefern. Im Browser tippst du seine IP-Adresse ein und schaltest per Klick eine LED an und aus. Du baust dein erstes Smart-Home-Gerät.",
+  "summary_en": "You'll teach the ESP32 to serve a real HTML page. Type its IP into a browser and toggle an LED with a click. You're building your first smart-home gadget.",
+  "estimatedMinutes": 25,
+  "xpReward": 170,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Der ESP32 spannt seinen eigenen Mini-Webserver auf. Du gibst seine IP-Adresse im Browser ein — und schaltest eine LED per Knopfdruck auf der Webseite an oder aus.",
+      "body_en": "The ESP32 runs its own mini web server. Type its IP in any browser on your network and toggle an LED with a button on the page.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Eine rote LED und ein 220-Ω-Widerstand reichen völlig. Die WebServer-Bibliothek ist im ESP32-Board-Paket bereits eingebaut — du musst nichts extra installieren.",
+      "body_en": "A red LED and a 220 Ω resistor is all you need. The WebServer library comes bundled with the ESP32 board package — no extra install required.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was ist eigentlich ein Webserver?",
+      "title_en": "What exactly is a web server?",
+      "body_de": "Wenn du eine URL im Browser aufrufst, schickst du eine Anfrage (Request) an einen Server. Der antwortet mit HTML (Response). Normalerweise läuft so ein Server im Rechenzentrum. Heute läuft er auf deinem Mikrocontroller. Das Prinzip ist exakt dasselbe: Der ESP32 wartet auf Anfragen, erkennt die Route (z. B. /on) und schickt eine HTML-Seite zurück.",
+      "body_en": "When you type a URL in the browser, you send a request to a server. The server replies with HTML — the response. Usually that server sits in a data center. Today it runs on your microcontroller. The idea is exactly the same: the ESP32 listens for requests, matches the route (e.g. /on), and sends back an HTML page.",
+      "payload": {
+        "keyPoint_de": "Request kommt rein → Route passt → ESP32 schaltet LED und antwortet mit HTML.",
+        "keyPoint_en": "Request comes in → route matches → ESP32 toggles LED and replies with HTML."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "LED-Anode (längeres Bein) über einen 220-Ω-Widerstand an GPIO 25. LED-Kathode (kürzeres Bein) direkt an GND.",
+      "body_en": "LED anode (longer leg) through a 220 Ω resistor to GPIO 25. LED cathode (shorter leg) directly to GND.",
+      "payload": {
+        "instruction_de": "Kein 220-Ω-Widerstand zur Hand? 330 Ω oder 470 Ω funktionieren auch — die LED leuchtet nur etwas schwächer.",
+        "instruction_en": "No 220 Ω resistor? 330 Ω or 470 Ω work fine too — the LED will just be a bit dimmer."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Trag deine WLAN-Daten ein, dann hochladen — fertig.",
+      "body_en": "Fill in your Wi-Fi credentials, upload, done.",
+      "payload": {
+        "code": "#include <WiFi.h>\n#include <WebServer.h>\n\nconst char* ssid     = \"DEIN_WLAN\";\nconst char* password = \"DEIN_PASSWORT\";\n\n#define LED_PIN 25\n\nWebServer server(80);\n\nString buildPage(bool ledOn) {\n  String page = \"<!DOCTYPE html><html><head>\";\n  page += \"<meta charset='utf-8'>\";\n  page += \"<meta name='viewport' content='width=device-width,initial-scale=1'>\";\n  page += \"<title>ESP32 LED</title></head><body>\";\n  page += \"<h1>LED-Steuerung</h1>\";\n  page += \"<p>Status: <b>\";\n  page += ledOn ? \"AN\" : \"AUS\";\n  page += \"</b></p>\";\n  page += \"<a href='/on'><button>AN</button></a>  \";\n  page += \"<a href='/off'><button>AUS</button></a>\";\n  page += \"</body></html>\";\n  return page;\n}\n\nvoid handleRoot() {\n  bool state = digitalRead(LED_PIN);\n  server.send(200, \"text/html\", buildPage(state));\n}\n\nvoid handleOn() {\n  digitalWrite(LED_PIN, HIGH);\n  server.send(200, \"text/html\", buildPage(true));\n}\n\nvoid handleOff() {\n  digitalWrite(LED_PIN, LOW);\n  server.send(200, \"text/html\", buildPage(false));\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(LED_PIN, OUTPUT);\n  digitalWrite(LED_PIN, LOW);\n\n  WiFi.begin(ssid, password);\n  Serial.print(\"Verbinde mit WLAN\");\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println();\n  Serial.print(\"IP-Adresse: \");\n  Serial.println(WiFi.localIP());\n\n  server.on(\"/\",    handleRoot);\n  server.on(\"/on\",  handleOn);\n  server.on(\"/off\", handleOff);\n  server.begin();\n  Serial.println(\"Webserver gestartet!\");\n}\n\nvoid loop() {\n  server.handleClient();\n}",
+        "lines": [
+          {
+            "from": 1,
+            "to": 8,
+            "explain_de": "WiFi- und WebServer-Library laden, WLAN-Zugangsdaten und LED-Pin definieren.",
+            "explain_en": "Load WiFi and WebServer libraries, define Wi-Fi credentials and LED pin."
+          },
+          {
+            "from": 10,
+            "to": 22,
+            "explain_de": "buildPage() baut die HTML-Seite als String zusammen. Der aktuelle LED-Zustand wird als AN oder AUS angezeigt.",
+            "explain_en": "buildPage() assembles the HTML page as a string. The current LED state shows as ON or OFF."
+          },
+          {
+            "from": 24,
+            "to": 35,
+            "explain_de": "Drei Handler-Funktionen: handleRoot zeigt den aktuellen Zustand, handleOn schaltet die LED an, handleOff aus.",
+            "explain_en": "Three handler functions: handleRoot shows current state, handleOn turns LED on, handleOff turns it off."
+          },
+          {
+            "from": 37,
+            "to": 57,
+            "explain_de": "setup(): WLAN verbinden, warten bis es klappt, dann IP-Adresse ausgeben, Routen registrieren und Server starten.",
+            "explain_en": "setup(): connect to Wi-Fi, wait until connected, print the IP address, register routes, start the server."
+          },
+          {
+            "from": 59,
+            "to": 61,
+            "explain_de": "loop() ruft handleClient() auf — das ist der Herzschlag des Servers, der eingehende Anfragen verarbeitet.",
+            "explain_en": "loop() calls handleClient() — the server's heartbeat that processes incoming requests."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du?",
+      "title_en": "What to expect",
+      "body_de": "Im seriellen Monitor erscheint nach ein paar Sekunden eine IP-Adresse (z. B. 192.168.1.42). Tipp sie im Browser eines Geräts im gleichen WLAN ein — du siehst die Seite mit AN/AUS-Buttons, und die LED reagiert sofort beim Klick.",
+      "body_en": "After a few seconds the serial monitor shows an IP address (e.g. 192.168.1.42). Type it in a browser on any device on the same Wi-Fi — you'll see the page with ON/OFF buttons, and the LED reacts instantly on click.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum kannst du die Webseite nur im gleichen WLAN aufrufen?",
+      "body_en": "Why can you only access the page from the same Wi-Fi network?",
+      "payload": {
+        "prompt_de": "Warum kannst du die Webseite nur im gleichen WLAN aufrufen?",
+        "prompt_en": "Why can you only access the page from the same Wi-Fi network?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Die IP-Adresse wie 192.168.x.x ist eine lokale Adresse — sie ist von außerhalb des Heimnetzes nicht erreichbar.",
+            "label_en": "An address like 192.168.x.x is a local network address — it's not reachable from outside your home network."
+          },
+          {
+            "key": "b",
+            "label_de": "Der ESP32 hat kein starkes WLAN-Signal.",
+            "label_en": "The ESP32's Wi-Fi signal isn't strong enough to reach the internet."
+          },
+          {
+            "key": "c",
+            "label_de": "Der Webserver läuft nur auf Port 80, und Browser blockieren Port 80.",
+            "label_en": "The web server uses port 80 and browsers block port 80."
+          }
+        ],
+        "correctKey": "a"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Dein erstes Smart-Home-Gerät!",
+      "title_en": "Your first smart-home gadget!",
+      "body_de": "Du hast gerade einen echten Webserver gebaut — auf einem Chip, der kleiner als ein Daumen ist. Als Nächstes kombinieren wir das mit dem DHT22-Sensor und zeigen Temperatur live im Browser an.",
+      "body_en": "You just built a real web server — on a chip smaller than your thumb. Next up: combine this with the DHT22 sensor and display live temperature readings in the browser.",
+      "payload": {
+        "xpAward": 170
+      }
+    }
+  ]
+}

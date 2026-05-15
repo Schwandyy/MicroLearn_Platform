@@ -1,0 +1,170 @@
+{
+  "slug": "esp32-ota-update",
+  "title_de": "OTA: drahtlos neue Firmware aufspielen",
+  "title_en": "OTA: upload new firmware over the air",
+  "summary_de": "Du steckst den ESP32 für ein letztes Mal per USB ein — danach lädst du jede neue Code-Version über WLAN. Über-die-Luft-Updates (OTA) sind der Standard für professionelle IoT-Geräte. In dieser Lesson bringst du dem ESP32 das bei.",
+  "summary_en": "You'll plug your ESP32 into USB one last time — after that, every new firmware version uploads over WiFi. Over-the-air updates (OTA) are the standard for professional IoT devices. In this lesson you'll wire it up.",
+  "estimatedMinutes": 20,
+  "xpReward": 160,
+  "safetyNotes_de": "OTA hat einen versteckten Falltritt: wenn das neue Firmware-Image die OTA-Logik nicht mehr enthält, ist das Gerät danach nur per USB erreichbar. Erste Regel: ArduinoOTA.begin() NIE rauslassen, auch wenn die Lesson endet.",
+  "safetyNotes_en": "OTA has a hidden trap: if a new firmware image no longer contains the OTA setup, the device is then only reachable via USB. First rule: never remove ArduinoOTA.begin() — keep it in every future sketch.",
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was passiert heute?",
+      "title_en": "What happens today?",
+      "body_de": "Du spielst zweimal Code auf den ESP32 — beim ersten Mal per USB, beim zweiten Mal komplett drahtlos über dein WLAN.",
+      "body_en": "You'll flash the ESP32 twice — the first time via USB, the second time completely wireless over your WiFi.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Nur dein ESP32 DevKit und ein USB-Kabel — für diesen ersten Upload. Danach brauchst du das Kabel nie wieder.",
+      "body_en": "Just your ESP32 DevKit and a USB cable — for this first upload. After that, the cable can go back in the drawer.",
+      "payload": null
+    },
+    {
+      "kind": "SETUP",
+      "title_de": "Vorbereitung in der Arduino IDE",
+      "title_en": "Preparation in the Arduino IDE",
+      "body_de": "Die ArduinoOTA-Bibliothek steckt bereits im ESP32-Core — du musst nichts nachinstallieren. Prüfe aber kurz diese Punkte:",
+      "body_en": "The ArduinoOTA library ships with the ESP32 core — no extra install needed. Just check these points first:",
+      "payload": {
+        "checklist": [
+          {
+            "de": "ESP32-Core installiert (Boardverwalter → „esp32 by Espressif Systems\")",
+            "en": "ESP32 core installed (Boards Manager → \"esp32 by Espressif Systems\")"
+          },
+          {
+            "de": "Board auf „ESP32 Dev Module\" gesetzt (Tools → Board)",
+            "en": "Board set to \"ESP32 Dev Module\" (Tools → Board)"
+          },
+          {
+            "de": "ESP32 per USB verbunden und USB-Port gewählt (Tools → Port → COMx / /dev/ttyUSBx)",
+            "en": "ESP32 connected via USB and USB port selected (Tools → Port → COMx / /dev/ttyUSBx)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was steckt hinter OTA?",
+      "title_en": "What's the idea behind OTA?",
+      "body_de": "Beim normalen Upload schickt die Arduino IDE die kompilierte Firmware über USB. OTA macht dasselbe — nur über dein WLAN. Der ESP32 horcht ständig auf einem bestimmten UDP-Port. Kommt dort ein Upload-Befehl an, speichert er die neue Firmware in einem zweiten Flash-Bereich und startet sich neu. Das klingt komplex, aber du brauchst dafür nur drei Zeilen Setup-Code.",
+      "body_en": "Normally the Arduino IDE sends compiled firmware over USB. OTA does the same thing — but over your WiFi. The ESP32 listens on a specific UDP port. When an upload arrives, it stores the new firmware in a second flash area and reboots itself. That sounds complex, but it only takes three lines of setup code.",
+      "payload": {
+        "keyPoint_de": "ArduinoOTA.handle() im Loop ist der Schlüssel — damit prüft der ESP32 jedes Mal, ob ein drahtloser Upload wartet.",
+        "keyPoint_en": "ArduinoOTA.handle() in the loop is the key — it checks every iteration whether a wireless upload is waiting."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Trag deine WLAN-Zugangsdaten bei ssid und password ein, dann einmal per USB flashen.",
+      "body_en": "Enter your WiFi credentials at ssid and password, then flash once via USB.",
+      "payload": {
+        "code": "// ESP32 OTA + Blink\n#include <WiFi.h>\n#include <ArduinoOTA.h>\n\nconst char* ssid     = \"DEIN_WLAN\";\nconst char* password = \"DEIN_PASSWORT\";\n\n#define LED_PIN 2\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(LED_PIN, OUTPUT);\n\n  WiFi.mode(WIFI_STA);\n  WiFi.begin(ssid, password);\n  Serial.print(\"Verbinde\");\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println();\n  Serial.print(\"IP: \");\n  Serial.println(WiFi.localIP());\n\n  ArduinoOTA.setHostname(\"microlearn-esp32\");\n  ArduinoOTA.setPassword(\"microlearn\");\n\n  ArduinoOTA.onStart([]() {\n    Serial.println(\"OTA Start\");\n  });\n  ArduinoOTA.onEnd([]() {\n    Serial.println(\"\\nOTA Ende — Neustart...\");\n  });\n  ArduinoOTA.onError([](ota_error_t error) {\n    Serial.printf(\"OTA Fehler [%u]\\n\", error);\n  });\n\n  ArduinoOTA.begin();\n  Serial.println(\"OTA bereit\");\n}\n\nvoid loop() {\n  ArduinoOTA.handle();\n\n  digitalWrite(LED_PIN, HIGH);\n  delay(500);\n  digitalWrite(LED_PIN, LOW);\n  delay(500);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 3,
+            "explain_de": "Zwei Libraries: WiFi.h für die WLAN-Verbindung, ArduinoOTA.h für den drahtlosen Upload — beide im ESP32-Core enthalten.",
+            "explain_en": "Two libraries: WiFi.h for the connection, ArduinoOTA.h for wireless uploads — both ship with the ESP32 core."
+          },
+          {
+            "from": 5,
+            "to": 6,
+            "explain_de": "Trag hier deinen WLAN-Namen und dein WLAN-Passwort ein.",
+            "explain_en": "Enter your WiFi name and password here."
+          },
+          {
+            "from": 14,
+            "to": 22,
+            "explain_de": "ESP32 verbindet sich mit dem WLAN und zeigt die zugewiesene IP-Adresse im seriellen Monitor.",
+            "explain_en": "ESP32 connects to WiFi and prints the assigned IP address to the serial monitor."
+          },
+          {
+            "from": 24,
+            "to": 25,
+            "explain_de": "Hostname: so taucht der ESP32 im Netzwerk-Port der IDE auf. Passwort: schützt vor fremden Uploads.",
+            "explain_en": "Hostname: this is how the ESP32 appears in the IDE's network port list. Password: protects against unwanted uploads."
+          },
+          {
+            "from": 27,
+            "to": 34,
+            "explain_de": "Callback-Funktionen — optional, aber hilfreich. Du siehst im seriellen Monitor genau, wann ein OTA-Upload startet, endet oder schiefläuft.",
+            "explain_en": "Callback functions — optional but useful. The serial monitor shows exactly when an OTA upload starts, finishes, or fails."
+          },
+          {
+            "from": 36,
+            "to": 37,
+            "explain_de": "ArduinoOTA.begin() startet den Listener — ab jetzt ist der ESP32 per WLAN erreichbar.",
+            "explain_en": "ArduinoOTA.begin() starts the listener — from this point the ESP32 is reachable over WiFi."
+          },
+          {
+            "from": 41,
+            "to": 41,
+            "explain_de": "ArduinoOTA.handle() MUSS jedes Mal durch den Loop — sonst verpasst der ESP32 einen eingehenden Upload.",
+            "explain_en": "ArduinoOTA.handle() MUST run every loop iteration — otherwise the ESP32 misses an incoming upload."
+          },
+          {
+            "from": 43,
+            "to": 46,
+            "explain_de": "Die eigentliche Blink-Logik — läuft ganz normal nebenbei, während OTA.handle() im Hintergrund wartet.",
+            "explain_en": "The actual blink logic — runs normally while OTA.handle() quietly waits in the background."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du?",
+      "title_en": "What do you see?",
+      "body_de": "Nach dem USB-Flash erscheint im seriellen Monitor: „Verbinde....\" gefolgt von der IP-Adresse und „OTA bereit\". In der Arduino IDE öffnest du Tools → Port: dort taucht jetzt neben dem USB-Port ein Netzwerk-Port „microlearn-esp32 at 192.168.x.y\" auf — über den kannst du ab sofort direkt hochladen.",
+      "body_en": "After the USB flash the serial monitor shows: \"Verbinde....\" followed by the IP address and \"OTA bereit\". In the Arduino IDE open Tools → Port: next to the USB port you'll now see a network port \"microlearn-esp32 at 192.168.x.y\" — use that for all future uploads.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Was passiert, wenn du ArduinoOTA.handle() aus dem Loop entfernst?",
+      "body_en": "What happens if you remove ArduinoOTA.handle() from the loop?",
+      "payload": {
+        "prompt_de": "Was passiert, wenn du ArduinoOTA.handle() aus dem Loop entfernst?",
+        "prompt_en": "What happens if you remove ArduinoOTA.handle() from the loop?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "OTA funktioniert trotzdem — die Library läuft im Hintergrund automatisch.",
+            "label_en": "OTA still works — the library runs automatically in the background."
+          },
+          {
+            "key": "b",
+            "label_de": "Der ESP32 ist per OTA nicht mehr erreichbar und du musst wieder per USB flashen.",
+            "label_en": "The ESP32 is no longer reachable via OTA and you have to go back to USB flashing."
+          },
+          {
+            "key": "c",
+            "label_de": "Der ESP32 startet sich jede Minute neu, weil er keinen Upload empfängt.",
+            "label_en": "The ESP32 reboots every minute because it receives no upload."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Kabellos — für immer!",
+      "title_en": "Wireless — forever!",
+      "body_de": "Dein ESP32 hängt ab sofort nicht mehr am Schreibtisch-USB. Er kann an der Decke, im Keller oder im Gewächshaus sitzen — du aktualisierst ihn einfach aus der IDE. Nächste Lesson: Sensor-Daten per MQTT ins Internet schicken.",
+      "body_en": "Your ESP32 no longer needs to sit next to your laptop. It can live in the ceiling, the basement, or a greenhouse — you update it straight from the IDE. Next lesson: send sensor data to the internet via MQTT.",
+      "payload": {
+        "xpAward": 160
+      }
+    }
+  ]
+}

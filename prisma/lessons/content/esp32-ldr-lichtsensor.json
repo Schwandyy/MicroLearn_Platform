@@ -1,0 +1,126 @@
+{
+  "slug": "esp32-ldr-lichtsensor",
+  "title_de": "Lichtsensor: dunkel ↔ hell",
+  "title_en": "Light sensor: dark ↔ bright",
+  "summary_de": "Ein Fotowiderstand (LDR) verändert seinen Widerstand mit Licht. Mit einem Spannungsteiler liest der ESP32 daraus einen Helligkeitswert von 0 bis 4095 — die Grundlage für Dämmerungsschalter und Pflanzenlicht-Sensoren.",
+  "summary_en": "A photoresistor (LDR) changes its resistance with light. Combined with a voltage divider, the ESP32 reads a brightness value from 0 to 4095 — the basis for dusk switches and grow-light sensors.",
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Einen Helligkeitsmesser: der ESP32 zeigt dir live im seriellen Monitor, wie dunkel oder hell es gerade ist — Zahlen von 0 (stockdunkel) bis 4095 (grell beleuchtet).",
+      "body_en": "A brightness meter: the ESP32 shows you live in the serial monitor how dark or bright it currently is — numbers from 0 (pitch black) to 4095 (blazing bright).",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Nimm einen normalen 5-mm-Fotowiderstand (LDR) und einen 10-kΩ-Widerstand — der gibt den besten Wertebereich. Ein 220-Ω-Widerstand aus dem Starter-Kit funktioniert auch zum Ausprobieren.",
+      "body_en": "Use a standard 5 mm photoresistor (LDR) and a 10 kΩ resistor — that gives the best value range. A 220 Ω resistor from a starter kit works fine for trying it out.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Das Spannungsteiler-Prinzip",
+      "title_en": "How a voltage divider works",
+      "body_de": "Zwei Widerstände hintereinander teilen die Spannung auf. Der LDR ist Widerstand 1, dein Festwiderstand ist Widerstand 2. Am Knotenpunkt dazwischen entsteht eine Spannung, die sich mit dem Licht verändert: mehr Licht → LDR-Widerstand sinkt → Spannung am Knotenpunkt steigt → höherer ADC-Wert.",
+      "body_en": "Two resistors in series split the supply voltage. The LDR is resistor 1, your fixed resistor is resistor 2. At the junction between them a voltage forms that changes with light: more light → LDR resistance drops → junction voltage rises → higher ADC reading.",
+      "payload": {
+        "keyPoint_de": "Vout = 3,3 V × R_fest / (R_LDR + R_fest) — wenn R_LDR sinkt, steigt Vout.",
+        "keyPoint_en": "Vout = 3.3 V × R_fixed / (R_LDR + R_fixed) — as R_LDR drops, Vout rises."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Stecke den LDR mit einem Bein an 3,3 V. Das andere Bein verbindest du mit GPIO 34 — das ist dein Messpunkt. Von GPIO 34 geht ein Kabel über den Widerstand nach GND. Fertig ist der Spannungsteiler.",
+      "body_en": "Put one leg of the LDR into 3.3 V. Connect the other leg to GPIO 34 — that's your measurement point. From GPIO 34 run a wire through the resistor to GND. Your voltage divider is done.",
+      "payload": {
+        "instruction_de": "Für echte Projekte: 10-kΩ-Widerstand verwenden — das gibt einen viel breiteren Wertebereich als 220 Ω. GPIO 34 ist ein reiner Eingangspin und hat keinen internen Pull-Up, das passt hier perfekt.",
+        "instruction_en": "For real projects: use a 10 kΩ resistor — it gives a much wider value range than 220 Ω. GPIO 34 is input-only with no internal pull-up, which is exactly what we want here."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Keine externe Bibliothek nötig — analogRead() steckt schon im ESP32-Arduino-Framework.",
+      "body_en": "No extra library needed — analogRead() is already part of the ESP32 Arduino framework.",
+      "payload": {
+        "code": "// ESP32 — LDR Helligkeit lesen\n#define LDR_PIN 34\n\nvoid setup() {\n  Serial.begin(115200);\n}\n\nvoid loop() {\n  int val = analogRead(LDR_PIN);\n  Serial.print(\"Helligkeit: \");\n  Serial.println(val);\n  delay(500);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 2,
+            "explain_de": "GPIO 34 als Konstante definieren — ADC1-Pin, funktioniert auch wenn WLAN aktiv ist.",
+            "explain_en": "Define GPIO 34 as a constant — it's on ADC1, so it still works when Wi-Fi is active."
+          },
+          {
+            "from": 4,
+            "to": 6,
+            "explain_de": "Seriellen Monitor mit 115200 Baud starten.",
+            "explain_en": "Start the serial monitor at 115200 baud."
+          },
+          {
+            "from": 9,
+            "to": 9,
+            "explain_de": "analogRead() gibt einen Wert von 0 bis 4095 zurück — 12-Bit-Auflösung des ESP32-ADC.",
+            "explain_en": "analogRead() returns a value from 0 to 4095 — that's the ESP32's 12-bit ADC resolution."
+          },
+          {
+            "from": 10,
+            "to": 12,
+            "explain_de": "Wert ausgeben und 500 ms warten — alle halbe Sekunde ein neues Messergebnis.",
+            "explain_en": "Print the value and wait 500 ms — a fresh reading every half second."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum liefert der ESP32-ADC Werte bis 4095 und nicht bis 1023?",
+      "body_en": "Why does the ESP32 ADC go up to 4095 instead of 1023?",
+      "payload": {
+        "prompt_de": "Warum liefert der ESP32-ADC Werte bis 4095 und nicht bis 1023?",
+        "prompt_en": "Why does the ESP32 ADC go up to 4095 instead of 1023?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Der ESP32 hat eine 12-Bit-Auflösung — 2¹² = 4096 Stufen (0 bis 4095).",
+            "label_en": "The ESP32 has 12-bit resolution — 2¹² = 4096 steps (0 to 4095)."
+          },
+          {
+            "key": "b",
+            "label_de": "Der ESP32 läuft mit 3,3 V statt 5 V, deshalb wird der Maximalwert größer.",
+            "label_en": "The ESP32 runs at 3.3 V instead of 5 V, so the maximum value is scaled up."
+          },
+          {
+            "key": "c",
+            "label_de": "analogRead() summiert mehrere Messungen auf, um genauer zu werden.",
+            "label_en": "analogRead() adds up multiple samples to improve accuracy."
+          }
+        ],
+        "correctKey": "a"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Gut gemacht!",
+      "title_en": "Nice work!",
+      "body_de": "Du hast deinen ersten analogen Sensor ausgelesen. Halte jetzt die Hand über den LDR — sieh, wie die Werte fallen. In der nächsten Lesson schaltest du damit eine LED automatisch an.",
+      "body_en": "You just read your first analog sensor. Hold your hand over the LDR and watch the values drop. In the next lesson you'll use this to switch an LED on automatically.",
+      "payload": {
+        "xpAward": 100
+      }
+    }
+  ]
+}

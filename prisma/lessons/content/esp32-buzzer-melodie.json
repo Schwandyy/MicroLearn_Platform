@@ -1,0 +1,146 @@
+{
+  "slug": "esp32-buzzer-melodie",
+  "title_de": "Buzzer: dein erstes Lied",
+  "title_en": "Buzzer: your first song",
+  "summary_de": "Ein passiver Piezo-Buzzer ist ein winziger Lautsprecher. Mit dem ESP32 erzeugst du genaue Tonhöhen und spielst die ersten Noten von „Alle meine Entchen\" — Ton für Ton, deinen ersten Code-Komponisten.",
+  "summary_en": "A passive piezo buzzer is a tiny speaker. With the ESP32 you generate precise pitches and play the first notes of \"Twinkle Twinkle\" — note by note, your first code composer.",
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Der ESP32 wird zum Mini-Komponisten: Wir programmieren die ersten Noten von „Alle meine Entchen\" — und lernst dabei, wie Töne aus Zahlen entstehen.",
+      "body_en": "The ESP32 becomes a mini composer: we program the first notes of \"Twinkle Twinkle\" — and you'll learn how sounds are made from numbers.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Wichtig: passiver Buzzer (nicht aktiver). Der aktive piept nur auf einer festen Frequenz — der passive klingt, was immer wir ihm vorgeben.",
+      "body_en": "Important: passive buzzer (not active). The active one only beeps at a fixed pitch — the passive one plays whatever we tell it.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Frequenz = Tonhöhe",
+      "title_en": "Frequency = pitch",
+      "body_de": "Ein Ton ist Luft, die schnell hin- und herschwingt. Je schneller, desto höher klingt er. Wir messen das in Hertz (Hz). Das mittlere C auf dem Klavier schwingt 262-mal pro Sekunde — also C4 = 262 Hz. Der ESP32 erzeugt diese Schwingung per PWM auf einem digitalen Pin.",
+      "body_en": "A sound is air vibrating back and forth. The faster it vibrates, the higher the pitch. We measure that in hertz (Hz). Middle C on a piano vibrates 262 times per second — so C4 = 262 Hz. The ESP32 creates this vibration via PWM on a digital pin.",
+      "payload": {
+        "keyPoint_de": "Höhere Frequenz = höherer Ton — jede Note ist einfach eine Zahl in Hz.",
+        "keyPoint_en": "Higher frequency = higher pitch — every musical note is just a number in Hz."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Buzzer + (längeres Bein) an GPIO 25, Buzzer − (kürzeres Bein) an GND. Das war's — zwei Kabel.",
+      "body_en": "Buzzer + (longer leg) to GPIO 25, buzzer − (shorter leg) to GND. That's it — two wires.",
+      "payload": {
+        "instruction_de": "Du hast keinen Aufdruck? Dann miss nach: das längere Bein ist immer Plus. GPIO 25 ist PWM-fähig und liegt gut erreichbar auf dem DevKit.",
+        "instruction_en": "No markings on your buzzer? Easy: the longer leg is always positive. GPIO 25 is PWM-capable and conveniently placed on the DevKit."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Keine externe Bibliothek nötig — der ESP32 bringt alles mit.",
+      "body_en": "No external library needed — the ESP32 has everything built in.",
+      "payload": {
+        "code": "// ESP32 — Buzzer Melodie\n// \"Alle meine Entchen\" / \"Twinkle Twinkle\"\n\n#define BUZZER_PIN 25\n#define LEDC_CHANNEL 0\n#define LEDC_RESOLUTION 8\n\n// Frequenzen in Hz\n#define C4 262\n#define D4 294\n#define E4 330\n#define F4 349\n#define G4 392\n#define A4 440\n\n// { Frequenz in Hz, Dauer in ms }\nstruct Note {\n  int freq;\n  int duration;\n};\n\n// Alle meine Entchen (erste 8 Noten)\nNote melody[] = {\n  {C4, 400},\n  {D4, 400},\n  {E4, 400},\n  {F4, 400},\n  {G4, 800},\n  {G4, 800},\n  {A4, 400},\n  {A4, 400}\n};\n\nint noteCount = sizeof(melody) / sizeof(melody[0]);\n\nvoid playNote(int freq, int ms) {\n  ledcWriteTone(LEDC_CHANNEL, freq);\n  delay(ms);\n  ledcWriteTone(LEDC_CHANNEL, 0); // Pause zwischen Noten\n  delay(50);\n}\n\nvoid setup() {\n  ledcSetup(LEDC_CHANNEL, 1000, LEDC_RESOLUTION);\n  ledcAttachPin(BUZZER_PIN, LEDC_CHANNEL);\n}\n\nvoid loop() {\n  for (int i = 0; i < noteCount; i++) {\n    playNote(melody[i].freq, melody[i].duration);\n  }\n  delay(2000); // Pause vor Wiederholung\n}",
+        "lines": [
+          {
+            "from": 4,
+            "to": 13,
+            "explain_de": "Pin und LEDC-Kanal festlegen, Noten-Frequenzen als sprechende Konstanten definieren — so steht D4 statt 294 im Code.",
+            "explain_en": "Define pin and LEDC channel, then note frequencies as readable constants — D4 in the code instead of a bare 294."
+          },
+          {
+            "from": 16,
+            "to": 30,
+            "explain_de": "Struct Note fasst Frequenz und Dauer zusammen. Das Array melody[] ist unsere Partitur — eine Zeile pro Note.",
+            "explain_en": "The Note struct pairs a frequency with a duration. The melody[] array is our score — one line per note."
+          },
+          {
+            "from": 32,
+            "to": 32,
+            "explain_de": "sizeof(melody) / sizeof(melody[0]) zählt die Noten automatisch — du kannst Noten hinzufügen, ohne diese Zahl manuell anzupassen.",
+            "explain_en": "sizeof(melody) / sizeof(melody[0]) counts notes automatically — add more notes without manually updating a counter."
+          },
+          {
+            "from": 34,
+            "to": 39,
+            "explain_de": "playNote() startet den Ton, wartet die gewünschte Dauer, stoppt dann kurz (50 ms Stille) — so klingen gleiche Noten hintereinander nicht wie eine lange Note.",
+            "explain_en": "playNote() starts the tone, waits for the duration, then briefly silences (50 ms) — so repeated notes don't blur into one long beep."
+          },
+          {
+            "from": 41,
+            "to": 44,
+            "explain_de": "ledcSetup konfiguriert den PWM-Kanal, ledcAttachPin verbindet ihn mit GPIO 25.",
+            "explain_en": "ledcSetup configures the PWM channel, ledcAttachPin connects it to GPIO 25."
+          },
+          {
+            "from": 46,
+            "to": 51,
+            "explain_de": "loop() spielt die Melodie einmal durch und wartet 2 Sekunden, bevor es von vorn beginnt.",
+            "explain_en": "loop() plays through the melody once, then waits 2 seconds before starting over."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was passiert jetzt?",
+      "title_en": "What happens now?",
+      "body_de": "Nach dem Upload hörst du sofort die ersten acht Noten von „Alle meine Entchen\" — dann eine kurze Pause, dann wieder. Ändere eine Zahl in melody[] und höre, wie sich der Ton verändert.",
+      "body_en": "Right after uploading you'll hear the first eight notes of \"Twinkle Twinkle\" — then a short pause, then it repeats. Change one number in melody[] and hear the difference.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Was passiert, wenn du bei einem Ton 262 Hz durch 524 Hz ersetzt?",
+      "body_en": "What happens when you replace 262 Hz with 524 Hz for a note?",
+      "payload": {
+        "prompt_de": "Was passiert, wenn du bei einem Ton 262 Hz durch 524 Hz ersetzt?",
+        "prompt_en": "What happens when you replace 262 Hz with 524 Hz for a note?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Der Ton wird doppelt so laut.",
+            "label_en": "The note plays twice as loud."
+          },
+          {
+            "key": "b",
+            "label_de": "Der Ton klingt eine Oktave höher — gleicher Ton, aber höherer Klang.",
+            "label_en": "The note sounds one octave higher — same note name, but a higher pitch."
+          },
+          {
+            "key": "c",
+            "label_de": "Der Ton dauert doppelt so lang.",
+            "label_en": "The note plays for twice as long."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Dein ESP32 macht Musik!",
+      "title_en": "Your ESP32 makes music!",
+      "body_de": "Du hast gerade deinen ersten Code-Komponisten gebaut. Füge einfach mehr Zeilen ins melody[]-Array ein — und spiel dein Lieblingslied. In der nächsten Lesson kombinieren wir Licht und Ton.",
+      "body_en": "You just built your first code composer. Add more lines to the melody[] array and play your favourite song. In the next lesson we combine light and sound.",
+      "payload": {
+        "xpAward": 100
+      }
+    }
+  ]
+}

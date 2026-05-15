@@ -1,0 +1,134 @@
+{
+  "slug": "esp32-mpu6050-gyro",
+  "title_de": "Gyroskop: Lage im Raum erkennen",
+  "title_en": "Gyroscope: detect orientation in space",
+  "summary_de": "Der MPU-6050 hat 6 Achsen: Beschleunigung (oben/unten, links/rechts, vor/zurück) und Rotation. Du liest die Werte aus und erkennst, in welche Richtung der Sensor gekippt wird.",
+  "summary_en": "The MPU-6050 has 6 axes: acceleration (up/down, left/right, front/back) and rotation. You'll read the values and detect which way the sensor is being tilted.",
+  "estimatedMinutes": 18,
+  "xpReward": 130,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein Lage-Erkennungssystem: Kippst du das Board nach links oder rechts, schreibt der serielle Monitor sofort, in welche Richtung du es hältst.",
+      "body_en": "An orientation detector: tilt the board left or right and the serial monitor instantly tells you which way it's pointing.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Den MPU-6050 bekommst du als günstiges GY-521-Breakout-Board — der I²C-Pull-Up ist schon drauf, du brauchst keine extra Widerstände.",
+      "body_en": "The MPU-6050 comes as the popular GY-521 breakout board — I²C pull-ups are built in, no extra resistors needed.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was bedeutet 6-DOF?",
+      "title_en": "What does 6-DOF mean?",
+      "body_de": "DOF steht für „Degrees of Freedom\" — Freiheitsgrade. Drei davon messen Beschleunigung: vorwärts/rückwärts, links/rechts und hoch/runter. Die anderen drei messen Drehung um jede dieser Achsen. Selbst flach auf dem Tisch zeigt der Sensor ~9,8 m/s² nach oben — die Erdanziehung zieht ihn nach unten, das ist die Gegenkraft.",
+      "body_en": "DOF stands for Degrees of Freedom. Three measure acceleration: forward/back, left/right, up/down. The other three measure rotation around each axis. Even sitting flat on a desk the sensor reads ~9.8 m/s² upward — gravity pulls it down, and that's the reaction force.",
+      "payload": {
+        "keyPoint_de": "Schwerkraft ist immer messbar: ein ruhender Sensor zeigt ~9,8 m/s² — genau das nutzen wir, um die Lage zu erkennen.",
+        "keyPoint_en": "Gravity is always there: a still sensor reads ~9.8 m/s² — that's exactly what we use to detect orientation."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "VCC des Moduls an 3,3 V, GND an GND, SCL an GPIO 22, SDA an GPIO 21 — das sind die Standard-I²C-Pins des ESP32.",
+      "body_en": "Module VCC to 3.3 V, GND to GND, SCL to GPIO 22, SDA to GPIO 21 — those are the ESP32's default I²C pins.",
+      "payload": {
+        "instruction_de": "Wichtig: VCC unbedingt an 3,3 V, NICHT 5 V — das GY-521-Board verträgt 5 V zwar oft, aber der ESP32-Eingang nicht. Auf der sicheren Seite bleibst du mit 3,3 V.",
+        "instruction_en": "Important: always use 3.3 V, NOT 5 V — the GY-521 board sometimes tolerates 5 V, but the ESP32 inputs don't. Stick to 3.3 V to stay safe."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Installiere zuerst die Bibliothek „Adafruit MPU6050\" im Bibliotheksverwalter der Arduino IDE.",
+      "body_en": "First install the \"Adafruit MPU6050\" library via the Arduino IDE Library Manager.",
+      "payload": {
+        "code": "// ESP32 — MPU-6050 Lage erkennen\n#include <Adafruit_MPU6050.h>\n#include <Adafruit_Sensor.h>\n#include <Wire.h>\n\nAdafruit_MPU6050 mpu;\n\nvoid setup() {\n  Serial.begin(115200);\n  if (!mpu.begin()) {\n    Serial.println(\"MPU-6050 nicht gefunden!\");\n    while (true) delay(10);\n  }\n  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);\n  Serial.println(\"MPU-6050 bereit.\");\n}\n\nvoid loop() {\n  sensors_event_t a, g, temp;\n  mpu.getEvent(&a, &g, &temp);\n\n  Serial.print(\"X: \"); Serial.print(a.acceleration.x);\n  Serial.print(\"  Y: \"); Serial.print(a.acceleration.y);\n  Serial.print(\"  Z: \"); Serial.println(a.acceleration.z);\n\n  if (a.acceleration.x > 5) {\n    Serial.println(\" → nach rechts gekippt\");\n  } else if (a.acceleration.x < -5) {\n    Serial.println(\" → nach links gekippt\");\n  } else if (a.acceleration.z < 5) {\n    Serial.println(\" → senkrecht gestellt\");\n  } else {\n    Serial.println(\" → liegt flach\");\n  }\n\n  delay(500);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 6,
+            "explain_de": "Drei Libraries laden: die MPU6050-Treiber-Lib, das allgemeine Adafruit-Sensor-Interface und Wire für I²C. Dann das Sensor-Objekt anlegen.",
+            "explain_en": "Load three libraries: the MPU6050 driver, the generic Adafruit sensor interface, and Wire for I²C. Then create the sensor object."
+          },
+          {
+            "from": 8,
+            "to": 15,
+            "explain_de": "setup(): Sensor initialisieren. Wenn er nicht antwortet, bleibt das Programm in einer Endlos-Schleife — so siehst du sofort, ob die Verkabelung stimmt.",
+            "explain_en": "setup(): initialize the sensor. If it doesn't respond, the program halts in an infinite loop — you'll spot wiring problems immediately."
+          },
+          {
+            "from": 18,
+            "to": 23,
+            "explain_de": "sensors_event_t ist ein Standard-Container der Adafruit-Lib. getEvent() füllt ihn mit frischen Messwerten. Dann alle drei Achsen-Werte ausgeben.",
+            "explain_en": "sensors_event_t is a standard Adafruit container. getEvent() fills it with fresh readings. We then print all three axis values."
+          },
+          {
+            "from": 25,
+            "to": 33,
+            "explain_de": "Schwellwert-Logik: Übersteigt X den Wert 5 m/s², ist der Sensor zur Seite gekippt. Fällt Z unter 5 m/s², steht er senkrecht. Sonst liegt er flach.",
+            "explain_en": "Threshold logic: if X exceeds 5 m/s² the sensor is tilted sideways. If Z drops below 5 m/s² it's standing upright. Otherwise it's lying flat."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du im seriellen Monitor?",
+      "title_en": "What do you see in the serial monitor?",
+      "body_de": "Liegst du das Board flach auf den Tisch, zeigt Z etwa 9,8 und X/Y nahe 0 — plus die Meldung „liegt flach\". Kippst du es zur Seite, springt X auf über 5 und die Richtungsmeldung wechselt sofort.",
+      "body_en": "With the board flat on the table, Z shows about 9.8 and X/Y near 0 — along with the message \"liegt flach\". Tilt it sideways and X jumps above 5, switching the direction message instantly.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum zeigt der MPU-6050 auch im Ruhezustand einen Wert von ~9,8 m/s² auf der Z-Achse?",
+      "body_en": "Why does the MPU-6050 show ~9.8 m/s² on the Z axis even when completely still?",
+      "payload": {
+        "prompt_de": "Warum zeigt der MPU-6050 auch im Ruhezustand einen Wert von ~9,8 m/s² auf der Z-Achse?",
+        "prompt_en": "Why does the MPU-6050 show ~9.8 m/s² on the Z axis even when completely still?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Der Sensor ist falsch kalibriert und hat einen Fehler.",
+            "label_en": "The sensor is miscalibrated and has an offset error."
+          },
+          {
+            "key": "b",
+            "label_de": "Er misst die Erdanziehungskraft — die wirkt immer, auch wenn sich nichts bewegt.",
+            "label_en": "It's measuring gravitational acceleration — that's always present, even when nothing moves."
+          },
+          {
+            "key": "c",
+            "label_de": "Die I²C-Leitung überträgt einen Störimpuls.",
+            "label_en": "The I²C line is transmitting a glitch signal."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Klasse gemacht!",
+      "title_en": "Well done!",
+      "body_de": "Dein ESP32 weiß jetzt, wie er im Raum liegt. Als nächstes lernst du, wie du aus diesen Rohwerten einen echten Neigungswinkel in Grad berechnest.",
+      "body_en": "Your ESP32 now knows how it's oriented in space. Next up: turning these raw values into an actual tilt angle in degrees.",
+      "payload": {
+        "xpAward": 130
+      }
+    }
+  ]
+}

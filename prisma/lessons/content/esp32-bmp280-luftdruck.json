@@ -1,0 +1,126 @@
+{
+  "slug": "esp32-bmp280-luftdruck",
+  "title_de": "Luftdruck & Höhe: dein eigenes Barometer",
+  "title_en": "Pressure & altitude: your own barometer",
+  "summary_de": "Der BMP280 misst Luftdruck und Temperatur. Aus dem Druck berechnest du sogar die Höhe über dem Meer. Erstes Projekt mit dem I²C-Bus — nur zwei Drähte für Daten.",
+  "summary_en": "The BMP280 measures pressure and temperature. From pressure you can even derive altitude above sea level. Your first project using the I²C bus — just two data wires.",
+  "estimatedMinutes": 15,
+  "xpReward": 110,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein Mini-Barometer: alle 2 Sekunden zeigt der serielle Monitor Luftdruck, Temperatur und deine aktuelle Höhe über dem Meer.",
+      "body_en": "A mini barometer: every 2 seconds the serial monitor shows air pressure, temperature and your current altitude above sea level.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Nimm ein BMP280-Breakout-Board — die meisten haben schon alle nötigen Kondensatoren drauf und einen 3,3-V-Regler.",
+      "body_en": "Grab a BMP280 breakout board — most already have the necessary capacitors and a 3.3 V regulator on board.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was ist der I²C-Bus?",
+      "title_en": "What is the I²C bus?",
+      "body_de": "I²C nutzt nur zwei Leitungen: SDA (Daten) und SCL (Takt). Viele Sensoren teilen sich exakt diese beiden Drähte. Jeder Sensor hat eine eindeutige Adresse — beim BMP280 ist das 0x76 oder 0x77. Der ESP32 ruft jeden Sensor einzeln beim Namen auf.",
+      "body_en": "I²C uses just two lines: SDA (data) and SCL (clock). Many sensors share exactly those two wires. Each sensor has a unique address — for the BMP280 that's 0x76 or 0x77. The ESP32 calls each sensor by name.",
+      "payload": {
+        "keyPoint_de": "Zwei Drähte reichen für viele Sensoren gleichzeitig — I²C macht das möglich.",
+        "keyPoint_en": "Two wires are enough for many sensors at once — that's the magic of I²C."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "BMP280-Modul: VCC an 3,3 V am ESP32, GND an GND, SDA an GPIO 21, SCL an GPIO 22.",
+      "body_en": "BMP280 module: VCC to 3.3 V on the ESP32, GND to GND, SDA to GPIO 21, SCL to GPIO 22.",
+      "payload": {
+        "instruction_de": "Manche Module beschriften den Pin „SDI\" statt „SDA\" — gemeint ist dasselbe. Falls du mehrere I²C-Sensoren planst, hängst du sie einfach parallel an dieselben Pins.",
+        "instruction_en": "Some modules label the pin \"SDI\" instead of \"SDA\" — same thing. If you plan to add more I²C sensors later, just connect them in parallel to the same pins."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Installiere „Adafruit BMP280 Library\" und „Adafruit Unified Sensor\" im Bibliotheksverwalter der Arduino IDE.",
+      "body_en": "Install \"Adafruit BMP280 Library\" and \"Adafruit Unified Sensor\" via the Arduino IDE library manager.",
+      "payload": {
+        "code": "// ESP32 — BMP280 Luftdruck, Temperatur & Höhe\n#include <Wire.h>\n#include <Adafruit_BMP280.h>\n\nAdafruit_BMP280 bmp;\n\nvoid setup() {\n  Serial.begin(115200);\n  if (!bmp.begin(0x76)) {\n    Serial.println(\"BMP280 nicht gefunden — Adresse prüfen!\");\n    while (true) {}\n  }\n  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,\n                  Adafruit_BMP280::SAMPLING_X2,\n                  Adafruit_BMP280::SAMPLING_X16,\n                  Adafruit_BMP280::FILTER_X16,\n                  Adafruit_BMP280::STANDBY_MS_500);\n}\n\nvoid loop() {\n  float temperature = bmp.readTemperature();\n  float pressure    = bmp.readPressure() / 100.0;\n  float altitude    = bmp.readAltitude(1013.25);\n\n  Serial.print(\"Temp: \");\n  Serial.print(temperature);\n  Serial.print(\" °C  |  Druck: \");\n  Serial.print(pressure);\n  Serial.print(\" hPa  |  Höhe: \");\n  Serial.print(altitude);\n  Serial.println(\" m\");\n\n  delay(2000);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 5,
+            "explain_de": "Wire.h aktiviert den I²C-Bus, Adafruit_BMP280.h lädt die Sensor-Library. Dann erzeugen wir das Sensor-Objekt.",
+            "explain_en": "Wire.h enables the I²C bus, Adafruit_BMP280.h loads the sensor library. Then we create the sensor object."
+          },
+          {
+            "from": 7,
+            "to": 17,
+            "explain_de": "setup(): Monitor starten, Sensor mit Adresse 0x76 initialisieren. Schlägt begin() fehl, hält das Programm an — so siehst du sofort, wenn etwas falsch verkabelt ist. setSampling() konfiguriert Auflösung und Rauschfilter.",
+            "explain_en": "setup(): start the monitor, initialise the sensor at address 0x76. If begin() fails the program halts — so you notice bad wiring immediately. setSampling() configures resolution and noise filter."
+          },
+          {
+            "from": 20,
+            "to": 22,
+            "explain_de": "readPressure() liefert Pascal — durch 100 dividieren ergibt Hektopascal (hPa). readAltitude() braucht den aktuellen Meeresspiegel-Standarddruck (1013,25 hPa) zum Rechnen.",
+            "explain_en": "readPressure() returns Pascals — divide by 100 to get hectopascals (hPa). readAltitude() needs the standard sea-level pressure (1013.25 hPa) to calculate altitude."
+          },
+          {
+            "from": 24,
+            "to": 31,
+            "explain_de": "Alle drei Werte auf den seriellen Monitor schreiben, dann 2 Sekunden warten.",
+            "explain_en": "Print all three values to the serial monitor, then wait 2 seconds."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum teilen sich mehrere I²C-Sensoren problemlos dieselben zwei Datenleitungen?",
+      "body_en": "Why can multiple I²C sensors share the same two data lines without conflict?",
+      "payload": {
+        "prompt_de": "Warum teilen sich mehrere I²C-Sensoren problemlos dieselben zwei Datenleitungen?",
+        "prompt_en": "Why can multiple I²C sensors share the same two data lines without conflict?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Jeder Sensor hat eine eindeutige Adresse — der ESP32 spricht immer nur einen gezielt an.",
+            "label_en": "Each sensor has a unique address — the ESP32 only ever talks to one at a time."
+          },
+          {
+            "key": "b",
+            "label_de": "Die Sensoren senden abwechselnd im Sekundentakt automatisch.",
+            "label_en": "The sensors automatically take turns sending every second."
+          },
+          {
+            "key": "c",
+            "label_de": "SDA und SCL übertragen Daten und Spannung gleichzeitig, deshalb braucht jeder Sensor nur zwei Pins.",
+            "label_en": "SDA and SCL carry both data and power simultaneously, so each sensor only needs two pins."
+          }
+        ],
+        "correctKey": "a"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Barometer — fertig!",
+      "title_en": "Barometer — done!",
+      "body_de": "Du hast deinen ersten I²C-Sensor in Betrieb genommen. Schau mal, wie sich die Höhenanzeige verändert, wenn du das Board eine Treppe rauf- oder runterträgst. Als Nächstes kombinieren wir mehrere Sensoren auf demselben Bus.",
+      "body_en": "You just got your first I²C sensor up and running. Watch the altitude reading change as you carry the board up or down a flight of stairs. Next up: combining multiple sensors on the same bus.",
+      "payload": {
+        "xpAward": 110
+      }
+    }
+  ]
+}

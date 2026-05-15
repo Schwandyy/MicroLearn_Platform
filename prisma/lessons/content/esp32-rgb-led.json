@@ -1,0 +1,134 @@
+{
+  "slug": "esp32-rgb-led",
+  "title_de": "RGB-LED: Farben mischen",
+  "title_en": "RGB LED: mix colors",
+  "summary_de": "Eine RGB-LED hat drei LEDs in einem Gehäuse: Rot, Grün und Blau. Über PWM mischst du jede Farbe stufenlos – von Sonnengelb bis Türkis. Der Einstieg ins Thema „Additive Farbmischung\".",
+  "summary_en": "An RGB LED has three LEDs in one package: red, green, blue. With PWM you mix any color smoothly — from sunshine yellow to teal. Your gateway to additive color mixing.",
+  "estimatedMinutes": 14,
+  "xpReward": 110,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Eine einzelne LED leuchtet automatisch in Orange, Türkis und Magenta auf — und das alles mit nur einem Bauteil.",
+      "body_en": "A single LED cycles through orange, teal and magenta automatically — all from one tiny component.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Wir nutzen eine RGB-LED mit 5 mm Durchmesser, Common-Cathode (vier Beine: R, GND, G, B) — plus drei Vorwiderstände (je 220 Ω, einen pro Farbkanal).",
+      "body_en": "We use a 5 mm RGB LED in common-cathode configuration (four legs: R, GND, G, B) — plus three resistors (220 Ω each, one per color channel).",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Additive Farbmischung — wie funktioniert das?",
+      "title_en": "Additive color mixing — how does it work?",
+      "body_de": "Drinnen sitzen drei winzige LEDs: Rot, Grün und Blau. Je heller du jede einzelne machst, desto mehr Farbanteile mischt du. Rot + Grün ergibt Gelb, Grün + Blau ergibt Türkis, Rot + Blau ergibt Magenta — und alle drei voll auf 255 geben Weiß. Mit PWM kannst du jeden Kanal von 0 bis 255 einstellen. Common-Cathode bedeutet: das lange Bein ist GND, jede Farbe bekommt Spannung auf ihren eigenen Pin.",
+      "body_en": "Inside sit three tiny LEDs: red, green and blue. The brighter each one, the more color you mix in. Red + green = yellow, green + blue = teal, red + blue = magenta — all three at 255 gives white. PWM lets you dial each channel from 0 to 255. Common-cathode means the long leg goes to GND, and each color gets voltage on its own pin.",
+      "payload": {
+        "keyPoint_de": "Jede Farbe ist ein eigener PWM-Kanal — du mischst durch Zahlen von 0 bis 255.",
+        "keyPoint_en": "Each color is its own PWM channel — mix by choosing numbers from 0 to 255."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Das längste Bein (GND) kommt ins Minusrail des Steckbretts. Die drei anderen Beine — Rot, Grün, Blau — bekommen je einen 220-Ω-Widerstand in Reihe. Roter Kanal: Widerstand → GPIO 25. Grüner Kanal: Widerstand → GPIO 26. Blauer Kanal: Widerstand → GPIO 27. GND-Rail verbindest du mit GND am ESP32.",
+      "body_en": "The longest leg (GND) goes to the minus rail on the breadboard. The three other legs — red, green, blue — each get a 220 Ω resistor in series. Red channel: resistor → GPIO 25. Green channel: resistor → GPIO 26. Blue channel: resistor → GPIO 27. Connect the GND rail to GND on the ESP32.",
+      "payload": {
+        "instruction_de": "Bei einer Common-Anode-LED das lange Bein an 3,3 V hängen und die Logik umkehren: 255 = aus, 0 = voll an. Außerdem ledcWrite-Werte invertieren (255 − gewünschter Wert).",
+        "instruction_en": "For a common-anode LED connect the long leg to 3.3 V and invert the logic: 255 = off, 0 = full on. Invert your ledcWrite values accordingly (255 minus desired value)."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Kein extra Library nötig — PWM ist schon im ESP32-Arduino-Framework dabei.",
+      "body_en": "No extra library needed — PWM is built right into the ESP32 Arduino framework.",
+      "payload": {
+        "code": "// ESP32 — RGB-LED Farbwechsel\n\n#define PIN_R 25\n#define PIN_G 26\n#define PIN_B 27\n\n#define CH_R 0\n#define CH_G 1\n#define CH_B 2\n\n#define PWM_FREQ 5000\n#define PWM_RES  8\n\nvoid setColor(uint8_t r, uint8_t g, uint8_t b) {\n  ledcWrite(CH_R, r);\n  ledcWrite(CH_G, g);\n  ledcWrite(CH_B, b);\n}\n\nvoid setup() {\n  ledcSetup(CH_R, PWM_FREQ, PWM_RES);\n  ledcSetup(CH_G, PWM_FREQ, PWM_RES);\n  ledcSetup(CH_B, PWM_FREQ, PWM_RES);\n\n  ledcAttachPin(PIN_R, CH_R);\n  ledcAttachPin(PIN_G, CH_G);\n  ledcAttachPin(PIN_B, CH_B);\n}\n\nvoid loop() {\n  // Orange: Rot voll, Grün halb, kein Blau\n  setColor(255, 128, 0);\n  delay(1000);\n\n  // Türkis: kein Rot, Grün voll, Blau voll\n  setColor(0, 255, 200);\n  delay(1000);\n\n  // Magenta: Rot voll, kein Grün, Blau voll\n  setColor(255, 0, 255);\n  delay(1000);\n}",
+        "lines": [
+          {
+            "from": 3,
+            "to": 11,
+            "explain_de": "GPIO-Pins und Kanal-Nummern definieren. PWM-Frequenz 5000 Hz und 8-Bit-Auflösung (0–255) festlegen.",
+            "explain_en": "Define GPIO pins and channel numbers. Set PWM frequency to 5000 Hz and 8-bit resolution (0–255)."
+          },
+          {
+            "from": 13,
+            "to": 17,
+            "explain_de": "Hilfsfunktion setColor(): schreibt mit einem Aufruf alle drei Kanäle auf einmal.",
+            "explain_en": "Helper function setColor(): updates all three channels in one call."
+          },
+          {
+            "from": 19,
+            "to": 26,
+            "explain_de": "setup(): jeden Kanal einrichten (Frequenz, Auflösung) und dann mit seinem GPIO-Pin verbinden.",
+            "explain_en": "setup(): configure each channel (frequency, resolution), then attach it to its GPIO pin."
+          },
+          {
+            "from": 28,
+            "to": 41,
+            "explain_de": "loop(): drei Farben für je 1 Sekunde setzen — die RGB-Zahlen zeigen genau die additive Mischung.",
+            "explain_en": "loop(): set three colors for 1 second each — the RGB numbers show the additive mix directly."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was passiert auf dem Board?",
+      "title_en": "What happens on the board?",
+      "body_de": "Die LED wechselt alle Sekunde die Farbe: erst ein warmes Orange, dann klares Türkis, dann leuchtendes Magenta — in einer Endlosschleife.",
+      "body_en": "The LED changes color every second: first a warm orange, then crisp teal, then vivid magenta — repeating forever.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Welche RGB-Werte ergeben Gelb?",
+      "body_en": "Which RGB values produce yellow?",
+      "payload": {
+        "prompt_de": "Welche RGB-Werte ergeben Gelb?",
+        "prompt_en": "Which RGB values produce yellow?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "R=255, G=0, B=255",
+            "label_en": "R=255, G=0, B=255"
+          },
+          {
+            "key": "b",
+            "label_de": "R=255, G=255, B=0",
+            "label_en": "R=255, G=255, B=0"
+          },
+          {
+            "key": "c",
+            "label_de": "R=0, G=255, B=255",
+            "label_en": "R=0, G=255, B=255"
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Gut gemacht!",
+      "title_en": "Nice work!",
+      "body_de": "Du mischst jetzt Farben per Code — wie ein Bildschirm-Pixel, nur zum Anfassen. Als Nächstes lernst du, wie du sanfte Übergänge animierst.",
+      "body_en": "You're now mixing colors in code — just like a screen pixel, but physical. Next up: smooth color transitions with animations.",
+      "payload": {
+        "xpAward": 110
+      }
+    }
+  ]
+}

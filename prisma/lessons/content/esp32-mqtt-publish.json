@@ -1,0 +1,159 @@
+{
+  "slug": "esp32-mqtt-publish",
+  "title_de": "MQTT: Daten in die Welt senden",
+  "title_en": "MQTT: send data into the world",
+  "summary_de": "MQTT ist das WhatsApp der IoT-Welt. Dein ESP32 verbindet sich mit WLAN, dann mit einem öffentlichen Test-Broker (HiveMQ), und schickt jede Sekunde eine Zahl in ein Topic. Du siehst die Daten live in einem Browser-Client.",
+  "summary_en": "MQTT is the WhatsApp of IoT. Your ESP32 connects to WiFi, then to a public test broker (HiveMQ), and publishes a number to a topic every second. You'll see the data live in a browser client.",
+  "estimatedMinutes": 25,
+  "xpReward": 170,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Dein ESP32 zählt hoch — und sendet jeden Zählwert live über das Internet. Im Browser siehst du die Zahlen ankommen, ohne irgendwas zu installieren.",
+      "body_en": "Your ESP32 counts upward — and sends every value live over the internet. You'll watch the numbers arrive in a browser tab, no extra software needed."
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Nur dein ESP32-Board, ein USB-Kabel, WLAN-Zugang und einen Browser — keine zusätzliche Hardware nötig.",
+      "body_en": "Just your ESP32 board, a USB cable, WiFi access and a browser — no extra hardware required."
+    },
+    {
+      "kind": "SETUP",
+      "title_de": "Software vorbereiten",
+      "title_en": "Prepare your software",
+      "body_de": "Einmal kurz einrichten — dann kann's losgehen.",
+      "body_en": "A quick setup — then you're ready to go.",
+      "payload": {
+        "checklist": [
+          {
+            "de": "Arduino IDE öffnen → Sketch → Bibliotheken verwalten → „PubSubClient\" von Nick O'Leary suchen und installieren.",
+            "en": "Open Arduino IDE → Sketch → Manage Libraries → search for \"PubSubClient\" by Nick O'Leary and install it."
+          },
+          {
+            "de": "Browser öffnen und zu https://www.hivemq.com/demos/websocket-client/ navigieren.",
+            "en": "Open a browser and go to https://www.hivemq.com/demos/websocket-client/"
+          },
+          {
+            "de": "Im HiveMQ Web Client auf „Connect\" klicken (Standardeinstellungen lassen).",
+            "en": "Click \"Connect\" in the HiveMQ web client (leave default settings)."
+          },
+          {
+            "de": "Im Feld „Subscriptions\" das Topic microlearn/TEST/counter eintragen und auf „Subscribe\" klicken — du empfängst später hier deine Werte.",
+            "en": "In the \"Subscriptions\" field enter the topic microlearn/TEST/counter and click \"Subscribe\" — your values will appear here shortly."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Was ist MQTT überhaupt?",
+      "title_en": "What is MQTT anyway?",
+      "body_de": "Stell dir einen Briefkasten vor, der im Internet steht — der Broker. Du (Publisher) wirfst Briefe rein. Andere (Subscriber) holen die raus. Jeder Brief landet in einem bestimmten Fach: dem Topic. Dein ESP32 ist der Absender, dein Browser ist der Empfänger — beide treffen sich beim Broker, ohne sich direkt kennen zu müssen.",
+      "body_en": "Picture a mailbox sitting on the internet — that's the broker. You (the publisher) drop letters in. Others (subscribers) pick them up. Each letter goes into a specific slot: the topic. Your ESP32 is the sender, your browser is the receiver — they meet at the broker without ever talking directly.",
+      "payload": {
+        "keyPoint_de": "Broker = Vermittler. Publisher und Subscriber müssen nie gleichzeitig online sein oder voneinander wissen.",
+        "keyPoint_en": "Broker = middleman. Publisher and subscriber never need to know about each other or be online at the same time."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Trag deine WLAN-Daten bei den Konstanten oben ein. Das Topic kannst du personalisieren — ersetze TEST durch irgendwas Einzigartiges.",
+      "body_en": "Fill in your WiFi credentials in the constants at the top. Feel free to personalise the topic — replace TEST with something unique.",
+      "payload": {
+        "code": "#include <WiFi.h>\n#include <PubSubClient.h>\n\n// Hier deine WLAN-Daten\nconst char* ssid     = \"DEIN_WLAN_NAME\";\nconst char* password = \"DEIN_PASSWORT\";\n\nconst char* broker = \"broker.hivemq.com\";\nconst int   port   = 1883;\nconst char* topic  = \"microlearn/TEST/counter\";\n\nWiFiClient   wifiClient;\nPubSubClient mqttClient(wifiClient);\n\nlong  counter    = 0;\nunsigned long lastPublish = 0;\n\nvoid connectWiFi() {\n  Serial.print(\"WLAN verbinden\");\n  WiFi.begin(ssid, password);\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(500);\n    Serial.print(\".\");\n  }\n  Serial.println(\" verbunden!\");\n}\n\nvoid reconnectMQTT() {\n  while (!mqttClient.connected()) {\n    String clientId = \"microlearn-\" + String((uint32_t)ESP.getEfuseMac(), HEX);\n    Serial.print(\"MQTT verbinden … \");\n    if (mqttClient.connect(clientId.c_str())) {\n      Serial.println(\"OK\");\n    } else {\n      Serial.print(\"Fehler: \");\n      Serial.println(mqttClient.state());\n      delay(3000);\n    }\n  }\n}\n\nvoid setup() {\n  Serial.begin(115200);\n  connectWiFi();\n  mqttClient.setServer(broker, port);\n}\n\nvoid loop() {\n  if (!mqttClient.connected()) {\n    reconnectMQTT();\n  }\n  mqttClient.loop();\n\n  if (millis() - lastPublish >= 1000) {\n    lastPublish = millis();\n    String payload = String(counter++);\n    mqttClient.publish(topic, payload.c_str());\n    Serial.println(\"Gesendet: \" + payload);\n  }\n}",
+        "lines": [
+          {
+            "from": 1,
+            "to": 2,
+            "explain_de": "WiFi-Library (ESP32-intern) und PubSubClient laden.",
+            "explain_en": "Load the built-in WiFi library and PubSubClient."
+          },
+          {
+            "from": 4,
+            "to": 10,
+            "explain_de": "WLAN-Zugangsdaten, Broker-Adresse, Port und Topic als Konstanten — leicht austauschbar.",
+            "explain_en": "WiFi credentials, broker address, port and topic as constants — easy to change."
+          },
+          {
+            "from": 12,
+            "to": 13,
+            "explain_de": "Zwei Objekte: wifiClient stellt die TCP-Verbindung her, mqttClient baut MQTT darauf auf.",
+            "explain_en": "Two objects: wifiClient handles the TCP connection, mqttClient builds MQTT on top of it."
+          },
+          {
+            "from": 18,
+            "to": 25,
+            "explain_de": "connectWiFi() wartet in einer Schleife, bis der ESP32 wirklich im WLAN ist — kein Weitermachen ohne Verbindung.",
+            "explain_en": "connectWiFi() loops until the ESP32 is actually connected to WiFi — no proceeding without a link."
+          },
+          {
+            "from": 27,
+            "to": 37,
+            "explain_de": "reconnectMQTT() baut die MQTT-Verbindung auf. Die Client-ID basiert auf der eindeutigen Chip-MAC — damit kollidierst du nicht mit anderen Nutzern des Brokers.",
+            "explain_en": "reconnectMQTT() establishes the MQTT connection. The client ID is derived from the chip's unique MAC address — preventing collisions with other users on the broker."
+          },
+          {
+            "from": 45,
+            "to": 55,
+            "explain_de": "Im Loop: mqttClient.loop() hält die Verbindung am Leben. Alle 1000 ms wird der Zähler als String gepublisht — millis() statt delay(), damit der MQTT-Loop nicht blockiert.",
+            "explain_en": "In the loop: mqttClient.loop() keeps the connection alive. Every 1000 ms the counter is published as a string — using millis() instead of delay() so the MQTT loop never gets blocked."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was siehst du?",
+      "title_en": "What will you see?",
+      "body_de": "Im seriellen Monitor erscheinen die Meldungen „WLAN verbinden … verbunden!\" und „MQTT verbinden … OK\", danach jede Sekunde „Gesendet: 0\", „Gesendet: 1\" usw. Im HiveMQ-Webclient im Browser tauchen exakt dieselben Zahlen als eingehende Nachrichten auf — in Echtzeit aus dem Internet.",
+      "body_en": "The serial monitor shows \"WLAN verbinden … verbunden!\" and \"MQTT verbinden … OK\", then \"Gesendet: 0\", \"Gesendet: 1\" and so on every second. In the HiveMQ web client in your browser those exact numbers appear as incoming messages — live from the internet."
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum muss jede MQTT-Client-ID eindeutig sein?",
+      "body_en": "Why does every MQTT client ID have to be unique?",
+      "payload": {
+        "prompt_de": "Warum muss jede MQTT-Client-ID eindeutig sein?",
+        "prompt_en": "Why does every MQTT client ID have to be unique?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Damit der Broker die Verbindung schneller aufbaut.",
+            "label_en": "So the broker establishes the connection faster."
+          },
+          {
+            "key": "b",
+            "label_de": "Weil der Broker sonst die ältere Verbindung gleicher ID trennt — zwei Geräte würden sich gegenseitig rauswerfen.",
+            "label_en": "Because the broker disconnects the older session with the same ID — two devices would keep kicking each other off."
+          },
+          {
+            "key": "c",
+            "label_de": "Damit das Topic-Name verschlüsselt wird.",
+            "label_en": "So that the topic name gets encrypted."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Dein ESP32 spricht mit der Welt!",
+      "title_en": "Your ESP32 is talking to the world!",
+      "body_de": "Du hast gerade echte IoT-Kommunikation gebaut. Nächster Schritt: statt eines Zählers echte Sensordaten senden — zum Beispiel Temperatur vom DHT22.",
+      "body_en": "You just built real IoT communication from scratch. Next up: publish actual sensor data instead of a counter — like temperature from the DHT22.",
+      "payload": {
+        "xpAward": 170
+      }
+    }
+  ]
+}

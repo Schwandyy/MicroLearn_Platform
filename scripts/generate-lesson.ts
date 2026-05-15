@@ -10,6 +10,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
+import { jsonrepair } from "jsonrepair";
 import type { LessonContent, LessonSpec } from "../prisma/lessons/types";
 
 const ROOT = path.resolve(__dirname, "..");
@@ -310,8 +311,18 @@ async function generateOne(client: Anthropic, spec: LessonSpec, force: boolean):
   let content: LessonContent;
   try {
     content = JSON.parse(jsonText) as LessonContent;
-  } catch (err) {
-    throw new Error(`Konnte JSON für ${spec.slug} nicht parsen: ${(err as Error).message}\n\n--- Rohtext ---\n${text.slice(0, 500)}`);
+  } catch {
+    // Häufiger LLM-Fehler: unescapte Anführungszeichen in Strings.
+    // jsonrepair fixt das robust statt mit Prompt-Engineering nachzulaufen.
+    try {
+      const repaired = jsonrepair(jsonText);
+      content = JSON.parse(repaired) as LessonContent;
+      console.log(`  🛠  ${spec.slug}: JSON via jsonrepair gerettet`);
+    } catch (err) {
+      throw new Error(
+        `Konnte JSON für ${spec.slug} auch nach jsonrepair nicht parsen: ${(err as Error).message}\n\n--- Rohtext ---\n${text.slice(0, 800)}`,
+      );
+    }
   }
 
   // Basis-Sanity-Checks

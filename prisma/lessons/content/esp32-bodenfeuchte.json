@@ -1,0 +1,126 @@
+{
+  "slug": "esp32-bodenfeuchte",
+  "title_de": "Bodenfeuchte: Pflanzenwarnung",
+  "title_en": "Soil moisture: plant alert",
+  "summary_de": "Zwei Metallspitzen in der Erde, ein analoger Wert am ESP32 — das ist die einfachste Form eines smarten Pflanzenwächters. Du baust einen Sensor, der per Serial Monitor warnt, sobald die Erde zu trocken wird.",
+  "summary_en": "Two metal probes in the soil, one analog value at the ESP32 — that's the simplest form of a smart plant guardian. You'll build a sensor that warns via the serial monitor when the soil gets too dry.",
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein einfacher Pflanzenwächter: steckst du den Sensor in trockene Erde, erscheint im seriellen Monitor sofort eine Gieß-Warnung.",
+      "body_en": "A simple plant guardian: push the sensor into dry soil and a watering alert pops up in the serial monitor right away.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Wir nutzen das YL-69-Modul — bestehend aus zwei Zinksonden und einer kleinen Platine mit analogem Ausgang. Ähnliche Module funktionieren genauso.",
+      "body_en": "We're using the YL-69 module — two zinc probes and a small board with an analog output. Similar modules work the same way.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Wie misst der Sensor Feuchtigkeit?",
+      "title_en": "How does the sensor measure moisture?",
+      "body_de": "Feuchte Erde leitet Strom besser als trockene. Zwischen den zwei Metallspitzen fließt ein kleiner Strom — je mehr Wasser, desto weniger Widerstand, desto kleiner der ADC-Wert. Trocken = hoher Wert, nass = niedriger Wert. Das klingt andersrum als erwartet, stimmt aber so.",
+      "body_en": "Moist soil conducts electricity better than dry soil. A tiny current flows between the two probes — more water means less resistance, which means a lower ADC value. Dry = high value, wet = low value. It feels backwards, but that's how it works.",
+      "payload": {
+        "keyPoint_de": "Der ADC-Wert ist umgekehrt proportional zur Bodenfeuchte — map() dreht die Skala für dich um.",
+        "keyPoint_en": "The ADC value is inversely proportional to soil moisture — map() flips the scale for you."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Sensor-Platine: VCC an 3,3 V, GND an GND, AO (analoger Ausgang) an GPIO 34. Den DO-Pin (digital) lassen wir unverbunden.",
+      "body_en": "Sensor board: VCC to 3.3 V, GND to GND, AO (analog output) to GPIO 34. Leave the DO pin (digital) unconnected.",
+      "payload": {
+        "instruction_de": "GPIO 34 am ESP32 ist input-only — kein Pull-Up möglich, aber für analogRead() perfekt geeignet. Falls du ein anderes Board verwendest, wähle einen ADC-fähigen Pin.",
+        "instruction_en": "GPIO 34 on the ESP32 is input-only — no pull-up, but perfect for analogRead(). If you use a different board, pick any ADC-capable pin."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Keine externe Bibliothek nötig — analogRead() ist schon eingebaut.",
+      "body_en": "No external library needed — analogRead() is built right in.",
+      "payload": {
+        "code": "// ESP32 — Bodenfeuchte-Sensor YL-69\n#define SENSOR_PIN 34\n#define DRY_VALUE  3500  // Sensor in der Luft / in trockener Erde messen\n#define WET_VALUE   800  // Sensor in Wasser tauchen und Wert ablesen\n\nvoid setup() {\n  Serial.begin(115200);\n  Serial.println(\"Pflanzenwächter startet...\");\n}\n\nvoid loop() {\n  int raw = analogRead(SENSOR_PIN);\n  int percent = map(raw, DRY_VALUE, WET_VALUE, 0, 100);\n  percent = constrain(percent, 0, 100);\n\n  Serial.print(\"Rohwert: \");\n  Serial.print(raw);\n  Serial.print(\"  |  Feuchte: \");\n  Serial.print(percent);\n  Serial.println(\" %\");\n\n  if (percent < 30) {\n    Serial.println(\"Bitte giessen!\");\n  }\n\n  delay(2000);\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 4,
+            "explain_de": "Pin und Kalibrierwerte als Konstanten — so musst du für Anpassungen nur diese zwei Zeilen ändern.",
+            "explain_en": "Pin and calibration values as constants — to adjust, you only change these two lines."
+          },
+          {
+            "from": 12,
+            "to": 14,
+            "explain_de": "map() rechnet den Rohwert in eine Prozentskala um und dreht dabei die Richtung um. constrain() schneidet Ausreißer ab, die außerhalb 0–100 landen.",
+            "explain_en": "map() converts the raw value to a percentage scale and flips the direction. constrain() clips any outliers that fall outside 0–100."
+          },
+          {
+            "from": 21,
+            "to": 23,
+            "explain_de": "Schwellwert-Check: unter 30 % Feuchte kommt die Gieß-Warnung. Den Wert kannst du frei anpassen.",
+            "explain_en": "Threshold check: below 30 % moisture the watering alert fires. Feel free to adjust that number."
+          },
+          {
+            "from": 25,
+            "to": 25,
+            "explain_de": "Nur alle 2 Sekunden messen. Tipp für später: Sensor über einen extra GPIO mit Strom versorgen und nur kurz einschalten — das verhindert Korrosion durch Dauerbestromung.",
+            "explain_en": "Measure every 2 seconds. Pro tip for later: power the sensor through a spare GPIO and switch it on only briefly — this prevents corrosion from continuous current."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum liest du den Sensor in Luft und in Wasser aus, bevor du ihn nutzt?",
+      "body_en": "Why do you read the sensor in air and in water before using it?",
+      "payload": {
+        "prompt_de": "Warum liest du den Sensor in Luft und in Wasser aus, bevor du ihn nutzt?",
+        "prompt_en": "Why do you read the sensor in air and in water before using it?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Damit der Sensor aufwärmt und genauer wird.",
+            "label_en": "To warm up the sensor so it becomes more accurate."
+          },
+          {
+            "key": "b",
+            "label_de": "Um die Min- und Max-Werte für die eigene Hardware zu finden — jedes Modul ist etwas anders.",
+            "label_en": "To find the min and max values for your specific hardware — every module is slightly different."
+          },
+          {
+            "key": "c",
+            "label_de": "Der ESP32 braucht diese Werte beim Booten.",
+            "label_en": "The ESP32 needs these values during boot."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Pflanzenwächter läuft!",
+      "title_en": "Plant guardian up and running!",
+      "body_de": "Du hast gerade deinen ersten analogen Sensor kalibriert. Als nächstes kannst du einen Summer anschließen — und dein ESP32 piept, wenn die Pflanze Durst hat.",
+      "body_en": "You just calibrated your first analog sensor. Next up: add a buzzer so your ESP32 beeps whenever the plant needs water.",
+      "payload": {
+        "xpAward": 100
+      }
+    }
+  ]
+}

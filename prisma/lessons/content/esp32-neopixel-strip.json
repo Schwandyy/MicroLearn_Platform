@@ -1,0 +1,145 @@
+{
+  "slug": "esp32-neopixel-strip",
+  "title_de": "NeoPixel: jeder LED ihre Farbe",
+  "title_en": "NeoPixel: every LED its own color",
+  "summary_de": "Ein WS2812B-Streifen hat dutzende adressierbare RGB-LEDs an einer einzigen Datenleitung. Du programmierst einen Regenbogen-Lauf und einen sanften Farbverlauf. Sieht aus wie Profi-Lichteffekt — ist in 30 Zeilen Code drin.",
+  "summary_en": "A WS2812B strip carries dozens of addressable RGB LEDs on one data wire. You'll program a rainbow chase and a smooth color fade. Looks like pro lighting — fits in 30 lines of code.",
+  "estimatedMinutes": 18,
+  "xpReward": 130,
+  "safetyNotes_de": "Stromhungrig: 30 mA pro LED bei voller Helligkeit. Bei mehr als 8 LEDs auf voller Helligkeit nicht über USB-VIN versorgen, sondern externes 5V-Netzteil mit gemeinsamer Masse nutzen.",
+  "safetyNotes_en": "Power hungry: 30 mA per LED at full brightness. With more than 8 LEDs at full brightness, don't power from USB VIN — use an external 5V supply with shared ground.",
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Einen Regenbogen, der über deinen LED-Streifen wandert — jede LED leuchtet in einer anderen Farbe, und das in einer Endlosschleife.",
+      "body_en": "A rainbow that glides across your LED strip — each LED glowing in its own color, looping forever.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Nimm einen WS2812B-Streifen mit 8 LEDs — die gängigste und günstigste Variante für Einsteiger. Ein Streifen mit löt-fertigen Anschlusskabeln (5 V / GND / DIN) ist am einfachsten.",
+      "body_en": "Grab a WS2812B strip with 8 LEDs — the most common and affordable option for beginners. A strip with pre-soldered wires (5 V / GND / DIN) is easiest to work with.",
+      "payload": null
+    },
+    {
+      "kind": "SAFETY",
+      "title_de": "Erst lesen, dann anschließen",
+      "title_en": "Read this before you connect anything",
+      "body_de": "8 LEDs bei voller Helligkeit ziehen bis zu 240 mA — das schafft USB noch. Aber: Wir begrenzen die Helligkeit im Code auf 50 von 255. So bleibt alles im sicheren Bereich.",
+      "body_en": "8 LEDs at full brightness pull up to 240 mA — USB can handle that. But we cap brightness in code at 50 out of 255, keeping everything safely within limits.",
+      "payload": {
+        "instruction_de": "Mehr als 8 LEDs oder volle Helligkeit? Externes 5V-Netzteil verwenden und GND des Netzteils mit GND des ESP32 verbinden.",
+        "instruction_en": "More than 8 LEDs or full brightness? Use an external 5V supply and connect its GND to the ESP32 GND."
+      }
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Wie weiß jede LED, welche Farbe sie leuchten soll?",
+      "title_en": "How does each LED know which color to show?",
+      "body_de": "Stell dir eine Schlange vor: Du flüsterst der ersten LED ihre Farbe zu, die gibt alle weiteren Farben einfach weiter — das nennt sich Daisy-Chain. Jede LED hat eine Adresse (Index 0, 1, 2 …). Im Code schreibst du strip.setPixelColor(2, rot) und genau LED Nummer 2 gehorcht.",
+      "body_en": "Think of a chain of whispers: you tell the first LED its color, and it passes the rest along — that's called daisy-chaining. Each LED has an address (index 0, 1, 2 …). In code you write strip.setPixelColor(2, red) and exactly LED number 2 lights up.",
+      "payload": {
+        "keyPoint_de": "Alle LEDs hängen an EINEM Datenkabel — jede reagiert nur auf ihren eigenen Index.",
+        "keyPoint_en": "All LEDs share ONE data wire — each one only reacts to its own index."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "Streifen-Kabel 5V an VIN des ESP32, GND an GND, DIN über einen 470-Ω-Widerstand an GPIO 5. Den Widerstand einfach ins Breadboard stecken, direkt in der Datenleitung.",
+      "body_en": "Strip wire 5V to ESP32 VIN, GND to GND, DIN through a 470 Ω resistor to GPIO 5. Just plug the resistor into the breadboard, right in the data line.",
+      "payload": {
+        "instruction_de": "Kein 470-Ω-Widerstand zur Hand? 330 Ω funktioniert auch. Der Widerstand schützt den Daten-Pin vor Spannungsspitzen.",
+        "instruction_en": "No 470 Ω resistor? 330 Ω works too. The resistor protects the data pin from voltage spikes."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Installiere vorher die Bibliothek „Adafruit NeoPixel\" über den Bibliotheksverwalter der Arduino IDE.",
+      "body_en": "First install the \"Adafruit NeoPixel\" library via the Arduino IDE Library Manager.",
+      "payload": {
+        "code": "#include <Adafruit_NeoPixel.h>\n\n#define PIN      5\n#define NUM_LEDS 8\n\nAdafruit_NeoPixel strip(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);\n\nvoid setup() {\n  strip.begin();\n  strip.setBrightness(50);\n  strip.show();\n}\n\nuint32_t colorWheel(uint8_t pos) {\n  pos = 255 - pos;\n  if (pos < 85)  return strip.Color(255 - pos * 3, 0,           pos * 3);\n  if (pos < 170) return strip.Color(0,           pos * 3 - 255, 255 - pos * 3);\n                 return strip.Color(pos * 3 - 255, 255 - pos * 3, 0);\n}\n\nvoid loop() {\n  static uint8_t hueOffset = 0;\n  for (int i = 0; i < NUM_LEDS; i++) {\n    uint8_t hue = hueOffset + (i * (256 / NUM_LEDS));\n    strip.setPixelColor(i, colorWheel(hue));\n  }\n  strip.show();\n  hueOffset++;\n  delay(20);\n}",
+        "lines": [
+          {
+            "from": 1,
+            "to": 6,
+            "explain_de": "Library laden, Pin und LED-Anzahl festlegen, Streifen-Objekt erzeugen. NEO_GRB + NEO_KHZ800 ist der Standard für WS2812B.",
+            "explain_en": "Load the library, set pin and LED count, create the strip object. NEO_GRB + NEO_KHZ800 is standard for WS2812B."
+          },
+          {
+            "from": 8,
+            "to": 11,
+            "explain_de": "setup(): Streifen starten, Helligkeit auf 50 von 255 begrenzen, alle LEDs einmal ausschalten (show ohne vorherige Farbe = aus).",
+            "explain_en": "setup(): start the strip, cap brightness at 50 out of 255, then blank all LEDs with the first show() call."
+          },
+          {
+            "from": 13,
+            "to": 18,
+            "explain_de": "colorWheel() wandelt eine Zahl 0–255 in eine RGB-Farbe um — so läuft der Regenbogen durch alle Farbtöne.",
+            "explain_en": "colorWheel() converts a number 0–255 into an RGB color — this cycles through the full rainbow."
+          },
+          {
+            "from": 20,
+            "to": 28,
+            "explain_de": "Im Loop wird hueOffset jede Runde um 1 erhöht. Jede LED bekommt einen um ihren Index versetzten Farbton — das ergibt die wandernde Regenbogen-Animation.",
+            "explain_en": "Each loop round hueOffset increments by 1. Every LED gets a hue shifted by its index — that's what creates the moving rainbow effect."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "SIMULATE",
+      "title_de": "Was passiert jetzt?",
+      "title_en": "What happens now?",
+      "body_de": "Sobald du den Code hochlädst, wandert ein sanfter Regenbogen über den Streifen — alle 20 ms ein kleiner Schritt. Du siehst keine Ausgabe im seriellen Monitor, aber dafür leuchtet das Board.",
+      "body_en": "As soon as you upload the code, a smooth rainbow glides across the strip — one small step every 20 ms. Nothing appears in the serial monitor, but your board lights up instead.",
+      "payload": null
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum brauchst du strip.show() nach strip.setPixelColor()?",
+      "body_en": "Why do you need strip.show() after strip.setPixelColor()?",
+      "payload": {
+        "prompt_de": "Warum brauchst du strip.show() nach strip.setPixelColor()?",
+        "prompt_en": "Why do you need strip.show() after strip.setPixelColor()?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "setPixelColor() schaltet die LED sofort ein — show() ist nur optional.",
+            "label_en": "setPixelColor() lights the LED immediately — show() is optional."
+          },
+          {
+            "key": "b",
+            "label_de": "setPixelColor() speichert die Farbe nur im Arbeitsspeicher. show() schickt alle Farben erst auf den Streifen.",
+            "label_en": "setPixelColor() only stores the color in memory. show() is what actually sends all colors to the strip."
+          },
+          {
+            "key": "c",
+            "label_de": "show() erhöht die Helligkeit der LEDs.",
+            "label_en": "show() increases the brightness of the LEDs."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Sieht gut aus!",
+      "title_en": "Looking good!",
+      "body_de": "Du hast adressierbare LEDs im Griff — das ist die Basis für Musik-Visualizer, Smart-Home-Lichtstreifen und Weihnachtsbeleuchtung auf Profi-Niveau. Im nächsten Schritt schickst du Werte übers WLAN.",
+      "body_en": "You've got addressable LEDs under control — that's the foundation for music visualizers, smart home light strips, and seriously impressive holiday lighting. Next up: sending data over Wi-Fi.",
+      "payload": {
+        "xpAward": 130
+      }
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "slug": "esp32-pir-bewegung",
+  "title_de": "PIR: dein eigener Bewegungsmelder",
+  "title_en": "PIR: build your own motion detector",
+  "summary_de": "Ein PIR-Sensor erkennt warme bewegliche Körper — Menschen, Tiere, dich. Du baust den klassischen „Licht-an-wenn-wer-reinkommt\"-Effekt, wie an einer Garageneinfahrt.",
+  "summary_en": "A PIR sensor detects warm moving bodies — humans, animals, you. You'll build the classic \"light on when someone enters\" effect, like a garage motion light.",
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "steps": [
+    {
+      "kind": "INTRO",
+      "title_de": "Was bauen wir?",
+      "title_en": "What are we building?",
+      "body_de": "Ein Bewegungsmelder: eine LED geht an, sobald du dich vor dem Sensor bewegst — und erlischt nach kurzer Zeit wieder.",
+      "body_en": "A motion detector: an LED lights up the moment you move in front of the sensor — and turns off again after a short while.",
+      "payload": null
+    },
+    {
+      "kind": "PARTS",
+      "title_de": "Das brauchst du",
+      "title_en": "What you need",
+      "body_de": "Der HC-SR501 ist die Standard-Variante — weit verbreitet, günstig, hat zwei einstellbare Potis direkt auf der Platine.",
+      "body_en": "The HC-SR501 is the standard choice — widely available, cheap, and has two adjustable trim pots right on the board.",
+      "payload": null
+    },
+    {
+      "kind": "EXPLAIN",
+      "title_de": "Wie erkennt ein PIR Bewegung?",
+      "title_en": "How does a PIR detect motion?",
+      "body_de": "PIR steht für „Passive Infrared\". Der Sensor hat zwei kleine Messflächen nebeneinander. Ein warmer Körper — zum Beispiel du — sendet Infrarotstrahlung aus. Wenn du dich bewegst, trifft diese Strahlung nacheinander auf die zwei Flächen. Der Unterschied zwischen ihnen löst das Signal aus. Steht alles still? Kein Signal.",
+      "body_en": "PIR stands for Passive Infrared. The sensor has two tiny detection cells side by side. A warm body — like you — emits infrared radiation. As you move, that radiation hits one cell after the other. The difference between them triggers the signal. Nothing moving? No signal.",
+      "payload": {
+        "keyPoint_de": "Der PIR misst nicht Wärme, sondern Bewegung von Wärme — der Unterschied zwischen seinen zwei Zellen löst den High-Pegel aus.",
+        "keyPoint_en": "The PIR doesn't just measure heat — it detects moving heat. The difference between its two cells triggers the high signal."
+      }
+    },
+    {
+      "kind": "BUILD",
+      "title_de": "Verkabelung",
+      "title_en": "Wiring",
+      "body_de": "PIR-Sensor: VCC an den 5V-VIN-Pin des ESP32, GND an GND, OUT an GPIO 13. LED: langer Pin (Anode) über einen 220-Ω-Widerstand an GPIO 12, kurzer Pin (Kathode) direkt an GND.",
+      "body_en": "PIR sensor: VCC to the 5V VIN pin on the ESP32, GND to GND, OUT to GPIO 13. LED: long leg (anode) via a 220 Ω resistor to GPIO 12, short leg (cathode) directly to GND.",
+      "payload": {
+        "instruction_de": "Wichtig: Der PIR braucht nach dem Einschalten etwa 30 Sekunden zum Aufwärmen — in dieser Zeit liefert er zufällige Signale. Warte kurz, bevor du ihn testest.",
+        "instruction_en": "Important: the PIR needs about 30 seconds to warm up after power-on — during that time it may give random signals. Wait a moment before testing."
+      }
+    },
+    {
+      "kind": "CODE_WALK",
+      "title_de": "Der Code — Zeile für Zeile",
+      "title_en": "The code — line by line",
+      "body_de": "Kein Library-Import nötig — digitalRead reicht völlig aus.",
+      "body_en": "No library import needed — digitalRead is all it takes.",
+      "payload": {
+        "code": "// ESP32 — PIR Bewegungsmelder\n#define PIR_PIN 13\n#define LED_PIN 12\n\nint lastState = LOW;\n\nvoid setup() {\n  Serial.begin(115200);\n  pinMode(PIR_PIN, INPUT);\n  pinMode(LED_PIN, OUTPUT);\n  Serial.println(\"Aufwaermphase: bitte 30 Sekunden warten...\");\n  delay(30000);\n  Serial.println(\"Bereit!\");\n}\n\nvoid loop() {\n  int motion = digitalRead(PIR_PIN);\n  digitalWrite(LED_PIN, motion);\n  if (motion != lastState) {\n    if (motion == HIGH) {\n      Serial.println(\"Bewegung erkannt!\");\n    } else {\n      Serial.println(\"Keine Bewegung.\");\n    }\n    lastState = motion;\n  }\n}",
+        "lines": [
+          {
+            "from": 2,
+            "to": 5,
+            "explain_de": "Pins als Konstanten definieren, lastState merkt sich den vorherigen Zustand.",
+            "explain_en": "Define pins as constants, lastState remembers the previous state."
+          },
+          {
+            "from": 7,
+            "to": 13,
+            "explain_de": "setup(): serieller Monitor, Pins konfigurieren, 30 Sekunden Aufwärmzeit abwarten.",
+            "explain_en": "setup(): serial monitor, configure pins, wait 30 seconds for the sensor to warm up."
+          },
+          {
+            "from": 16,
+            "to": 17,
+            "explain_de": "PIR auslesen — gibt HIGH (Bewegung) oder LOW (Ruhe) zurück — und das Ergebnis direkt an die LED weitergeben.",
+            "explain_en": "Read the PIR — returns HIGH (motion) or LOW (still) — and pass the result straight to the LED."
+          },
+          {
+            "from": 18,
+            "to": 25,
+            "explain_de": "Nur bei einem Zustandswechsel eine Meldung schreiben, damit der Monitor nicht überflutet wird.",
+            "explain_en": "Only print a message when the state changes, so the monitor doesn't get flooded."
+          }
+        ]
+      }
+    },
+    {
+      "kind": "QUIZ",
+      "title_de": "Kurze Frage",
+      "title_en": "Quick question",
+      "body_de": "Warum liefert der PIR-Sensor direkt nach dem Einschalten manchmal zufällige Signale?",
+      "body_en": "Why does the PIR sensor sometimes give random signals right after power-on?",
+      "payload": {
+        "prompt_de": "Warum liefert der PIR-Sensor direkt nach dem Einschalten manchmal zufällige Signale?",
+        "prompt_en": "Why does the PIR sensor sometimes give random signals right after power-on?",
+        "options": [
+          {
+            "key": "a",
+            "label_de": "Weil der Code noch nicht fertig geladen ist.",
+            "label_en": "Because the code hasn't finished loading yet."
+          },
+          {
+            "key": "b",
+            "label_de": "Weil der Sensor erst seine Referenztemperatur ermitteln muss — das dauert etwa 30 Sekunden.",
+            "label_en": "Because the sensor needs time to establish a reference temperature — that takes about 30 seconds."
+          },
+          {
+            "key": "c",
+            "label_de": "Weil 5V zu viel Spannung für den Sensor sind.",
+            "label_en": "Because 5V is too much voltage for the sensor."
+          }
+        ],
+        "correctKey": "b"
+      }
+    },
+    {
+      "kind": "CELEBRATE",
+      "title_de": "Gut gemacht!",
+      "title_en": "Well done!",
+      "body_de": "Du hast deinen ersten Bewegungsmelder gebaut. Dreh ruhig an den Potis — probiere aus, wie empfindlich und wie lange er reagiert. Als nächstes kannst du statt der LED einen Buzzer oder eine Nachricht ans Handy schicken.",
+      "body_en": "You just built your first motion detector. Try turning the trim pots — play with sensitivity and hold time. Next up: swap the LED for a buzzer, or fire off a notification to your phone.",
+      "payload": {
+        "xpAward": 100
+      }
+    }
+  ]
+}
