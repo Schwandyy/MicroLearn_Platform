@@ -155,7 +155,16 @@
     "heroEyebrow": "Dein erstes Projekt",
     "heroSubtitle": "Keine Vorkenntnisse nötig. Wir bauen gemeinsam eine blinkende LED — Schritt für Schritt.",
     "heroCta": "Los geht's",
-    "boardSelectorHint": "Stell hier ein, welche Mikrocontroller du schon hast — wir schlagen dir dann passende Projekte vor."
+    "boardSelectorHint": "Stell hier ein, welche Mikrocontroller du schon hast — wir schlagen dir dann passende Projekte vor.",
+    "boardSave": "Speichern",
+    "boardSaving": "Speichere…",
+    "boardSaved": "Gespeichert",
+    "boardSaveOk": "Boards gespeichert ✓",
+    "boardSaveOkBody": "{count, plural, =0 {Keine Boards mehr ausgewählt.} =1 {1 Board ausgewählt.} other {# Boards ausgewählt.}}",
+    "boardSaveError": "Speichern fehlgeschlagen.",
+    "boardUnsavedHint": "Du hast Änderungen — klick „Speichern\" damit wir sie übernehmen.",
+    "boardSelectedCount": "{count, plural, =1 {1 Board ausgewählt.} other {# Boards ausgewählt.}}",
+    "boardEmptyHint": "Wähle mindestens ein Board, um passende Projekte vorgeschlagen zu bekommen."
   },
   "common": {
     "loading": "Lädt…",

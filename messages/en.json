@@ -155,7 +155,16 @@
     "heroEyebrow": "Your first project",
     "heroSubtitle": "No prior knowledge needed. We'll build a blinking LED together — step by step.",
     "heroCta": "Let's go",
-    "boardSelectorHint": "Tell us which microcontrollers you have — we'll suggest matching projects."
+    "boardSelectorHint": "Tell us which microcontrollers you have — we'll suggest matching projects.",
+    "boardSave": "Save",
+    "boardSaving": "Saving…",
+    "boardSaved": "Saved",
+    "boardSaveOk": "Boards saved ✓",
+    "boardSaveOkBody": "{count, plural, =0 {No boards selected anymore.} =1 {1 board selected.} other {# boards selected.}}",
+    "boardSaveError": "Saving failed.",
+    "boardUnsavedHint": "You have unsaved changes — click „Save\" to apply them.",
+    "boardSelectedCount": "{count, plural, =1 {1 board selected.} other {# boards selected.}}",
+    "boardEmptyHint": "Pick at least one board so we can suggest matching projects."
   },
   "common": {
     "loading": "Loading…",
