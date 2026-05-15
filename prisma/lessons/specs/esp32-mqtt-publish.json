@@ -1,0 +1,22 @@
+{
+  "slug": "esp32-mqtt-publish",
+  "pathSlug": "anzeige-iot",
+  "courseSlug": "anzeige-und-iot",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 4,
+  "estimatedMinutes": 25,
+  "xpReward": 170,
+  "title_de": "MQTT: Daten in die Welt senden",
+  "title_en": "MQTT: send data into the world",
+  "summary_de": "MQTT ist das WhatsApp der IoT-Welt. Dein ESP32 verbindet sich mit WLAN, dann mit einem öffentlichen Test-Broker (HiveMQ), und schickt jede Sekunde eine Zahl in ein Topic. Du siehst die Daten live in einem Browser-Client.",
+  "summary_en": "MQTT is the WhatsApp of IoT. Your ESP32 connects to WiFi, then to a public test broker (HiveMQ), and publishes a number to a topic every second. You'll see the data live in a browser client.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 }
+  ],
+  "learningGoal": "Lerner verbindet ESP32 mit WLAN (SSID/Passwort), verbindet sich mit dem öffentlichen HiveMQ-Test-Broker, publiziert alle 1 Sekunde einen incrementierten Zähler im Topic „microlearn/<eigeneId>/counter\" und kann das im Webclient live sehen.",
+  "newConcepts": "WLAN-Verbindung mit WiFi.begin/WiFi.status, MQTT-Broker (Publisher/Subscriber/Topic), QoS 0, Client-ID Pflicht (eindeutig), öffentlicher Test-Broker broker.hivemq.com, Web-Client zum Subscribe (HiveMQ Web Client).",
+  "stepOutline": ["INTRO", "PARTS", "SETUP", "EXPLAIN", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 mit Arduino-Framework. Libraries: „PubSubClient\" + native WiFi. WiFi.begin(ssid, password); MQTT: broker = \"broker.hivemq.com\", port = 1883, client.setServer(broker, 1883). reconnect()-Funktion mit eindeutiger Client-ID („microlearn-\" + chipId). Im Loop: client.loop(); alle 1000 ms client.publish(topic, String(counter++).c_str()). Hinweis: PLACEHOLDER für SSID/Password als Konstanten oben mit Kommentar „Hier deine WLAN-Daten\". SETUP-Step zeigt: Library installieren + HiveMQ-WebClient öffnen + auf Topic subscribed haben."
+}

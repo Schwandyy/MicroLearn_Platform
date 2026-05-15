@@ -1,0 +1,22 @@
+{
+  "slug": "esp32-ota-update",
+  "pathSlug": "anzeige-iot",
+  "courseSlug": "anzeige-und-iot",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 6,
+  "estimatedMinutes": 20,
+  "xpReward": 160,
+  "title_de": "OTA: drahtlos neue Firmware aufspielen",
+  "title_en": "OTA: upload new firmware over the air",
+  "summary_de": "Du steckst den ESP32 für ein letztes Mal per USB ein — danach lädst du jede neue Code-Version über WLAN. Über-die-Luft-Updates (OTA) sind der Standard für professionelle IoT-Geräte. In dieser Lesson bringst du dem ESP32 das bei.",
+  "summary_en": "You'll plug your ESP32 into USB one last time — after that, every new firmware version uploads over WiFi. Over-the-air updates (OTA) are the standard for professional IoT devices. In this lesson you'll wire it up.",
+  "safetyNotes_de": "OTA hat einen versteckten Falltritt: wenn das neue Firmware-Image die OTA-Logik nicht mehr enthält, ist das Gerät danach nur per USB erreichbar. Erste Regel: ArduinoOTA.begin() NIE rauslassen, auch wenn die Lesson endet.",
+  "safetyNotes_en": "OTA has a hidden trap: if a new firmware image no longer contains the OTA setup, the device is then only reachable via USB. First rule: never remove ArduinoOTA.begin() — keep it in every future sketch.",
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 }
+  ],
+  "learningGoal": "Lerner aktiviert ArduinoOTA, sieht den ESP32 in der Arduino IDE als „Netzwerk-Port\", spielt eine zweite Firmware (Blink-LED) drahtlos darüber.",
+  "newConcepts": "ArduinoOTA-Library (kommt mit ESP32-Core mit), Netzwerkport in der IDE (Tools → Port), Passwort zum Schutz, MDNS-Hostname.",
+  "stepOutline": ["INTRO", "PARTS", "SETUP", "EXPLAIN", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32. Library „ArduinoOTA\" (im ESP32-Core enthalten). Im Setup: WiFi.begin(), warten bis verbunden, dann ArduinoOTA.setHostname(\"microlearn-esp32\"); ArduinoOTA.setPassword(\"microlearn\"); ArduinoOTA.begin(). Im Loop: ArduinoOTA.handle() — MUSS jedes Loop-Mal aufgerufen werden. Plus die normale Blink-LED-Logik auf onboard-LED GPIO 2. SETUP-Step zeigt: Arduino IDE neu öffnen, Tools → Port → Netzwerkport „microlearn-esp32 at 192.168.x.y\"."
+}

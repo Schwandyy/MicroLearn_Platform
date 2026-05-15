@@ -1,0 +1,26 @@
+{
+  "slug": "esp32-ldr-lichtsensor",
+  "pathSlug": "welt-der-sensoren",
+  "courseSlug": "sensoren-grundlagen",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 3,
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "title_de": "Lichtsensor: dunkel ↔ hell",
+  "title_en": "Light sensor: dark ↔ bright",
+  "summary_de": "Ein Fotowiderstand (LDR) verändert seinen Widerstand mit Licht. Mit einem Spannungsteiler liest der ESP32 daraus einen Helligkeitswert von 0 bis 4095 — die Grundlage für Dämmerungsschalter und Pflanzenlicht-Sensoren.",
+  "summary_en": "A photoresistor (LDR) changes its resistance with light. Combined with a voltage divider, the ESP32 reads a brightness value from 0 to 4095 — the basis for dusk switches and grow-light sensors.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "photoresistor-ldr", "qty": 1 },
+    { "kind": "component", "slug": "resistor-220ohm", "qty": 1 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 3 }
+  ],
+  "learningGoal": "Lerner baut einen Spannungsteiler mit LDR + Festwiderstand, liest analogRead() auf einem ADC-Pin des ESP32, kalibriert „dunkel vs. hell\" durch Beobachtung der Werte.",
+  "newConcepts": "Spannungsteiler-Prinzip (Vout = Vin × R2/(R1+R2)), ADC-Auflösung des ESP32 (12-Bit = 0–4095), analogRead(), Pflicht: einen ADC1-Pin nehmen wenn WLAN aktiv sein soll.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 ADC1-Pins: GPIO 32–39. Spannungsteiler: 3.3V → LDR → Knotenpunkt → 10 kΩ (hier nehmen wir 220 Ω als Demo, eigentlich besser 10 kΩ) → GND. Knotenpunkt an GPIO 34. Im Loop: int val = analogRead(34); Serial.println(val). Im Code-Walk erwähnen: für echte Projekte 10 kΩ statt 220 Ω verwenden, das gibt den schöneren Wertebereich."
+}

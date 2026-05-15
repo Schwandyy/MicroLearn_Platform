@@ -1,0 +1,25 @@
+{
+  "slug": "esp32-bmp280-luftdruck",
+  "pathSlug": "welt-der-sensoren",
+  "courseSlug": "sensoren-grundlagen",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 2,
+  "estimatedMinutes": 15,
+  "xpReward": 110,
+  "title_de": "Luftdruck & Höhe: dein eigenes Barometer",
+  "title_en": "Pressure & altitude: your own barometer",
+  "summary_de": "Der BMP280 misst Luftdruck und Temperatur. Aus dem Druck berechnest du sogar die Höhe über dem Meer. Erstes Projekt mit dem I²C-Bus — nur zwei Drähte für Daten.",
+  "summary_en": "The BMP280 measures pressure and temperature. From pressure you can even derive altitude above sea level. Your first project using the I²C bus — just two data wires.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "bmp280-sensor", "qty": 1 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 4 }
+  ],
+  "learningGoal": "Lerner verkabelt einen I²C-Sensor (SDA/SCL), installiert die Adafruit-BMP280-Library, liest Druck + Temperatur + berechnete Höhe alle 2 Sekunden aus.",
+  "newConcepts": "I²C-Bus-Konzept (SDA + SCL, alle Sensoren teilen sich denselben Bus), Sensor-Adresse 0x76/0x77, Adafruit-Library-Workflow (begin, readPressure, readAltitude), seaLevelPressure-Parameter.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 I²C-Pins: SDA=GPIO 21, SCL=GPIO 22. BMP280: VCC=3.3V, GND, SDA, SCL. Library „Adafruit BMP280\" + „Adafruit Unified Sensor\". bmp.begin(0x76) (manche Module 0x77). Im Loop: temperature = bmp.readTemperature(), pressure = bmp.readPressure() / 100.0 (in hPa), altitude = bmp.readAltitude(1013.25). Serial alle 2 s."
+}

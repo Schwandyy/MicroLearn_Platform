@@ -1,0 +1,25 @@
+{
+  "slug": "esp32-buzzer-melodie",
+  "pathSlug": "mein-erstes-licht",
+  "courseSlug": "erste-lichter",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 5,
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "title_de": "Buzzer: dein erstes Lied",
+  "title_en": "Buzzer: your first song",
+  "summary_de": "Ein passiver Piezo-Buzzer ist ein winziger Lautsprecher. Mit dem ESP32 erzeugst du genaue Tonhöhen und spielst die ersten Noten von „Alle meine Entchen\" — Ton für Ton, deinen ersten Code-Komponisten.",
+  "summary_en": "A passive piezo buzzer is a tiny speaker. With the ESP32 you generate precise pitches and play the first notes of „Twinkle Twinkle\" — note by note, your first code composer.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "buzzer-passive", "qty": 1 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 2 }
+  ],
+  "learningGoal": "Lerner versteht den Zusammenhang Frequenz → Tonhöhe, kann ledcWriteTone() / tone() bzw. ledcSetup mit verschiedenen Frequenzen aufrufen, und programmiert eine kurze Melodie aus 5–7 Noten mit definierten Längen.",
+  "newConcepts": "Frequenz vs. Tonhöhe, Noten als Hz-Werte (C4=262 Hz etc.), Notenlängen (Viertel/Achtel), Pausen zwischen Tönen, ledcWriteTone() auf ESP32.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 mit Arduino-Framework. Buzzer + Pin an GPIO 25 (PWM-fähig), - an GND. ledcSetup(0, 1000, 8) / ledcAttachPin(25, 0) / ledcWriteTone(0, freqHz) — Pause = ledcWriteTone(0, 0). Melodie als Array { freq, ms } für „Alle meine Entchen\" oder „Twinkle Twinkle\"."
+}

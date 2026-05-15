@@ -1,6 +1,53 @@
 import { PrismaClient, Prisma } from "@prisma/client";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import type { LessonContent, LessonSpec } from "./lessons/types";
 
 const prisma = new PrismaClient();
+
+// Diese Lessons werden inline weiter unten geseedet; der Generator-Loader
+// muss sie überspringen, damit nichts doppelt läuft.
+const INLINE_LESSON_SLUGS = new Set([
+  "esp32-blink-led",
+  "esp32-button-led",
+  "esp32-pwm-fade",
+  "esp32-servo-sweep",
+  "esp32-dht22-temperature",
+  "esp32-wifi-scan",
+]);
+
+interface GeneratedLessonPair {
+  spec: LessonSpec;
+  content: LessonContent;
+}
+
+async function loadGeneratedLessons(): Promise<GeneratedLessonPair[]> {
+  const specsDir = path.join(__dirname, "lessons", "specs");
+  const contentDir = path.join(__dirname, "lessons", "content");
+  const pairs: GeneratedLessonPair[] = [];
+  let specFiles: string[];
+  try {
+    specFiles = await fs.readdir(specsDir);
+  } catch {
+    return [];
+  }
+  for (const f of specFiles) {
+    if (!f.endsWith(".json")) continue;
+    const spec = JSON.parse(
+      await fs.readFile(path.join(specsDir, f), "utf-8"),
+    ) as LessonSpec;
+    if (INLINE_LESSON_SLUGS.has(spec.slug)) continue;
+    const contentPath = path.join(contentDir, `${spec.slug}.json`);
+    try {
+      const raw = await fs.readFile(contentPath, "utf-8");
+      const content = JSON.parse(raw) as LessonContent;
+      pairs.push({ spec, content });
+    } catch {
+      console.log(`  ⏭  ${spec.slug} (Spec da, Content fehlt — Generator noch nicht gelaufen)`);
+    }
+  }
+  return pairs;
+}
 
 async function main() {
   console.log("🌱 Seeding MicroLearn dev data…");
@@ -252,6 +299,240 @@ async function main() {
       descriptionShort_de: "Misst Wärme + Feuchte.",
       descriptionShort_en: "Measures warmth + humidity.",
       levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "led-rgb-5mm",
+      name: "RGB-LED 5 mm (Common Cathode)",
+      category: "actuator",
+      iconKey: "Lightbulb",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 1.8,
+      voltageMax: 3.3,
+      protocols: ["GPIO", "PWM"] as const,
+      description_de:
+        "Drei LEDs (rot, grün, blau) in einem Gehäuse mit gemeinsamer Masse. Über PWM lassen sich beliebige Farben mischen.",
+      description_en:
+        "Three LEDs (red, green, blue) in one housing with a common cathode. PWM lets you mix any color.",
+      descriptionShort_de: "Drei LEDs in einem — alle Farben.",
+      descriptionShort_en: "Three LEDs in one — any color.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+    {
+      slug: "buzzer-passive",
+      name: "Passiver Piezo-Buzzer",
+      category: "actuator",
+      iconKey: "Volume2",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 1.5,
+      voltageMax: 5.0,
+      protocols: ["GPIO", "PWM"] as const,
+      description_de:
+        "Piezo-Lautsprecher ohne eigene Tonerzeugung. Der ESP32 gibt PWM-Signale aus — daraus werden Melodien.",
+      description_en:
+        "Piezo speaker without its own oscillator. The ESP32 outputs PWM signals — those become melodies.",
+      descriptionShort_de: "Piept — alle Töne möglich.",
+      descriptionShort_en: "Beeps — any tone possible.",
+      levelHint: "L1_BEGINNER" as const,
+    },
+    {
+      slug: "dc-motor-3v",
+      name: "Mini-DC-Motor 3V",
+      category: "actuator",
+      iconKey: "Fan",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 3.0,
+      voltageMax: 6.0,
+      protocols: ["GPIO", "PWM"] as const,
+      description_de:
+        "Kleiner Gleichstrommotor — dreht sich, sobald Strom fließt. Wird NIE direkt am GPIO betrieben (zu viel Strom) — immer über H-Brücke oder Transistor.",
+      description_en:
+        "Small DC motor — spins as soon as current flows. NEVER drive directly from GPIO (too much current) — always use an H-bridge or transistor.",
+      descriptionShort_de: "Dreht sich. Braucht Treiber.",
+      descriptionShort_en: "Spins. Needs a driver.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "stepper-28byj48-uln2003",
+      name: "Schrittmotor 28BYJ-48 + ULN2003-Treiber",
+      category: "actuator",
+      iconKey: "RotateCw",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 5.0,
+      voltageMax: 12.0,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Schrittmotor mit 4096 Schritten pro Umdrehung, kommt im Set mit ULN2003-Treiberplatine. Bewegt sich auf den genauen Winkel.",
+      description_en:
+        "Stepper motor with 4096 steps per revolution, ships with ULN2003 driver board. Moves to a precise angle.",
+      descriptionShort_de: "Dreht sich auf genauen Winkel.",
+      descriptionShort_en: "Rotates to a precise angle.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "ultrasonic-hc-sr04",
+      name: "Ultraschall-Abstandssensor HC-SR04",
+      category: "sensor",
+      iconKey: "Ruler",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 5.0,
+      voltageMax: 5.0,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Misst Entfernungen zwischen 2 cm und 4 m mit Ultraschall — wie eine Fledermaus. Zwei Pins: Trigger und Echo.",
+      description_en:
+        "Measures distance from 2 cm to 4 m using ultrasonic pulses — like a bat. Two pins: trigger and echo.",
+      descriptionShort_de: "Misst Abstand wie eine Fledermaus.",
+      descriptionShort_en: "Measures distance like a bat.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "pir-hc-sr501",
+      name: "PIR-Bewegungsmelder HC-SR501",
+      category: "sensor",
+      iconKey: "Eye",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 5.0,
+      voltageMax: 12.0,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Passiver Infrarot-Sensor — bemerkt warme bewegliche Körper (Mensch, Tier). Liefert ein einfaches High-Signal, wenn er Bewegung erkennt.",
+      description_en:
+        "Passive infrared sensor — detects warm moving bodies (humans, animals). Outputs a simple high signal on motion.",
+      descriptionShort_de: "Sieht Bewegung.",
+      descriptionShort_en: "Sees motion.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "bmp280-sensor",
+      name: "BMP280 Luftdruck- & Temperatursensor",
+      category: "sensor",
+      iconKey: "Mountain",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 1.8,
+      voltageMax: 3.6,
+      protocols: ["I2C", "SPI"] as const,
+      description_de:
+        "Misst Luftdruck (300–1100 hPa) und Temperatur. Über I²C oder SPI mit nur 2 Leitungen am ESP32. Aus dem Druck lässt sich die Höhe berechnen.",
+      description_en:
+        "Measures air pressure (300–1100 hPa) and temperature. Connects via I²C or SPI with just 2 wires. Pressure lets you derive altitude.",
+      descriptionShort_de: "Druck + Temperatur, I²C.",
+      descriptionShort_en: "Pressure + temperature, I²C.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "photoresistor-ldr",
+      name: "Fotowiderstand (LDR)",
+      category: "sensor",
+      iconKey: "SunMedium",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 0,
+      voltageMax: 5.0,
+      protocols: ["ADC"] as const,
+      description_de:
+        "Sein Widerstand wird kleiner, je mehr Licht draufscheint. Mit einem Spannungsteiler liest der ESP32 daraus den Helligkeitswert.",
+      description_en:
+        "Its resistance drops as more light hits it. Combined with a voltage divider, the ESP32 reads a brightness value.",
+      descriptionShort_de: "Misst Helligkeit.",
+      descriptionShort_en: "Measures brightness.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "mpu6050-sensor",
+      name: "MPU-6050 Gyroskop & Beschleunigungssensor",
+      category: "sensor",
+      iconKey: "Compass",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 2.3,
+      voltageMax: 3.4,
+      protocols: ["I2C"] as const,
+      description_de:
+        "6 Achsen: 3-Achsen-Beschleunigung + 3-Achsen-Rotation. Mit I²C — Grundlage für Drohnen, Self-Balancing-Roboter, Bewegungserkennung.",
+      description_en:
+        "6 axes: 3-axis acceleration + 3-axis rotation. I²C. Foundation for drones, self-balancing robots, motion detection.",
+      descriptionShort_de: "Misst Lage + Bewegung.",
+      descriptionShort_en: "Measures orientation + motion.",
+      levelHint: "L3_INTERMEDIATE" as const,
+    },
+    {
+      slug: "soil-moisture-yl69",
+      name: "Bodenfeuchte-Sensor YL-69",
+      category: "sensor",
+      iconKey: "Sprout",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 3.3,
+      voltageMax: 5.0,
+      protocols: ["ADC"] as const,
+      description_de:
+        "Zwei Metallstifte in der Erde — je feuchter, desto besser leitet sie. Der ESP32 liest das als analogen Wert. Perfekt für Pflanzen-Bewässerung.",
+      description_en:
+        "Two metal probes in soil — the wetter, the better it conducts. The ESP32 reads it as an analog value. Perfect for plant watering.",
+      descriptionShort_de: "Misst Erdfeuchte.",
+      descriptionShort_en: "Measures soil moisture.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "ds18b20-waterproof",
+      name: "DS18B20 Wassertemperatur-Sensor (wasserdicht)",
+      category: "sensor",
+      iconKey: "Thermometer",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 3.0,
+      voltageMax: 5.5,
+      protocols: ["ONEWIRE"] as const,
+      description_de:
+        "Wasserdichter Temperatursensor an einem 1m-Kabel. Per 1-Wire-Bus — mehrere Sensoren an einer einzigen GPIO-Leitung möglich.",
+      description_en:
+        "Waterproof temperature sensor on a 1m cable. One-Wire bus — multiple sensors share a single GPIO line.",
+      descriptionShort_de: "Wasserdichter Temp-Fühler.",
+      descriptionShort_en: "Waterproof temp probe.",
+      levelHint: "L2_NOVICE" as const,
+    },
+    {
+      slug: "oled-ssd1306",
+      name: "OLED-Display 128×64 (SSD1306, I²C)",
+      category: "actuator",
+      iconKey: "Monitor",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 3.3,
+      voltageMax: 5.0,
+      protocols: ["I2C"] as const,
+      description_de:
+        "128×64 Pixel monochromes OLED-Display. Über I²C mit nur 4 Drähten — zeigt Text, Werte, kleine Grafiken oder einfache Animationen.",
+      description_en:
+        "128×64 pixel monochrome OLED display. I²C with just 4 wires — shows text, values, small graphics or basic animations.",
+      descriptionShort_de: "Mini-Bildschirm.",
+      descriptionShort_en: "Tiny screen.",
+      levelHint: "L3_INTERMEDIATE" as const,
+    },
+    {
+      slug: "neopixel-strip-ws2812b",
+      name: "NeoPixel-LED-Streifen WS2812B",
+      category: "actuator",
+      iconKey: "Sparkles",
+      imageUrl: null,
+      logicLevel: "BOTH" as const,
+      voltageMin: 4.5,
+      voltageMax: 5.5,
+      protocols: ["GPIO"] as const,
+      description_de:
+        "Adressierbare RGB-LEDs in Reihe — jede einzeln per Datenleitung steuerbar. Eine Datenleitung für Dutzende von LEDs.",
+      description_en:
+        "Addressable RGB LEDs in series — each one individually controlled via one data line. One pin for dozens of LEDs.",
+      descriptionShort_de: "Viele bunte LEDs, einzeln steuerbar.",
+      descriptionShort_en: "Many colored LEDs, individually controllable.",
+      levelHint: "L3_INTERMEDIATE" as const,
     },
   ];
   for (const c of components) {
@@ -2219,6 +2500,80 @@ void loop() {
       },
     ],
   });
+
+  // -----------------------------------------------------------------------
+  // Generierte Lessons (aus prisma/lessons/specs/ + content/) einlesen.
+  // -----------------------------------------------------------------------
+  const generated = await loadGeneratedLessons();
+  if (generated.length > 0) {
+    console.log(`  📥 ${generated.length} generierte Lessons werden geseedet…`);
+  }
+
+  // Hilfs-Caches für Slug→ID-Lookups
+  const boardCache = new Map<string, { id: string }>();
+  const componentCache = new Map<string, { id: string }>();
+
+  async function resolveBoard(slug: string): Promise<{ id: string }> {
+    const cached = boardCache.get(slug);
+    if (cached) return cached;
+    const b = await prisma.board.findUnique({ where: { slug } });
+    if (!b) throw new Error(`Board nicht im Seed: ${slug}`);
+    boardCache.set(slug, b);
+    return b;
+  }
+  async function resolveComponent(slug: string): Promise<{ id: string }> {
+    const cached = componentCache.get(slug);
+    if (cached) return cached;
+    const c = await prisma.component.findUnique({ where: { slug } });
+    if (!c) throw new Error(`Component nicht im Seed: ${slug}`);
+    componentCache.set(slug, c);
+    return c;
+  }
+
+  for (const pair of generated) {
+    const { spec, content } = pair;
+    const courseId = courseBySlug.get(spec.courseSlug)?.id;
+    if (!courseId) {
+      console.warn(`  ⚠ unbekannter courseSlug für ${spec.slug}: ${spec.courseSlug}`);
+      continue;
+    }
+    const board = await resolveBoard(spec.boardSlug);
+
+    const bomResolved: { componentId?: string; boardId?: string; quantity: number }[] = [];
+    for (const item of spec.bom) {
+      if (item.kind === "board") {
+        const b = await resolveBoard(item.slug);
+        bomResolved.push({ boardId: b.id, quantity: item.qty });
+      } else {
+        const c = await resolveComponent(item.slug);
+        bomResolved.push({ componentId: c.id, quantity: item.qty });
+      }
+    }
+
+    await seedLesson({
+      slug: content.slug,
+      sortOrder: spec.sortOrder,
+      courseId,
+      title_de: content.title_de,
+      title_en: content.title_en,
+      summary_de: content.summary_de,
+      summary_en: content.summary_en,
+      estimatedMinutes: content.estimatedMinutes,
+      xpReward: content.xpReward,
+      safetyNotes_de: content.safetyNotes_de,
+      safetyNotes_en: content.safetyNotes_en,
+      recommendedBoardId: board.id,
+      bom: bomResolved,
+      steps: content.steps.map((s) => ({
+        kind: s.kind,
+        title_de: s.title_de,
+        title_en: s.title_en,
+        body_de: s.body_de,
+        body_en: s.body_en,
+        payload: (s.payload ?? null) as Record<string, unknown> | null,
+      })),
+    });
+  }
 
   console.log("✅ done");
 }

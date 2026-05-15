@@ -1,0 +1,26 @@
+{
+  "slug": "esp32-lauflicht-5leds",
+  "pathSlug": "mein-erstes-licht",
+  "courseSlug": "erste-lichter",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 6,
+  "estimatedMinutes": 15,
+  "xpReward": 120,
+  "title_de": "Lauflicht: 5 LEDs jagen sich",
+  "title_en": "Light chase: 5 LEDs in motion",
+  "summary_de": "Du baust ein klassisches Lauflicht — wie an einem Spielautomaten. Fünf LEDs leuchten nacheinander hin und her. Dein erster Schritt in saubere Code-Struktur mit Schleifen und Arrays.",
+  "summary_en": "You build a classic running-light chaser — like a slot-machine border. Five LEDs light up one after another, back and forth. Your first step into clean code with loops and arrays.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "led-red-5mm", "qty": 5 },
+    { "kind": "component", "slug": "resistor-220ohm", "qty": 5 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 7 }
+  ],
+  "learningGoal": "Lerner arbeitet erstmals mit einem Array (Pin-Liste) und einer for-Schleife. Lauflicht läuft hin und her (Pendel-Effekt), Geschwindigkeit ist eine Konstante zum Anpassen.",
+  "newConcepts": "Arrays in C++ (const int leds[5] = {…}), for-Schleifen über Array-Index, Pendel-Bewegung mit zwei Schleifen (vorwärts/rückwärts), Konstanten für Geschwindigkeit.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32. 5 LEDs auf GPIO 25, 26, 27, 32, 33 (alle PWM/digital). Jede LED über 220 Ω an GND. for-Schleife durchläuft das Array vorwärts (LED an, kurz warten, aus), dann rückwärts. setInterval-artig im loop()."
+}

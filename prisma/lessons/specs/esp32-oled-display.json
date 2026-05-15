@@ -1,0 +1,25 @@
+{
+  "slug": "esp32-oled-display",
+  "pathSlug": "anzeige-iot",
+  "courseSlug": "anzeige-und-iot",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 2,
+  "estimatedMinutes": 18,
+  "xpReward": 130,
+  "title_de": "OLED-Display: erstes eigenes Bild",
+  "title_en": "OLED display: your first screen",
+  "summary_de": "128×64 Pixel auf einem winzigen OLED-Bildschirm — über I²C an den ESP32. Du zeigst Text, einen Zähler und ein einfaches Smiley. Das ist die Bühne für jede spätere IoT-Anzeige.",
+  "summary_en": "128×64 pixels on a tiny OLED screen — connected to the ESP32 via I²C. You'll display text, a counter and a simple smiley. This is the stage for every later IoT readout.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "oled-ssd1306", "qty": 1 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 4 }
+  ],
+  "learningGoal": "Lerner verkabelt OLED per I²C, initialisiert das Display mit Adafruit SSD1306, schreibt Text in zwei Größen und zeichnet ein einfaches Smiley (Kreis + 2 kleine Kreise + Linie).",
+  "newConcepts": "Display-Buffer-Konzept (im RAM zeichnen, dann display.display() schickt alles auf einmal), Cursor und Schriftgröße (setTextSize), Primitive (drawCircle, drawLine), I²C-Adresse 0x3C.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "SIMULATE", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 I²C: SDA=21, SCL=22. OLED: VCC=3.3V, GND, SDA, SCL. Libraries: „Adafruit SSD1306\" + „Adafruit GFX\". Adafruit_SSD1306 display(128, 64, &Wire, -1); display.begin(SSD1306_SWITCHCAPVCC, 0x3C). Im Loop: display.clearDisplay(); display.setCursor(0,0); display.setTextSize(2); display.println(\"MicroLearn\"); display.setTextSize(1); display.print(\"count: \"); display.println(counter++); display.drawCircle(100, 40, 8, SSD1306_WHITE); display.display(); delay(500)."
+}

@@ -1,0 +1,27 @@
+{
+  "slug": "esp32-pir-bewegung",
+  "pathSlug": "bewegung-robotik",
+  "courseSlug": "bewegung-und-robotik",
+  "boardSlug": "esp32-devkit-v1",
+  "sortOrder": 5,
+  "estimatedMinutes": 12,
+  "xpReward": 100,
+  "title_de": "PIR: dein eigener Bewegungsmelder",
+  "title_en": "PIR: build your own motion detector",
+  "summary_de": "Ein PIR-Sensor erkennt warme bewegliche Körper — Menschen, Tiere, dich. Du baust den klassischen „Licht-an-wenn-wer-reinkommt\"-Effekt, wie an einer Garageneinfahrt.",
+  "summary_en": "A PIR sensor detects warm moving bodies — humans, animals, you. You'll build the classic „light on when someone enters\" effect, like a garage motion light.",
+  "safetyNotes_de": null,
+  "safetyNotes_en": null,
+  "bom": [
+    { "kind": "board", "slug": "esp32-devkit-v1", "qty": 1 },
+    { "kind": "component", "slug": "breadboard-half", "qty": 1 },
+    { "kind": "component", "slug": "pir-hc-sr501", "qty": 1 },
+    { "kind": "component", "slug": "led-red-5mm", "qty": 1 },
+    { "kind": "component", "slug": "resistor-220ohm", "qty": 1 },
+    { "kind": "component", "slug": "jumper-wires-mm", "qty": 5 }
+  ],
+  "learningGoal": "Lerner liest digitales High/Low vom PIR, schaltet eine LED basierend auf Bewegung, versteht die zwei Potis am PIR (Empfindlichkeit + Haltedauer).",
+  "newConcepts": "PIR-Sensor-Prinzip (Infrarot-Differenzmessung), digitalRead() als binäre Bewegungserkennung, Trim-Potis am Sensor (Sensitivity/Time), Aufwärmphase (~30 s) nach dem Einschalten.",
+  "stepOutline": ["INTRO", "PARTS", "EXPLAIN", "BUILD", "CODE_WALK", "QUIZ", "CELEBRATE"],
+  "codeHints": "ESP32 mit Arduino-Framework. PIR: VCC an 5V (USB-VIN), GND, OUT an GPIO 13. LED über 220 Ω an GPIO 12 → GND. Im Loop: int motion = digitalRead(13); digitalWrite(12, motion); Serial.println bei Wechseln (vorigen Zustand merken)."
+}
