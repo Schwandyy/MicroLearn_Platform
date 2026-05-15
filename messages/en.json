@@ -175,7 +175,7 @@
   "dashboard": {
     "welcome": "Hi, {name}",
     "yourLevel": "Your level",
-    "xp": "XP",
+    "xp": "{xp} XP",
     "streak": "Streak",
     "streakDays": "{days} days",
     "continueLearning": "Continue learning",
@@ -210,8 +210,7 @@
     "recommendedEmpty": "We don't have ready projects for these boards yet — we're working on it.",
     "recommendedStart": "Start",
     "recommendedReplay": "Replay",
-    "duration": "{min} min",
-    "xp": "{xp} XP"
+    "duration": "{min} min"
   },
   "common": {
     "loading": "Loading…",
@@ -348,7 +347,22 @@
     "deactivateStudent": "Deactivate",
     "reactivateStudent": "Reactivate",
     "exportPdf": "Export PDF report",
-    "needsInstitution": "Classroom management is part of the Institution plan."
+    "needsInstitution": "Classroom management is part of the Institution plan.",
+    "joinLink": "Join link",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "joinTitle": "Join {name}!",
+    "joinSubtitle": "Pick a nickname — no email, no password. Just your name.",
+    "joinInvalidTitle": "Hmm, this code doesn't work.",
+    "joinExpired": "This code has expired.",
+    "joinExhausted": "This code has been used too many times.",
+    "joinUnknown": "This code does not exist.",
+    "joinAskTeacher": "Ask your teacher for a fresh code.",
+    "joinUsernamePlaceholder": "e.g. Anna_42",
+    "joinUsernameHint": "3-40 characters, letters/numbers/_/- only. Stay anonymous!",
+    "joinSubmit": "Join class",
+    "joinFailedTitle": "Could not join",
+    "joinFailedBody": "Maybe the nickname is taken — try another one."
   },
   "consent": {
     "title": "Privacy",

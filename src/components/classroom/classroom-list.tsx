@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/admin/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
-import { Key, Users, RefreshCw, Copy } from "lucide-react";
+import { Key, Users, RefreshCw, Copy, Link2 } from "lucide-react";
 
 interface CodeRow {
   id: string;
@@ -99,6 +99,18 @@ function ClassroomCard({ classroom }: { classroom: ClassroomData }) {
     toast({ title: "Code kopiert" });
   };
 
+  const copyJoinLink = (code: string) => {
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    const locale =
+      typeof window !== "undefined"
+        ? window.location.pathname.split("/")[1] || "de"
+        : "de";
+    const url = `${origin}/${locale}/join/${code}`;
+    navigator.clipboard.writeText(url).catch(() => undefined);
+    toast({ title: t("linkCopied") });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -138,13 +150,24 @@ function ClassroomCard({ classroom }: { classroom: ClassroomData }) {
               {classroom.codes.map((c) => (
                 <li
                   key={c.id}
-                  className="flex items-center justify-between gap-3 rounded-md border p-3"
+                  className="grid gap-3 rounded-md border p-3 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
-                  <div>
-                    <code className="font-mono text-lg font-semibold tracking-widest">
-                      {c.code}
-                    </code>
-                    <div className="text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <code className="font-mono text-lg font-semibold tracking-widest">
+                        {c.code}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => copy(c.code)}
+                        aria-label="Copy code"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">
                       {t("codeExpires")}{" "}
                       {new Date(c.expiresAt).toLocaleDateString()} ·{" "}
                       {t("codeUses", { uses: c.uses, max: c.maxUses })}
@@ -152,10 +175,11 @@ function ClassroomCard({ classroom }: { classroom: ClassroomData }) {
                   </div>
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => copy(c.code)}
+                    variant="outline"
+                    onClick={() => copyJoinLink(c.code)}
                   >
-                    <Copy className="h-4 w-4" />
+                    <Link2 className="mr-2 h-4 w-4" />
+                    {t("copyLink")}
                   </Button>
                 </li>
               ))}

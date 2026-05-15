@@ -175,7 +175,7 @@
   "dashboard": {
     "welcome": "Hallo, {name}",
     "yourLevel": "Dein Level",
-    "xp": "XP",
+    "xp": "{xp} XP",
     "streak": "Streak",
     "streakDays": "{days} Tage",
     "continueLearning": "Weiterlernen",
@@ -210,8 +210,7 @@
     "recommendedEmpty": "Aktuell gibt es noch keine fertigen Projekte für diese Boards — wir arbeiten daran.",
     "recommendedStart": "Loslegen",
     "recommendedReplay": "Nochmal",
-    "duration": "{min} Min",
-    "xp": "{xp} XP"
+    "duration": "{min} Min"
   },
   "common": {
     "loading": "Lädt…",
@@ -348,7 +347,22 @@
     "deactivateStudent": "Deaktivieren",
     "reactivateStudent": "Reaktivieren",
     "exportPdf": "Bericht als PDF",
-    "needsInstitution": "Klassen-Verwaltung ist Teil des Institution-Plans."
+    "needsInstitution": "Klassen-Verwaltung ist Teil des Institution-Plans.",
+    "joinLink": "Beitritts-Link",
+    "copyLink": "Link kopieren",
+    "linkCopied": "Link kopiert",
+    "joinTitle": "Tritt {name} bei!",
+    "joinSubtitle": "Wähle einen Spitznamen — ohne E-Mail, ohne Passwort. Du brauchst nur deinen Namen.",
+    "joinInvalidTitle": "Ups, dieser Code passt nicht.",
+    "joinExpired": "Der Code ist abgelaufen.",
+    "joinExhausted": "Der Code wurde zu oft verwendet.",
+    "joinUnknown": "Diesen Code gibt es nicht.",
+    "joinAskTeacher": "Frag deine Lehrerin oder deinen Lehrer nach einem neuen Code.",
+    "joinUsernamePlaceholder": "z. B. Anna_42",
+    "joinUsernameHint": "3-40 Zeichen, nur Buchstaben, Zahlen, _ und -. Bleib anonym!",
+    "joinSubmit": "Klasse beitreten",
+    "joinFailedTitle": "Beitritt fehlgeschlagen",
+    "joinFailedBody": "Der Spitzname ist vielleicht schon vergeben. Probier einen anderen."
   },
   "consent": {
     "title": "Datenschutz",
