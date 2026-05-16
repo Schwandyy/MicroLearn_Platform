@@ -50,7 +50,7 @@ export function SignUpForm() {
       }
       await maybeStorePasswordCredential(email, password, name);
       router.refresh();
-      router.push("/assessment");
+      router.push("/start");
     });
   };
 
@@ -60,7 +60,7 @@ export function SignUpForm() {
         <Button
           variant="outline"
           type="button"
-          onClick={() => signIn("google", { callbackUrl: "/assessment" })}
+          onClick={() => signIn("google", { callbackUrl: "/start" })}
         >
           <Mail className="mr-2 h-4 w-4" />
           {t("continueWith", { provider: "Google" })}
@@ -68,7 +68,7 @@ export function SignUpForm() {
         <Button
           variant="outline"
           type="button"
-          onClick={() => signIn("github", { callbackUrl: "/assessment" })}
+          onClick={() => signIn("github", { callbackUrl: "/start" })}
         >
           <Github className="mr-2 h-4 w-4" />
           {t("continueWith", { provider: "GitHub" })}
@@ -76,7 +76,7 @@ export function SignUpForm() {
         <Button
           variant="outline"
           type="button"
-          onClick={() => signIn("apple", { callbackUrl: "/assessment" })}
+          onClick={() => signIn("apple", { callbackUrl: "/start" })}
         >
           <KeyRound className="mr-2 h-4 w-4" />
           {t("continueWith", { provider: "Apple" })}

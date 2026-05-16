@@ -87,6 +87,7 @@ export default async function DashboardPage({
     ? levelToNumber(user.profile.currentLevel)
     : 1;
   const favoriteBoardIds = user?.profile?.favoriteBoardIds ?? [];
+  const starterDone = Boolean(user?.profile?.starterCompletedAt);
 
   // Welche Lessons passen zu den gewählten Boards? Many-to-many filtern.
   const recommendedLessons =
@@ -214,7 +215,7 @@ export default async function DashboardPage({
   return (
     <div className="container py-8 md:py-12">
       <CheckoutResultBanner />
-      <OnboardingTour active={isBeginnerMode} />
+      <OnboardingTour active={isBeginnerMode && starterDone} />
       <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <h1 className="text-3xl font-bold md:text-4xl">
           {t("welcome", { name })}
@@ -226,9 +227,34 @@ export default async function DashboardPage({
         </Button>
       </div>
 
+      {!starterDone && (
+        <Card className="mb-10 overflow-hidden border-amber-300 bg-gradient-to-br from-amber-500/10 via-background to-emerald-500/10">
+          <CardContent className="grid gap-4 p-8 md:p-10">
+            <div className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+              <Sparkles className="h-4 w-4" />
+              {t("starterEyebrow")}
+            </div>
+            <h2 className="text-2xl font-bold md:text-3xl">
+              {t("starterTitle")}
+            </h2>
+            <p className="max-w-2xl text-base text-muted-foreground">
+              {t("starterBody")}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg" className="mt-2">
+                <Link href="/start">
+                  {t("starterCta")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Hero: aktiver Pfad (Progress) oder empfohlener (Level-Match).
           Verlinkt direkt auf die nächste offene Lesson statt auf die Pfad-Übersicht. */}
-      {heroPath && (
+      {starterDone && heroPath && (
         <Card className="mb-10 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background">
           <CardContent className="grid gap-4 p-8 md:p-10">
             <div className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-primary">

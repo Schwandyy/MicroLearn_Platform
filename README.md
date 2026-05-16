@@ -161,6 +161,18 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Automatische App-Store-Screenshots via Playwright (iOS 6.7", iPad Pro
       12.9", Android Phone, Auth-Session über `pnpm screenshots:capture-session`)
 
+### ✅ Phase 7.1 — Zero-Setup-Onboarding
+
+- [x] Starter-Flow `/start`: Intro → Hardware/Simulator-Wahl → Mini-Lesson → Celebrate
+- [x] In-Browser-LED-Simulator (pure HTML5 Canvas, kein externer Embed) mit Live-Code-Highlight,
+      Play/Pause/Reset, 5-Blink-Auto-Complete
+- [x] Hardware-Mini-Lesson 3 Steps (Board einstecken → LED+Widerstand stecken → Blink-Code laden)
+- [x] `POST /api/onboarding/starter` — markiert `Profile.starterCompletedAt`, grant +25 XP
+      (`ONBOARDING_STARTER`), bumpt Streak auf Tag 1
+- [x] Sign-Up + Google/GitHub/Apple-Callback → `/start` statt `/assessment`
+- [x] Dashboard zeigt „Erste Stunde"-Hero solange `starterCompletedAt == null`
+- [x] Onboarding-Tour erst nach erfolgreichem Starter sichtbar
+
 ### 📱 Mobile-App bauen (Capacitor)
 
 ```bash

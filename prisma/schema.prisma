@@ -220,13 +220,15 @@ model VerificationToken {
 }
 
 model Profile {
-  id               String       @id @default(cuid())
-  userId           String       @unique
-  bio              String?
-  country          String?
-  birthYear        Int?
-  currentLevel     LearnerLevel @default(L1_BEGINNER)
-  favoriteBoardIds String[]     @default([])
+  id                  String       @id @default(cuid())
+  userId              String       @unique
+  bio                 String?
+  country             String?
+  birthYear           Int?
+  currentLevel        LearnerLevel @default(L1_BEGINNER)
+  favoriteBoardIds    String[]     @default([])
+  starterCompletedAt  DateTime?
+  starterMode         String?
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
