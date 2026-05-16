@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { CreateClassroomForm } from "@/components/classroom/create-classroom-form";
 import { ClassroomList } from "@/components/classroom/classroom-list";
+import { TeacherStartWizard } from "@/components/classroom/teacher-start-wizard";
 import { GraduationCap } from "lucide-react";
 
 export default async function ClassroomPage({
@@ -65,9 +66,17 @@ export default async function ClassroomPage({
         </div>
       </div>
 
+      {classrooms.length === 0 && (
+        <div className="mb-8">
+          <TeacherStartWizard />
+        </div>
+      )}
+
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-base">{t("newClassroom")}</CardTitle>
+          <CardTitle className="text-base">
+            {classrooms.length === 0 ? t("manualCreate") : t("newClassroom")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CreateClassroomForm />

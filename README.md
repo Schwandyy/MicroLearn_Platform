@@ -161,6 +161,20 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Automatische App-Store-Screenshots via Playwright (iOS 6.7", iPad Pro
       12.9", Android Phone, Auth-Session über `pnpm screenshots:capture-session`)
 
+### ✅ Phase 7.4 — Lehrkraft-Onboarding-Wizard
+
+- [x] `<TeacherStartWizard>` als Empty-State auf `/classroom` für Lehrkräfte
+      mit 0 Klassen — 4 Stages (Intro → State+Grade → Plan-Review → Created)
+- [x] Server-Lib `teacher-program-suggester.ts`: deterministisch grade→level
+      → Top-4-Lessons mit gestaffelten Fristen (heute+3d, dann +7d/+14d/+21d)
+- [x] API `POST /api/onboarding/teacher-wizard` mit `mode: "preview" | "confirm"`
+      (Institution-Gate bzw. ADMIN/TEACHER/INSTRUCTOR)
+- [x] Confirm-Pfad legt Klassenraum an + Bulk-Assign in einem Rutsch
+- [x] Manuelles `<CreateClassroomForm>` bleibt parallel, Label wechselt auf
+      „Klasse manuell anlegen" wenn schon 0 Klassen + Wizard sichtbar
+- 📋 Offen Phase 7.4.1: Claude-Ranking der Lesson-Kandidaten + Curriculum-Standard-Match
+      (Standards-Tabelle steckt bereit aus Phase 6)
+
 ### ✅ Phase 7.3 — Eltern-Monatsbericht (silent Pro-Conversion-Driver)
 
 - [x] Schema: `User.parentEmail`, `User.monthlyParentDigestOptOut`,
