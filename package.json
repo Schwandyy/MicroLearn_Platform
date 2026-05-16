@@ -19,6 +19,8 @@
     "db:audit:boms": "tsx --env-file=.env scripts/audit-boms.ts",
     "db:audit:quality": "tsx --env-file=.env scripts/audit-lesson-quality.ts",
     "db:audit:kidspeak": "tsx --env-file=.env --env-file=.env.local scripts/audit-lesson-kidspeak.ts",
+    "db:audit:facts": "tsx --env-file=.env --env-file=.env.local scripts/audit-lesson-facts.ts",
+    "db:fix:facts-20260516": "tsx --env-file=.env scripts/fix-lesson-facts-2026-05-16.ts",
     "db:fix:affiliate-gaps": "tsx --env-file=.env scripts/fix-affiliate-gaps.ts",
     "db:fix:explain-visuals": "tsx --env-file=.env scripts/fix-explain-visuals.ts",
     "db:fix:kidspeak-top": "tsx --env-file=.env scripts/fix-kidspeak-top.ts",
