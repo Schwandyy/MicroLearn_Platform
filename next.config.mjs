@@ -20,6 +20,7 @@ const nextConfig = {
   poweredByHeader: false,
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    serverComponentsExternalPackages: ["@react-pdf/renderer"],
   },
   images: {
     remotePatterns: [

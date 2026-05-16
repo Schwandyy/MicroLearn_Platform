@@ -1,12 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, Share2 } from "lucide-react";
+import { Download, Share2 } from "lucide-react";
 
 export function CertificateActions({ publicSlug }: { publicSlug: string }) {
   const t = useTranslations("certificates");
+  const locale = useLocale();
   const { toast } = useToast();
 
   const share = async () => {
@@ -26,11 +27,15 @@ export function CertificateActions({ publicSlug }: { publicSlug: string }) {
     toast({ title: t("linkCopied") });
   };
 
+  const pdfUrl = `/api/certificates/${publicSlug}/pdf?locale=${locale}`;
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      <Button onClick={() => window.print()} variant="outline">
-        <Printer className="mr-2 h-4 w-4" />
-        {t("print")}
+      <Button asChild>
+        <a href={pdfUrl} download>
+          <Download className="mr-2 h-4 w-4" />
+          {t("downloadPdf")}
+        </a>
       </Button>
       <Button onClick={share} variant="outline">
         <Share2 className="mr-2 h-4 w-4" />

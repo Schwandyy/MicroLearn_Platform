@@ -511,7 +511,9 @@
     "noCertificates": "Complete a learning path to earn your first certificate.",
     "view": "View",
     "share": "Share",
-    "linkCopied": "Link copied"
+    "linkCopied": "Link copied",
+    "downloadPdf": "Download PDF",
+    "verifiedBadge": "verified by MicroLearn"
   },
   "errors": {
     "error500Title": "Something went wrong",

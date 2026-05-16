@@ -1,7 +1,41 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/server/db/prisma";
 import { CertificateActions } from "@/components/certificates/certificate-actions";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; publicSlug: string }>;
+}): Promise<Metadata> {
+  const { locale, publicSlug } = await params;
+  const cert = await prisma.certificate.findUnique({
+    where: { publicSlug },
+    include: {
+      user: { select: { name: true, username: true } },
+      path: { select: { title_de: true, title_en: true } },
+    },
+  });
+  if (!cert) return {};
+  const recipient = cert.user.name ?? cert.user.username ?? "—";
+  const pathTitle =
+    locale === "de" ? cert.path.title_de : cert.path.title_en;
+  const title =
+    locale === "de"
+      ? `Zertifikat · ${recipient} · ${pathTitle}`
+      : `Certificate · ${recipient} · ${pathTitle}`;
+  const description =
+    locale === "de"
+      ? `${recipient} hat den Lernpfad „${pathTitle}" bei MicroLearn abgeschlossen.`
+      : `${recipient} completed the learning path "${pathTitle}" on MicroLearn.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function PublicCertificatePage({
   params,
@@ -31,6 +65,8 @@ export default async function PublicCertificatePage({
     month: "long",
     day: "numeric",
   });
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const verifyUrl = `${appUrl}/${locale}/certificates/${publicSlug}`;
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-amber-50 via-white to-amber-50 py-10 dark:from-amber-950/40 dark:via-background dark:to-amber-950/40">
@@ -68,8 +104,12 @@ export default async function PublicCertificatePage({
               <p>
                 {t("issued")} {issued}
               </p>
-              <p className="font-mono">
-                {t("verify")}: {publicSlug}
+              <p className="font-mono break-all">
+                {t("verify")}: {verifyUrl || publicSlug}
+              </p>
+              <p className="mx-auto inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                <span aria-hidden>✓</span>
+                {t("verifiedBadge")}
               </p>
             </div>
           </div>

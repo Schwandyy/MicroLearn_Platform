@@ -511,7 +511,9 @@
     "noCertificates": "Schließe einen Lernpfad ab, um dein erstes Zertifikat zu erhalten.",
     "view": "Ansehen",
     "share": "Teilen",
-    "linkCopied": "Link kopiert"
+    "linkCopied": "Link kopiert",
+    "downloadPdf": "PDF herunterladen",
+    "verifiedBadge": "von MicroLearn bestätigt"
   },
   "errors": {
     "error500Title": "Hier ist etwas schiefgegangen",
