@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { CookieBanner } from "@/components/cookie-banner";
@@ -30,6 +31,7 @@ export default async function LocaleLayout({
           <SessionProvider>
             <Navbar />
             <main className="flex-1">{children}</main>
+            <Footer locale={locale} />
             <CookieBanner />
             <Toaster />
           </SessionProvider>
