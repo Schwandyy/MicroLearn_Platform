@@ -60,7 +60,11 @@ export default async function SettingsPage({
                   (user?.preferredLocale as "de" | "en") ?? "de",
                 marketingOptIn: user?.marketingOptIn ?? false,
                 weeklyDigestOptOut: user?.weeklyDigestOptOut ?? false,
+                parentEmail: user?.parentEmail ?? "",
+                monthlyParentDigestOptOut:
+                  user?.monthlyParentDigestOptOut ?? false,
                 isTeacher,
+                isStudentCode: user?.role === "STUDENT_CODE",
               }}
             />
           </CardContent>

@@ -15,7 +15,7 @@ const SECRET =
   process.env.AUTH_SECRET ??
   "microlearn-dev-unsubscribe-secret";
 
-export type UnsubKind = "weekly";
+export type UnsubKind = "weekly" | "parentMonthly";
 
 function payload(userId: string, kind: UnsubKind): string {
   return `${kind}|${userId}`;

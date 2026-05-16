@@ -154,6 +154,12 @@ model User {
   marketingOptIn        Boolean @default(false)
   weeklyDigestOptOut    Boolean @default(false)
 
+  // Optional Eltern-/Guardian-Mail für Monatsbericht (DSGVO: explizites
+  // Opt-in nötig; Schüler-Code-Accounts können das nicht setzen).
+  parentEmail                String?
+  monthlyParentDigestOptOut  Boolean @default(false)
+  monthlyParentDigestLastAt  DateTime?
+
   // Schüler-Code-System
   classroomMember ClassroomMember?
 

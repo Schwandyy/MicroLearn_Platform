@@ -161,6 +161,21 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Automatische App-Store-Screenshots via Playwright (iOS 6.7", iPad Pro
       12.9", Android Phone, Auth-Session über `pnpm screenshots:capture-session`)
 
+### ✅ Phase 7.3 — Eltern-Monatsbericht (silent Pro-Conversion-Driver)
+
+- [x] Schema: `User.parentEmail`, `User.monthlyParentDigestOptOut`,
+      `User.monthlyParentDigestLastAt` (Idempotenz)
+- [x] Settings-Profile-Form mit Eltern-Mail-Feld + DSGVO-Hinweis,
+      ausgeblendet für Schüler-Code-Accounts (kein PII)
+- [x] `/api/profile` PATCH: Validation + Schüler-Code-Block
+- [x] `src/server/lib/monthly-parent-digest.ts` — bilinguale HTML+Text-Mail
+      mit Stat-Karten (Lessons, Streak, XP) + Top-Lessons + Pro-CTA
+- [x] Cron `/api/cron/monthly-parent-digest` (Vercel: 1. d. Monats, 07:00 UTC),
+      `?dry=1` für Preview ohne Versand
+- [x] Unsubscribe-Token erweitert um Kind `parentMonthly`,
+      `/api/unsubscribe` rendert bilinguale Bestätigung
+- [x] Idempotenz: Re-Run im selben Kalendermonat überspringt bereits gesendete
+
 ### ✅ Phase 7.2 — WebSerial-Flash direkt aus dem Lesson-Player
 
 - [x] `<EspFlashButton>` (`src/components/learning/esp-flash-button.tsx`)

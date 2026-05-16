@@ -17,7 +17,10 @@ interface Initial {
   preferredLocale: "de" | "en";
   marketingOptIn: boolean;
   weeklyDigestOptOut: boolean;
+  parentEmail: string;
+  monthlyParentDigestOptOut: boolean;
   isTeacher: boolean;
+  isStudentCode: boolean;
 }
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -44,6 +47,8 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           preferredLocale: form.preferredLocale,
           marketingOptIn: form.marketingOptIn,
           weeklyDigestOptOut: form.weeklyDigestOptOut,
+          parentEmail: form.parentEmail || null,
+          monthlyParentDigestOptOut: form.monthlyParentDigestOptOut,
         }),
       });
       if (!res.ok) {
@@ -146,6 +151,45 @@ export function ProfileForm({ initial }: { initial: Initial }) {
             </span>
           </span>
         </label>
+      )}
+
+      {!form.isStudentCode && (
+        <div className="grid gap-2 rounded-xl border bg-muted/30 p-4">
+          <div>
+            <Label htmlFor="parentEmail" className="text-sm font-semibold">
+              {t("parentEmail")}
+            </Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("parentEmailHint")}
+            </p>
+          </div>
+          <Input
+            id="parentEmail"
+            type="email"
+            placeholder="mama@example.com"
+            value={form.parentEmail}
+            onChange={(e) => set("parentEmail", e.target.value)}
+            maxLength={200}
+          />
+          {form.parentEmail && (
+            <label className="flex items-start gap-2 text-sm">
+              <Checkbox
+                id="monthlyParentDigest"
+                checked={!form.monthlyParentDigestOptOut}
+                onCheckedChange={(v) =>
+                  set("monthlyParentDigestOptOut", !Boolean(v))
+                }
+                className="mt-0.5"
+              />
+              <span>
+                <span className="font-medium">{t("parentMonthly")}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {t("parentMonthlyHint")}
+                </span>
+              </span>
+            </label>
+          )}
+        </div>
       )}
 
       <div>
