@@ -38,7 +38,38 @@ Apple skaliert ältere Geräte vom 6.7"-Set automatisch — daher reicht
 - Pull-Quotes als overlay (Tailwind-Brand-Gelb `#F5B544` auf Dunkelblau
   `#0b1220`)
 
-## Produktion
+## Produktion — automatisch via Playwright
+
+```bash
+# 1) Dev-Server starten (Port 3030)
+pnpm dev
+
+# 2) (Einmalig) Auth-Cookie holen für protected Screens
+BASE_URL=http://localhost:3030 pnpm screenshots:capture-session
+#   → öffnet Chromium-Fenster, dort einloggen, <enter> im Terminal.
+#   → schreibt .screenshot-cookies.json (gitignored)
+
+# 3) Optional: konkrete Klasse setzen
+export SCREENSHOT_CLASSROOM_PATH="/classroom/<id>"
+
+# 4) Screenshots erzeugen
+BASE_URL=http://localhost:3030 pnpm screenshots:store
+#   → docs/store/assets/screenshots/{ios-67,ipad-pro-129,android-phone}/*.png
+```
+
+Skript-Eckdaten:
+
+| Device | viewport | DPR | resultierende PNG |
+|---|---|---|---|
+| `ios-67` | 430 × 932 | 3 | 1290 × 2796 |
+| `ipad-pro-129` | 1024 × 1366 | 2 | 2048 × 2732 |
+| `android-phone` | 412 × 915 | 2.625 | ~1081 × 2400 (auf 1080 × 1920 croppen) |
+
+Auth-geschützte Routes (`/dashboard`, `/mentor`, `/classroom/*`) werden
+übersprungen, solange `.screenshot-cookies.json` nicht existiert — das
+Skript meldet das je Routen-Zeile beim Lauf.
+
+## Produktion — manuell (Fallback / Marketing-Frames)
 
 1. App auf realem iPhone 15 Pro Max + iPad Pro 12.9 öffnen
    (oder über Xcode-Simulator → Screenshot-Hotkey ⌘S)

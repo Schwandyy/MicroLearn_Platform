@@ -49,3 +49,7 @@ public/fallback-*.js
 # Capacitor native projects (regenerated via `pnpm mobile:add:*`)
 /ios
 /android
+
+# Playwright screenshot session (contains auth cookies — never commit)
+.screenshot-cookies.json
+docs/store/assets/screenshots/

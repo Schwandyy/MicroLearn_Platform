@@ -23,6 +23,8 @@
     "mobile:open:ios": "cap open ios",
     "mobile:open:android": "cap open android",
     "mobile:assets:placeholders": "node scripts/generate-placeholder-assets.mjs",
+    "screenshots:store": "node scripts/generate-screenshots.mjs",
+    "screenshots:capture-session": "node scripts/capture-screenshot-session.mjs",
     "mobile:assets": "capacitor-assets generate --iconBackgroundColor=#0b1220 --iconBackgroundColorDark=#0b1220 --splashBackgroundColor=#0b1220 --splashBackgroundColorDark=#0b1220 --ios --android",
     "postinstall": "prisma generate"
   },
@@ -94,6 +96,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.18",
     "jsonrepair": "^3.14.0",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.49",
     "prisma": "^6.0.1",
     "tailwindcss": "^3.4.15",
