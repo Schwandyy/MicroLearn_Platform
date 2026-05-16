@@ -112,6 +112,13 @@ const bomFixes: BomFix[] = [
     targetQuantity: 5,
     reason: "Brauchen 5 Kabel inkl. GND-Schiene → ESP32-GND-Verbindung.",
   },
+  // esp32-ultraschall-abstand: 4 → 6 Jumper (zusätzlich Spannungsteiler-Verkabelung)
+  {
+    lessonSlug: "esp32-ultraschall-abstand",
+    componentSlug: "jumper-wires-mm",
+    targetQuantity: 6,
+    reason: "4 für HC-SR04 ↔ ESP32 + 2 für Spannungsteiler-Verdrahtung am Echo-Pin.",
+  },
 ];
 
 async function applyBomFix(b: BomFix): Promise<"applied" | "skipped" | "missing"> {
