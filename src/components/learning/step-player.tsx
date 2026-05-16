@@ -609,8 +609,12 @@ function NextButton({
 
 interface SetupChecklistItem {
   iconKey?: "download" | "usb" | "monitor" | "cable" | "check";
-  label_de: string;
-  label_en: string;
+  label_de?: string;
+  label_en?: string;
+  // Legacy-Format: {de, en} — wird automatisch in label_de/label_en gemappt
+  // und URLs werden aus dem Text gezogen und als Button gerendert.
+  de?: string;
+  en?: string;
   hint_de?: string;
   hint_en?: string;
   link?: {
@@ -627,6 +631,39 @@ const SETUP_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>
   cable: Cable,
   check: CheckCircle2,
 };
+
+const URL_REGEX = /https?:\/\/[^\s)>"']+/i;
+
+function normalizeChecklistItem(
+  item: SetupChecklistItem,
+  locale: "de" | "en",
+): { label: string; hint?: string; link?: { url: string; label: string } } {
+  // Modernes Format hat Vorrang
+  if (item.label_de || item.label_en) {
+    const label = (locale === "de" ? item.label_de : item.label_en) ?? "";
+    const hint = locale === "de" ? item.hint_de : item.hint_en;
+    const link = item.link
+      ? {
+          url: item.link.url,
+          label: locale === "de" ? item.link.label_de : item.link.label_en,
+        }
+      : undefined;
+    return { label, hint, link };
+  }
+
+  // Legacy-Format {de, en}
+  const raw = (locale === "de" ? item.de : item.en) ?? "";
+  const match = raw.match(URL_REGEX);
+  if (match) {
+    const url = match[0];
+    const labelText = raw.replace(URL_REGEX, "").trim().replace(/[:\s]+$/, "");
+    return {
+      label: labelText || (locale === "de" ? "Link öffnen" : "Open link"),
+      link: { url, label: locale === "de" ? "Öffnen" : "Open" },
+    };
+  }
+  return { label: raw };
+}
 
 function SetupStep({
   title,
@@ -664,8 +701,7 @@ function SetupStep({
       <ol className="grid gap-3">
         {items.map((item, idx) => {
           const Icon = SETUP_ICON_MAP[item.iconKey ?? "check"] ?? CheckCircle2;
-          const label = locale === "de" ? item.label_de : item.label_en;
-          const hint = locale === "de" ? item.hint_de : item.hint_en;
+          const norm = normalizeChecklistItem(item, locale);
           return (
             <li key={idx}>
               <Card>
@@ -674,24 +710,24 @@ function SetupStep({
                     {idx + 1}
                   </span>
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="flex items-center gap-2 text-base font-semibold leading-snug">
-                      <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
-                      {label}
+                    <p className="flex items-start gap-2 text-base font-semibold leading-snug">
+                      <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                      <span className="break-words">{norm.label}</span>
                     </p>
-                    {hint && (
+                    {norm.hint && (
                       <p className="text-sm leading-relaxed text-muted-foreground">
-                        {hint}
+                        {norm.hint}
                       </p>
                     )}
-                    {item.link && (
+                    {norm.link && (
                       <a
-                        href={item.link.url}
+                        href={norm.link.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
                       >
                         <Download className="h-3.5 w-3.5" />
-                        {locale === "de" ? item.link.label_de : item.link.label_en}
+                        {norm.link.label}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     )}
