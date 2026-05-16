@@ -17,6 +17,12 @@
     "verify:affiliate": "tsx --env-file=.env scripts/verify-affiliate-links.ts",
     "sync:affiliate": "tsx --env-file=.env scripts/sync-affiliate-links.ts",
     "lessons:generate": "tsx --env-file=.env.local scripts/generate-lesson.ts",
+    "mobile:add:ios": "cap add ios",
+    "mobile:add:android": "cap add android",
+    "mobile:sync": "cap sync",
+    "mobile:open:ios": "cap open ios",
+    "mobile:open:android": "cap open android",
+    "mobile:assets": "capacitor-assets generate --iconBackgroundColor=#0b1220 --iconBackgroundColorDark=#0b1220 --splashBackgroundColor=#0b1220 --splashBackgroundColorDark=#0b1220",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -24,6 +30,12 @@
     "@auth/prisma-adapter": "^2.7.4",
     "@aws-sdk/client-s3": "^3.1047.0",
     "@aws-sdk/s3-request-presigner": "^3.1047.0",
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/client": "^6.0.1",
     "@radix-ui/react-avatar": "^1.1.1",
@@ -67,6 +79,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.3.4",
     "@tailwindcss/typography": "^0.5.15",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.1",

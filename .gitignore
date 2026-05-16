@@ -45,3 +45,7 @@ public/workbox-*.js.map
 public/worker-*.js
 public/worker-*.js.map
 public/fallback-*.js
+
+# Capacitor native projects (regenerated via `pnpm mobile:add:*`)
+/ios
+/android

@@ -126,12 +126,41 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
       Lehrer-Tagging im Creator, /paths-Filter, Klassen-State+Grade)
 - [x] Content-Scraper: Adafruit Learn + Hackster.io (ATOM-Feeds)
 
-### 🧭 Phase 4 (next)
+### ✅ Phase 4
 
-- [ ] Capacitor Mobile-Wrapper (iOS + Android via PWA-Bridge)
-- [ ] Curriculum-Standards für AT (Lehrplan Sek I/II) und CH (LP21)
-- [ ] Lehrer-Reporting-PDF mit Curriculum-Coverage
-- [ ] Mehr Scraper-Quellen (Sparkfun Learn, Pimoroni Learn)
+- [x] Lehrer-Reporting-PDF mit Curriculum-Coverage
+      (`@react-pdf/renderer`, bilingual, je Klasse: Schüler:innen-Tabelle +
+      Standard-Abdeckung BW/BY/NRW/AT/CH inkl. "offen / abgedeckt"-Badge)
+- [x] Curriculum-Standards für AT (Lehrplan Sek I/II) und CH (LP21)
+      — 14 zusätzliche Einträge, Bundesländer-Dropdown gruppiert DE / AT / CH
+- [x] Mehr Scraper-Quellen: SparkFun Learn (`/feeds/tutorials` ATOM) +
+      Pimoroni Learn (`/article/<slug>`-Crawl mit Topic-Filter)
+- [x] Capacitor Mobile-Wrapper (iOS + Android via PWA-Bridge, server.url
+      zeigt auf die produktive Next.js-Deployment, www/ als Bootstrap-Shell)
+
+### 📱 Mobile-App bauen (Capacitor)
+
+```bash
+# 1) Produktiv-URL setzen (oder direkt capacitor.config.ts editieren)
+export MICROLEARN_MOBILE_URL=https://app.microlearn.example
+
+# 2) Native Projekte erzeugen (einmalig, danach in .gitignore)
+pnpm mobile:add:ios       # benötigt Xcode + CocoaPods
+pnpm mobile:add:android   # benötigt Android Studio + JDK 17
+
+# 3) Icons + Splash aus assets/icon.png + assets/splash.png (1024×1024)
+pnpm mobile:assets
+
+# 4) Web → native syncen + öffnen
+pnpm mobile:sync
+pnpm mobile:open:ios
+pnpm mobile:open:android
+```
+
+Die App lädt die produktive Web-Version in einer WKWebView (iOS) / WebView
+(Android); der PWA-Service-Worker übernimmt Offline-Caching. Stripe, NextAuth,
+Push & R2 funktionieren unverändert, weil sie weiterhin gegen den Next-Server
+laufen.
 
 ---
 
