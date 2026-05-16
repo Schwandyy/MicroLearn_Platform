@@ -12,6 +12,8 @@ import {
 import { CreateClassroomForm } from "@/components/classroom/create-classroom-form";
 import { ClassroomList } from "@/components/classroom/classroom-list";
 import { TeacherStartWizard } from "@/components/classroom/teacher-start-wizard";
+import { HelpRequestStrip } from "@/components/classroom/help-request-strip";
+import { listOpenHelpRequestsForTeacher } from "@/server/lib/help-requests";
 import { GraduationCap } from "lucide-react";
 
 export default async function ClassroomPage({
@@ -56,6 +58,12 @@ export default async function ClassroomPage({
     },
   });
 
+  const helpRequests = await listOpenHelpRequestsForTeacher({
+    teacherId: session.user.id,
+    role: session.user.role,
+    locale: locale === "en" ? "en" : "de",
+  });
+
   return (
     <div className="container py-10">
       <div className="mb-8 flex items-center gap-2">
@@ -65,6 +73,8 @@ export default async function ClassroomPage({
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
+
+      <HelpRequestStrip initialRequests={helpRequests} />
 
       {classrooms.length === 0 && (
         <div className="mb-8">

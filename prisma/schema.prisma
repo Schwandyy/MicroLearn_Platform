@@ -121,6 +121,12 @@ enum NotificationType {
   ASSIGNMENT
   LESSON_PUBLISHED
   SYSTEM
+  HELP_REQUEST
+}
+
+enum HelpRequestSource {
+  AUTO_STUCK // detected by cron
+  STUDENT_RAISED // student tapped "ask teacher"
 }
 
 enum BadgeCategory {
@@ -182,6 +188,8 @@ model User {
   classroomsTaught  Classroom[]        @relation("ClassroomTeacher")
   reviewsAuthored   ContentReview[]    @relation("ReviewAuthor")
   notifications     Notification[]
+  helpRequests      HelpRequest[]      @relation("HelpRequestStudent")
+  helpResolutions   HelpRequest[]      @relation("HelpRequestResolver")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -477,6 +485,7 @@ model Lesson {
   steps             LessonStep[]
   assignments       ClassroomAssignment[]
   curriculumLinks   LessonCurriculumStandard[]
+  helpRequests      HelpRequest[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -837,14 +846,35 @@ model Classroom {
   institution Institution? @relation(fields: [institutionId], references: [id])
   teacher     User         @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
 
-  members     ClassroomMember[]
-  codes       ClassroomCode[]
-  assignments ClassroomAssignment[]
+  members      ClassroomMember[]
+  codes        ClassroomCode[]
+  assignments  ClassroomAssignment[]
+  helpRequests HelpRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([state, grade])
+}
+
+model HelpRequest {
+  id          String            @id @default(cuid())
+  studentId   String
+  lessonId    String
+  classroomId String?
+  source      HelpRequestSource
+  message     String?           @db.Text
+  resolvedAt  DateTime?
+  resolvedById String?
+  createdAt   DateTime          @default(now())
+
+  student    User       @relation("HelpRequestStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  resolvedBy User?      @relation("HelpRequestResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  lesson     Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  classroom  Classroom? @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+
+  @@index([classroomId, resolvedAt])
+  @@index([studentId, lessonId, resolvedAt])
 }
 
 model ClassroomCode {

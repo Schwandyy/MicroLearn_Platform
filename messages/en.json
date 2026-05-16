@@ -382,6 +382,21 @@
     "retryLater": "Please try again later.",
     "saved": "Saved"
   },
+  "help": {
+    "title": "Need a hand?",
+    "body": "You've been on this lesson a while. Ask your teacher — they'll see it in their classroom.",
+    "cta": "Ask my teacher",
+    "dismiss": "I'm fine",
+    "confirmed": "Your teacher has been notified — hang in there, you've got this.",
+    "error": "Couldn't send the help request.",
+    "stripTitle": "{count, plural, =1 {1 student needs help} other {# students need help}}",
+    "stripRow": "on \"{title}\" · {classroom}",
+    "noClassroom": "no classroom assigned",
+    "ageMin": "{num, plural, =0 {just now} =1 {1 min ago} other {# min ago}}",
+    "sourceStudent": "asked",
+    "sourceAuto": "detected",
+    "resolve": "Resolve"
+  },
   "paths": {
     "title": "Learning paths",
     "subtitle": "Structured routes through microelectronics — pick by level or board.",

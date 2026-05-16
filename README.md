@@ -173,6 +173,27 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Manuelles `<CreateClassroomForm>` bleibt parallel, Label wechselt auf
       „Klasse manuell anlegen" wenn schon 0 Klassen + Wizard sichtbar
 
+### ✅ Phase 7.5 — Stuck-Detection + Lehrer-Hilferuf
+
+- [x] Neues Modell `HelpRequest` (Student + Lesson + Classroom + Source +
+      Resolved-Tracking) + Enum `HelpRequestSource = AUTO_STUCK | STUDENT_RAISED`
+      + Notification-Type `HELP_REQUEST`.
+- [x] Cron `/api/cron/stuck-detection` (Vercel `*/5 * * * *`) findet
+      Schüler:innen, die seit >12 Min aktiv an einer Lesson sind (Heartbeat
+      <5 Min) ohne Abschluss → öffnet `HelpRequest(AUTO_STUCK)`, 60-Min-Cooldown
+      pro (Student, Lesson) verhindert Spam.
+- [x] Schüler-Player: `<HelpRequestPrompt>` zeigt nach 8 Min Lesson-Aktivität
+      einen dezenten „Brauchst du Hilfe?"-Strip am unteren Rand;
+      Klick öffnet `HelpRequest(STUDENT_RAISED)` + 30-Min-Dismiss per localStorage.
+- [x] Lehrer-Dashboard `/classroom`: `<HelpRequestStrip>` oben mit Live-Liste
+      (Polling 60 s) — Schülername, Lesson-Titel, Klassen-Name, Quelle (gemeldet/
+      festgestellt), Alter in Min, optionale Nachricht; „Erledigt"-Button löst auf.
+- [x] APIs `POST /api/help-requests` (Schüler) + `GET /api/help-requests`
+      (Lehrer-Liste) + `POST /api/help-requests/:id/resolve` mit Auth-Gate
+      (Klassen-Teacher oder ADMIN).
+- [x] Notification + Push an Lehrkraft(en) der zugewiesenen Klasse;
+      Fallback an alle Lehrkräfte, die den Schüler in einer Klasse haben.
+
 ### ✅ Phase 7.4.1 — Claude-Ranking + Curriculum-Match im Teacher-Wizard
 
 - [x] Pool von 4 → 12 Kandidaten, sortiert nach Standards-Match-Count

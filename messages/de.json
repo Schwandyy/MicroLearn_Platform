@@ -382,6 +382,21 @@
     "retryLater": "Bitte später erneut versuchen.",
     "saved": "Gespeichert"
   },
+  "help": {
+    "title": "Brauchst du Hilfe?",
+    "body": "Du bist schon eine Weile an dieser Lesson dran. Frag deine Lehrkraft — sie sieht das im Klassenraum.",
+    "cta": "Lehrer:in fragen",
+    "dismiss": "Geht schon",
+    "confirmed": "Deine Lehrkraft wurde benachrichtigt — bleib einfach hier, du schaffst das.",
+    "error": "Konnte den Hilferuf nicht senden.",
+    "stripTitle": "{count, plural, =1 {Schüler:in braucht Hilfe} other {# Schüler:innen brauchen Hilfe}}",
+    "stripRow": "bei „{title}" · {classroom}",
+    "noClassroom": "ohne zugewiesene Klasse",
+    "ageMin": "{num, plural, =0 {gerade eben} =1 {vor 1 Min} other {vor # Min}}",
+    "sourceStudent": "gemeldet",
+    "sourceAuto": "festgestellt",
+    "resolve": "Erledigt"
+  },
   "paths": {
     "title": "Lernpfade",
     "subtitle": "Strukturierte Wege durch die Mikroelektronik — wähle nach Level oder Board.",

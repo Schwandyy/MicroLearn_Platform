@@ -35,6 +35,7 @@ import {
   LessonCompletionModal,
   type CompletionPayload,
 } from "./lesson-completion-modal";
+import { HelpRequestPrompt } from "./help-request-prompt";
 
 export type StepKind =
   | "INTRO"
@@ -231,6 +232,10 @@ export function StepPlayer({
           router.push("/dashboard");
         }}
       />
+
+      {!alreadyCompleted && completion === null && (
+        <HelpRequestPrompt lessonId={lessonId} />
+      )}
     </div>
   );
 }
