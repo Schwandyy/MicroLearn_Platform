@@ -56,30 +56,63 @@ const STEP_KINDS: Array<{
 let stepCounter = 0;
 const nextUid = () => `s${++stepCounter}_${Date.now()}`;
 
-export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) {
+interface WizardInitial {
+  lessonId: string;
+  courseId: string;
+  title_de: string;
+  title_en: string;
+  summary_de: string;
+  summary_en: string;
+  estimatedMinutes: number | null;
+  xpReward: number;
+  steps: Array<{
+    kind: StepKind;
+    title_de: string;
+    title_en: string;
+    body_de: string;
+    body_en: string;
+  }>;
+}
+
+export function LessonWizard({
+  courseGroups,
+  initial,
+}: {
+  courseGroups: CourseGroup[];
+  initial?: WizardInitial;
+}) {
   const t = useTranslations("create");
   const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const isEdit = Boolean(initial);
 
-  const [courseId, setCourseId] = useState("");
-  const [titleDe, setTitleDe] = useState("");
-  const [titleEn, setTitleEn] = useState("");
-  const [summaryDe, setSummaryDe] = useState("");
-  const [summaryEn, setSummaryEn] = useState("");
-  const [estimatedMinutes, setEstimatedMinutes] = useState("45");
-  const [xpReward, setXpReward] = useState("50");
-  const [steps, setSteps] = useState<DraftStep[]>([
-    {
-      uid: nextUid(),
-      kind: "INTRO",
-      title_de: "",
-      title_en: "",
-      body_de: "",
-      body_en: "",
-    },
-  ]);
+  const [courseId, setCourseId] = useState(initial?.courseId ?? "");
+  const [titleDe, setTitleDe] = useState(initial?.title_de ?? "");
+  const [titleEn, setTitleEn] = useState(initial?.title_en ?? "");
+  const [summaryDe, setSummaryDe] = useState(initial?.summary_de ?? "");
+  const [summaryEn, setSummaryEn] = useState(initial?.summary_en ?? "");
+  const [estimatedMinutes, setEstimatedMinutes] = useState(
+    initial?.estimatedMinutes != null ? String(initial.estimatedMinutes) : "45",
+  );
+  const [xpReward, setXpReward] = useState(
+    initial?.xpReward != null ? String(initial.xpReward) : "50",
+  );
+  const [steps, setSteps] = useState<DraftStep[]>(
+    initial?.steps && initial.steps.length > 0
+      ? initial.steps.map((s) => ({ uid: nextUid(), ...s }))
+      : [
+          {
+            uid: nextUid(),
+            kind: "INTRO",
+            title_de: "",
+            title_en: "",
+            body_de: "",
+            body_en: "",
+          },
+        ],
+  );
 
   const titleOk = titleDe.trim().length >= 3 && titleEn.trim().length >= 3;
   const summaryOk =
@@ -128,8 +161,10 @@ export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) 
       return;
     }
     startTransition(async () => {
-      const res = await fetch("/api/lessons", {
-        method: "POST",
+      const url = isEdit ? `/api/lessons/${initial!.lessonId}` : "/api/lessons";
+      const method = isEdit ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId,
@@ -156,7 +191,7 @@ export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) 
         });
         return;
       }
-      toast({ title: t("submitted") });
+      toast({ title: isEdit ? t("updated") : t("submitted") });
       router.push("/create");
     });
   };
@@ -322,7 +357,11 @@ export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) 
         <p className="text-sm text-muted-foreground">{t("submitHint")}</p>
         <Button onClick={submit} disabled={!canSubmit || isPending}>
           <Send className="mr-2 h-4 w-4" />
-          {isPending ? t("submitting") : t("submitForReview")}
+          {isPending
+            ? t("submitting")
+            : isEdit
+              ? t("saveChanges")
+              : t("submitForReview")}
         </Button>
       </div>
     </div>

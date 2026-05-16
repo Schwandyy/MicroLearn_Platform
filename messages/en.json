@@ -630,7 +630,12 @@
     "submitting": "Sending…",
     "submitHint": "We'll notify you once review is done.",
     "submitted": "Submitted — thanks!",
-    "fillRequired": "Please fill course, title and summary."
+    "fillRequired": "Please fill course, title and summary.",
+    "editLesson": "Edit lesson",
+    "saveChanges": "Save changes",
+    "updated": "Saved",
+    "readOnlyHint": "This lesson is locked after review. You can view it but no longer edit.",
+    "reviewerNotes": "Reviewer notes"
   },
   "admin": {
     "commentDeleteConfirm": "Really delete this comment?"

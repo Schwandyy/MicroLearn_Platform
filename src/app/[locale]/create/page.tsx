@@ -146,10 +146,11 @@ export default async function CreatePage({
                     ? "rejected"
                     : "pending";
               return (
-                <li
-                  key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4"
-                >
+                <li key={r.id}>
+                  <Link
+                    href={`/create/${l.id}`}
+                    className="group flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4 transition-colors hover:bg-muted/40"
+                  >
                   <div className="min-w-0">
                     <div className="font-medium">{l[titleField]}</div>
                     <div className="mt-1 text-xs text-muted-foreground">
@@ -176,6 +177,7 @@ export default async function CreatePage({
                   >
                     {t(`status_${status}`)}
                   </Badge>
+                  </Link>
                 </li>
               );
             })}

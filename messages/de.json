@@ -630,7 +630,12 @@
     "submitting": "Sende…",
     "submitHint": "Wir melden uns per Benachrichtigung, sobald die Prüfung durch ist.",
     "submitted": "Eingereicht — danke!",
-    "fillRequired": "Bitte Kurs, Titel und Kurzbeschreibung ausfüllen."
+    "fillRequired": "Bitte Kurs, Titel und Kurzbeschreibung ausfüllen.",
+    "editLesson": "Lektion bearbeiten",
+    "saveChanges": "Änderungen speichern",
+    "updated": "Gespeichert",
+    "readOnlyHint": "Diese Lektion ist nach abgeschlossener Review gesperrt. Du siehst sie nur noch lesend.",
+    "reviewerNotes": "Hinweise vom Review-Team"
   },
   "admin": {
     "commentDeleteConfirm": "Kommentar wirklich löschen?"
