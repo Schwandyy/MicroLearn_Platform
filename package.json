@@ -18,6 +18,7 @@
     "db:fix:setup-bom": "tsx --env-file=.env scripts/fix-setup-bom.ts",
     "db:audit:boms": "tsx --env-file=.env scripts/audit-boms.ts",
     "db:audit:quality": "tsx --env-file=.env scripts/audit-lesson-quality.ts",
+    "db:audit:kidspeak": "tsx --env-file=.env --env-file=.env.local scripts/audit-lesson-kidspeak.ts",
     "db:fix:affiliate-gaps": "tsx --env-file=.env scripts/fix-affiliate-gaps.ts",
     "db:fix:explain-visuals": "tsx --env-file=.env scripts/fix-explain-visuals.ts",
     "verify:affiliate": "tsx --env-file=.env scripts/verify-affiliate-links.ts",
