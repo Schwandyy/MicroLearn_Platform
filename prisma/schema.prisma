@@ -390,6 +390,7 @@ model LearningPath {
   courses      Course[]
   userProgress UserProgress[]
   certificates Certificate[]
+  assignments  ClassroomAssignment[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -449,6 +450,7 @@ model Lesson {
   review            ContentReview?
   progress          UserProgress[]
   steps             LessonStep[]
+  assignments       ClassroomAssignment[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -805,8 +807,9 @@ model Classroom {
   institution Institution? @relation(fields: [institutionId], references: [id])
   teacher     User         @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
 
-  members ClassroomMember[]
-  codes   ClassroomCode[]
+  members     ClassroomMember[]
+  codes       ClassroomCode[]
+  assignments ClassroomAssignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -832,6 +835,23 @@ model ClassroomMember {
 
   classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([classroomId])
+}
+
+model ClassroomAssignment {
+  id          String    @id @default(cuid())
+  classroomId String
+  pathId      String?
+  lessonId    String?
+  dueAt       DateTime?
+  note        String?   @db.Text
+
+  classroom Classroom     @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  path      LearningPath? @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  lesson    Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@index([classroomId])
 }

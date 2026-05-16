@@ -46,21 +46,12 @@ export default async function ClassroomPage({
   const classrooms = await prisma.classroom.findMany({
     where: { teacherId: session.user.id },
     orderBy: { createdAt: "desc" },
-    include: {
-      members: {
-        include: {
-          user: {
-            include: {
-              progress: {
-                where: { completedAt: { not: null } },
-                select: { id: true },
-              },
-              xp: { select: { amount: true } },
-            },
-          },
-        },
-      },
-      codes: { orderBy: { expiresAt: "desc" } },
+    select: {
+      id: true,
+      name: true,
+      curriculumTag: true,
+      members: { select: { id: true, isActive: true } },
+      assignments: { select: { id: true } },
     },
   });
 
@@ -88,20 +79,9 @@ export default async function ClassroomPage({
           id: c.id,
           name: c.name,
           curriculumTag: c.curriculumTag,
-          codes: c.codes.map((code) => ({
-            id: code.id,
-            code: code.code,
-            expiresAt: code.expiresAt.toISOString(),
-            maxUses: code.maxUses,
-            uses: code.uses,
-          })),
-          students: c.members.map((m) => ({
-            memberId: m.id,
-            isActive: m.isActive,
-            username: m.user.username ?? "(no name)",
-            completedLessons: m.user.progress.length,
-            totalXp: m.user.xp.reduce((sum, x) => sum + x.amount, 0),
-          })),
+          studentCount: c.members.length,
+          activeCount: c.members.filter((m) => m.isActive).length,
+          assignmentCount: c.assignments.length,
         }))}
       />
     </div>
