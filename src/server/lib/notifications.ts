@@ -1,5 +1,6 @@
 import type { NotificationType } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
+import { sendPush } from "@/server/lib/push";
 
 interface CreateInput {
   userId: string;
@@ -7,6 +8,20 @@ interface CreateInput {
   title: string;
   body?: string | null;
   link?: string | null;
+}
+
+async function maybePush(input: CreateInput): Promise<void> {
+  try {
+    await sendPush(input.userId, {
+      title_de: input.title,
+      title_en: input.title,
+      body_de: input.body ?? "",
+      body_en: input.body ?? "",
+      url: input.link ?? "/",
+    });
+  } catch {
+    // best-effort
+  }
 }
 
 export async function createNotification(input: CreateInput): Promise<void> {
@@ -21,8 +36,9 @@ export async function createNotification(input: CreateInput): Promise<void> {
       },
     });
   } catch {
-    // Notifications are best-effort — never break the caller flow
+    return; // best-effort
   }
+  await maybePush(input);
 }
 
 export async function createManyNotifications(
@@ -40,6 +56,7 @@ export async function createManyNotifications(
       })),
     });
   } catch {
-    // Best-effort
+    return; // best-effort
   }
+  await Promise.all(inputs.map(maybePush));
 }

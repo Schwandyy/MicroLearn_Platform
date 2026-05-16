@@ -12,6 +12,7 @@ import { ProfileForm } from "@/components/settings/profile-form";
 import { DataActions } from "@/components/settings/data-actions";
 import { DangerZone } from "@/components/settings/danger-zone";
 import { SubscriptionPanel } from "@/components/settings/subscription-panel";
+import { PushToggle } from "@/components/settings/push-toggle";
 
 export default async function SettingsPage({
   params,
@@ -71,6 +72,25 @@ export default async function SettingsPage({
               }
               cancelAtPeriodEnd={user?.subscription?.cancelAtPeriodEnd ?? false}
               hasCustomer={Boolean(user?.subscription?.stripeCustomerId)}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sectionNotifications")}</CardTitle>
+            <CardDescription>{t("notificationsHint")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PushToggle
+              vapidPublicKey={
+                process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null
+              }
+              preferredLocale={
+                (user?.preferredLocale as "de" | "en") ?? locale === "en"
+                  ? "en"
+                  : "de"
+              }
             />
           </CardContent>
         </Card>

@@ -556,7 +556,19 @@
     "manage": "Verwalten (Stripe-Portal)",
     "upgrade": "Upgraden",
     "checkoutSuccess": "Willkommen im Pro-Plan! Deine Zahlung war erfolgreich.",
-    "checkoutCancelled": "Checkout abgebrochen — kein Problem, du bleibst auf dem aktuellen Plan."
+    "checkoutCancelled": "Checkout abgebrochen — kein Problem, du bleibst auf dem aktuellen Plan.",
+    "sectionNotifications": "Benachrichtigungen",
+    "notificationsHint": "Push-Benachrichtigungen aufs Gerät — funktioniert auch wenn die App geschlossen ist.",
+    "pushOn": "Push aktiv",
+    "pushOff": "Push deaktiviert",
+    "pushTurnOn": "Aktivieren",
+    "pushTurnOff": "Deaktivieren",
+    "pushEnabled": "Push aktiviert",
+    "pushDisabled": "Push deaktiviert",
+    "pushBlocked": "Vom Browser blockiert",
+    "pushBlockedHint": "Bitte erlaube Benachrichtigungen in den Browser-Einstellungen für diese Seite.",
+    "pushUnsupported": "Dein Browser unterstützt Push-Benachrichtigungen nicht.",
+    "pushNotConfigured": "Push noch nicht konfiguriert. Kontakt: Admin."
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen öffnen",

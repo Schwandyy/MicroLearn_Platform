@@ -556,7 +556,19 @@
     "manage": "Manage (Stripe portal)",
     "upgrade": "Upgrade",
     "checkoutSuccess": "Welcome to Pro! Your payment went through.",
-    "checkoutCancelled": "Checkout cancelled — no worries, you stay on your current plan."
+    "checkoutCancelled": "Checkout cancelled — no worries, you stay on your current plan.",
+    "sectionNotifications": "Notifications",
+    "notificationsHint": "Push notifications to this device — works even when the app is closed.",
+    "pushOn": "Push active",
+    "pushOff": "Push disabled",
+    "pushTurnOn": "Turn on",
+    "pushTurnOff": "Turn off",
+    "pushEnabled": "Push enabled",
+    "pushDisabled": "Push disabled",
+    "pushBlocked": "Blocked by browser",
+    "pushBlockedHint": "Please allow notifications in your browser settings for this site.",
+    "pushUnsupported": "Your browser doesn't support push notifications.",
+    "pushNotConfigured": "Push not configured yet. Contact admin."
   },
   "notifications": {
     "ariaLabel": "Open notifications",
