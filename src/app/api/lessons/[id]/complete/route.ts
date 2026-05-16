@@ -3,6 +3,7 @@ import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { grantXP, bumpStreak, XP } from "@/server/lib/xp";
 import { issueCertificateIfPathDone } from "@/server/lib/certificates";
+import { checkAndAwardBadges } from "@/server/lib/badges";
 
 export async function POST(
   _req: Request,
@@ -58,9 +59,20 @@ export async function POST(
 
   const streak = await bumpStreak(session.user.id);
 
+  const newBadges = await checkAndAwardBadges({
+    userId: session.user.id,
+    completedLessonKind: lesson.kind === "PROJECT" ? "PROJECT" : "CONCEPT",
+    streakDays: streak.currentDays,
+  });
+
   const certificate = course?.pathId
     ? await issueCertificateIfPathDone(session.user.id, course.pathId)
     : null;
 
-  return NextResponse.json({ xpGained: xp, streak, certificate });
+  return NextResponse.json({
+    xpGained: xp,
+    streak,
+    newBadges,
+    certificate,
+  });
 }

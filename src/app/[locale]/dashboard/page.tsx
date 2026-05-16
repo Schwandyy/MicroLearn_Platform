@@ -29,6 +29,8 @@ import { pickRecommendedPath } from "@/lib/path-recommendation";
 import { BoardSelector } from "@/components/dashboard/board-selector";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { CheckoutResultBanner } from "@/components/dashboard/checkout-result-banner";
+import { StreakBadgeStrip } from "@/components/dashboard/streak-badge-strip";
+import { BADGE_CATALOG } from "@/server/lib/badges";
 
 export default async function DashboardPage({
   params,
@@ -46,7 +48,7 @@ export default async function DashboardPage({
   const canTeach =
     session.user.role === "TEACHER" || session.user.role === "ADMIN";
 
-  const [user, xpAgg, streak, paths, allBoards, lastAssessment, certificates, teacherActivity] =
+  const [user, xpAgg, streak, paths, allBoards, lastAssessment, certificates, teacherActivity, userBadgeCount, recentUserBadges] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id: session.user.id },
@@ -79,6 +81,13 @@ export default async function DashboardPage({
       canTeach
         ? getRecentTeacherActivity(session.user.id, 10)
         : Promise.resolve([]),
+      prisma.userBadge.count({ where: { userId: session.user.id } }),
+      prisma.userBadge.findMany({
+        where: { userId: session.user.id },
+        include: { badge: true },
+        orderBy: { earnedAt: "desc" },
+        take: 4,
+      }),
     ]);
   const tCert = await getTranslations("certificates");
 
@@ -310,26 +319,51 @@ export default async function DashboardPage({
         <TeacherActivityWidget items={teacherActivity} locale={locale} />
       )}
 
-      {/* Stats — bei aktiven Lernern unter dem Hero */}
-      {!isBeginnerMode && (
-        <div className="mb-10 grid grid-cols-3 gap-3 rounded-xl border bg-card p-3 md:gap-4 md:p-4">
-          <StatTile
-            icon={<GraduationCap className="h-4 w-4 text-primary" />}
-            label={t("yourLevel")}
-            value={tA(`resultLevel.${levelNum}`)}
-          />
-          <StatTile
-            icon={<Trophy className="h-4 w-4 text-amber-500" />}
-            label={t("xp")}
-            value={totalXp.toLocaleString(locale)}
-          />
-          <StatTile
-            icon={<Flame className="h-4 w-4 text-orange-500" />}
-            label={t("streak")}
-            value={t("streakDays", { days: streak?.currentDays ?? 0 })}
-          />
-        </div>
-      )}
+      {/* Streak + Badges + XP — bei aktiven Lernern unter dem Hero */}
+      {!isBeginnerMode && (() => {
+        const today = new Date();
+        const last = streak?.lastActiveDay ?? null;
+        const activeToday = Boolean(
+          last &&
+            last.getFullYear() === today.getFullYear() &&
+            last.getMonth() === today.getMonth() &&
+            last.getDate() === today.getDate(),
+        );
+        const stripBadges = recentUserBadges.map((ub) => ({
+          slug: ub.badge.slug,
+          title: locale === "de" ? ub.badge.title_de : ub.badge.title_en,
+          description:
+            locale === "de" ? ub.badge.description_de : ub.badge.description_en,
+          iconKey:
+            BADGE_CATALOG.find((c) => c.slug === ub.badge.slug)?.iconKey ??
+            null,
+          earnedAt: ub.earnedAt.toISOString(),
+        }));
+        return (
+          <>
+            <StreakBadgeStrip
+              currentDays={streak?.currentDays ?? 0}
+              longestDays={streak?.longestDays ?? 0}
+              activeToday={activeToday}
+              totalXp={totalXp}
+              totalBadges={userBadgeCount}
+              recentBadges={stripBadges}
+            />
+            <div className="mb-10 grid grid-cols-1 gap-3 rounded-xl border bg-card p-3 md:grid-cols-2 md:gap-4 md:p-4">
+              <StatTile
+                icon={<GraduationCap className="h-4 w-4 text-primary" />}
+                label={t("yourLevel")}
+                value={tA(`resultLevel.${levelNum}`)}
+              />
+              <StatTile
+                icon={<Trophy className="h-4 w-4 text-amber-500" />}
+                label={t("xp")}
+                value={totalXp.toLocaleString(locale)}
+              />
+            </div>
+          </>
+        );
+      })()}
 
       {!isBeginnerMode && (
         <section className="mb-12">

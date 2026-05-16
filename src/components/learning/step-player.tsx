@@ -31,6 +31,10 @@ import { BomCards, type BomItemView } from "./bom-cards";
 import { Esp32PinVisual } from "./esp32-pin-visual";
 import { MentorChat } from "./mentor-chat";
 import { EspFlashButton } from "./esp-flash-button";
+import {
+  LessonCompletionModal,
+  type CompletionPayload,
+} from "./lesson-completion-modal";
 
 export type StepKind =
   | "INTRO"
@@ -91,6 +95,7 @@ export function StepPlayer({
   const [isPending, startTransition] = useTransition();
   // Quiz-Gate: pro QUIZ-Step merken, ob korrekt gelöst (key = step.id)
   const [quizPassed, setQuizPassed] = useState<Record<string, boolean>>({});
+  const [completion, setCompletion] = useState<CompletionPayload | null>(null);
   const total = steps.length;
   const current = steps[stepIndex];
   const currentQuizPassed = current?.kind === "QUIZ" ? Boolean(quizPassed[current.id]) : true;
@@ -115,14 +120,19 @@ export function StepPlayer({
         toast({ title: tc("error"), variant: "destructive" });
         return;
       }
-      const data: { certificate?: { publicSlug: string } | null } = await res
-        .json()
-        .catch(() => ({}));
-      if (data.certificate?.publicSlug) {
-        router.push(`/certificates/${data.certificate.publicSlug}`);
+      const data: Partial<CompletionPayload> & {
+        alreadyCompleted?: boolean;
+      } = await res.json().catch(() => ({}));
+      if (data.alreadyCompleted) {
+        router.push("/dashboard");
         return;
       }
-      router.push("/dashboard");
+      setCompletion({
+        xpGained: data.xpGained ?? xpReward,
+        streak: data.streak ?? null,
+        newBadges: data.newBadges ?? [],
+        certificate: data.certificate ?? null,
+      });
     });
   };
 
@@ -210,6 +220,16 @@ export function StepPlayer({
             ? { title: current.title, body: current.body, kind: current.kind }
             : null
         }
+      />
+
+      <LessonCompletionModal
+        open={completion !== null}
+        payload={completion}
+        locale={locale}
+        onClose={() => {
+          setCompletion(null);
+          router.push("/dashboard");
+        }}
       />
     </div>
   );

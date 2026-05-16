@@ -14,6 +14,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:seed:curriculum": "tsx --env-file=.env scripts/seed-curriculum.ts",
+    "db:seed:badges": "tsx --env-file=.env scripts/seed-badges.ts",
     "verify:affiliate": "tsx --env-file=.env scripts/verify-affiliate-links.ts",
     "sync:affiliate": "tsx --env-file=.env scripts/sync-affiliate-links.ts",
     "lessons:generate": "tsx --env-file=.env.local scripts/generate-lesson.ts",
