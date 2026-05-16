@@ -652,7 +652,14 @@
     "saveChanges": "Save changes",
     "updated": "Saved",
     "readOnlyHint": "This lesson is locked after review. You can view it but no longer edit.",
-    "reviewerNotes": "Reviewer notes"
+    "reviewerNotes": "Reviewer notes",
+    "imageAdd": "Add image (optional)",
+    "imageUploading": "Uploading…",
+    "imageRemove": "Remove image",
+    "imageTooLarge": "Image too large (max 5 MB)",
+    "imageInvalidType": "Please use JPG, PNG, WEBP or GIF",
+    "imageStorageOff": "Image upload temporarily disabled",
+    "dragHandle": "Drag to reorder"
   },
   "admin": {
     "commentDeleteConfirm": "Really delete this comment?"

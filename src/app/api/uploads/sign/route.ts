@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 const schema = z.object({
   contentType: z.string().min(3).max(80),
   contentLength: z.number().int().positive().max(MAX_UPLOAD_BYTES),
-  purpose: z.enum(["project-cover", "avatar"]),
+  purpose: z.enum(["project-cover", "avatar", "lesson-step"]),
 });
 
 export async function POST(req: Request) {

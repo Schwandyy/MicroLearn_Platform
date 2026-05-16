@@ -17,6 +17,7 @@ const stepSchema = z.object({
   title_en: z.string().trim().max(120).optional().nullable(),
   body_de: z.string().trim().max(8000).optional().nullable(),
   body_en: z.string().trim().max(8000).optional().nullable(),
+  imageUrl: z.string().url().max(500).optional().nullable(),
 });
 
 const schema = z.object({
@@ -98,6 +99,7 @@ export async function PATCH(
             title_en: s.title_en ?? null,
             body_de: s.body_de ?? null,
             body_en: s.body_en ?? null,
+            imageUrl: s.imageUrl ?? null,
           })),
         },
       },

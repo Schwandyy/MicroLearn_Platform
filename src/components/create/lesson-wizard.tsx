@@ -14,11 +14,18 @@ import {
   BookOpen,
   Cog,
   Code2,
+  GripVertical,
+  ImageIcon,
   Lightbulb,
+  Loader2,
   PartyPopper,
   Send,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
+import Image from "next/image";
+import { uploadImage } from "@/lib/uploads";
 
 type StepKind = "INTRO" | "EXPLAIN" | "BUILD" | "CODE_WALK" | "CELEBRATE";
 
@@ -29,6 +36,7 @@ interface DraftStep {
   title_en: string;
   body_de: string;
   body_en: string;
+  imageUrl: string | null;
 }
 
 interface CourseGroup {
@@ -71,6 +79,7 @@ interface WizardInitial {
     title_en: string;
     body_de: string;
     body_en: string;
+    imageUrl: string | null;
   }>;
 }
 
@@ -110,6 +119,7 @@ export function LessonWizard({
             title_en: "",
             body_de: "",
             body_en: "",
+            imageUrl: null,
           },
         ],
   );
@@ -129,6 +139,7 @@ export function LessonWizard({
         title_en: "",
         body_de: "",
         body_en: "",
+        imageUrl: null,
       },
     ]);
   };
@@ -151,6 +162,20 @@ export function LessonWizard({
       const b = next[target]!;
       next[idx] = b;
       next[target] = a;
+      return next;
+    });
+  };
+
+  const reorderSteps = (fromUid: string, toUid: string) => {
+    if (fromUid === toUid) return;
+    setSteps((prev) => {
+      const from = prev.findIndex((s) => s.uid === fromUid);
+      const to = prev.findIndex((s) => s.uid === toUid);
+      if (from < 0 || to < 0) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      if (!moved) return prev;
+      next.splice(to, 0, moved);
       return next;
     });
   };
@@ -180,6 +205,7 @@ export function LessonWizard({
             title_en: s.title_en.trim() || null,
             body_de: s.body_de.trim() || null,
             body_en: s.body_en.trim() || null,
+            imageUrl: s.imageUrl,
           })),
         }),
       });
@@ -329,6 +355,7 @@ export function LessonWizard({
               onUpdate={(patch) => updateStep(s.uid, patch)}
               onRemove={() => removeStep(s.uid)}
               onMove={(dir) => moveStep(s.uid, dir)}
+              onDropFrom={(fromUid) => reorderSteps(fromUid, s.uid)}
             />
           ))}
 
@@ -375,6 +402,7 @@ function StepEditor({
   onUpdate,
   onRemove,
   onMove,
+  onDropFrom,
 }: {
   step: DraftStep;
   index: number;
@@ -382,12 +410,72 @@ function StepEditor({
   onUpdate: (patch: Partial<DraftStep>) => void;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
+  onDropFrom: (fromUid: string) => void;
 }) {
   const t = useTranslations("create");
+  const tc = useTranslations("common");
+  const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleImage = async (file: File) => {
+    setUploading(true);
+    try {
+      const { publicUrl } = await uploadImage({ file, purpose: "lesson-step" });
+      onUpdate({ imageUrl: publicUrl });
+    } catch (err) {
+      const code = (err as Error).message;
+      const msg =
+        code === "too_large"
+          ? t("imageTooLarge")
+          : code === "invalid_type"
+            ? t("imageInvalidType")
+            : code === "storage_disabled"
+              ? t("imageStorageOff")
+              : tc("error");
+      toast({ title: msg, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <div className="rounded-md border bg-card p-4">
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/x-step-uid", step.uid);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onDragOver={(e) => {
+        const uid = e.dataTransfer.types.includes("text/x-step-uid");
+        if (uid) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        const from = e.dataTransfer.getData("text/x-step-uid");
+        setDragOver(false);
+        if (from) {
+          e.preventDefault();
+          onDropFrom(from);
+        }
+      }}
+      className={`rounded-md border bg-card p-4 transition-colors ${
+        dragOver ? "border-primary bg-primary/5" : ""
+      }`}
+    >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          <span
+            className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+            aria-label={t("dragHandle")}
+            title={t("dragHandle")}
+          >
+            <GripVertical className="h-4 w-4" />
+          </span>
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold">
             {index + 1}
           </span>
@@ -425,6 +513,57 @@ function StepEditor({
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
+      </div>
+
+      <div className="mb-3">
+        {step.imageUrl ? (
+          <div className="relative overflow-hidden rounded-md border bg-muted">
+            <Image
+              src={step.imageUrl}
+              alt=""
+              width={800}
+              height={450}
+              className="h-auto max-h-48 w-full object-contain"
+              unoptimized
+            />
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              className="absolute right-2 top-2 h-7 w-7"
+              onClick={() => onUpdate({ imageUrl: null })}
+              aria-label={t("imageRemove")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed bg-muted/30 px-4 py-6 text-sm text-muted-foreground transition-colors hover:bg-muted/60">
+            {uploading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("imageUploading")}
+              </>
+            ) : (
+              <>
+                <ImageIcon className="h-4 w-4" />
+                <span>{t("imageAdd")}</span>
+                <Upload className="h-3.5 w-3.5 text-muted-foreground/60" />
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleImage(f);
+                e.target.value = "";
+              }}
+              disabled={uploading}
+            />
+          </label>
+        )}
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div>

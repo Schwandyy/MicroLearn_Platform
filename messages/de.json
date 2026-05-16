@@ -652,7 +652,14 @@
     "saveChanges": "Änderungen speichern",
     "updated": "Gespeichert",
     "readOnlyHint": "Diese Lektion ist nach abgeschlossener Review gesperrt. Du siehst sie nur noch lesend.",
-    "reviewerNotes": "Hinweise vom Review-Team"
+    "reviewerNotes": "Hinweise vom Review-Team",
+    "imageAdd": "Bild hinzufügen (optional)",
+    "imageUploading": "Lade hoch…",
+    "imageRemove": "Bild entfernen",
+    "imageTooLarge": "Bild ist zu groß (max. 5 MB)",
+    "imageInvalidType": "Bitte JPG, PNG, WEBP oder GIF",
+    "imageStorageOff": "Bild-Upload ist gerade deaktiviert",
+    "dragHandle": "Ziehen zum Sortieren"
   },
   "admin": {
     "commentDeleteConfirm": "Kommentar wirklich löschen?"

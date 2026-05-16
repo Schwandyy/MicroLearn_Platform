@@ -93,6 +93,7 @@ export default async function EditLessonPage({
       title_en: s.title_en ?? "",
       body_de: s.body_de ?? "",
       body_en: s.body_en ?? "",
+      imageUrl: s.imageUrl ?? null,
     }));
 
   return (
