@@ -67,13 +67,16 @@ interface CatalogItem {
   slug: string;
   title: string;
 }
+interface PathCatalogItem extends CatalogItem {
+  lessons: CatalogItem[];
+}
 
 interface Props {
   classroomId: string;
   students: StudentRow[];
   codes: CodeRow[];
   assignments: AssignmentRow[];
-  paths: CatalogItem[];
+  paths: PathCatalogItem[];
   lessons: CatalogItem[];
 }
 
@@ -302,7 +305,7 @@ function AssignmentsPanel({
 }: {
   classroomId: string;
   assignments: AssignmentRow[];
-  paths: CatalogItem[];
+  paths: PathCatalogItem[];
   lessons: CatalogItem[];
 }) {
   const t = useTranslations("classroom");
@@ -426,7 +429,7 @@ function AssignmentCreator({
   open: boolean;
   onClose: () => void;
   classroomId: string;
-  paths: CatalogItem[];
+  paths: PathCatalogItem[];
   lessons: CatalogItem[];
 }) {
   const t = useTranslations("classroom");
@@ -438,6 +441,10 @@ function AssignmentCreator({
   const [dueAt, setDueAt] = useState("");
   const [note, setNote] = useState("");
   const [query, setQuery] = useState("");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkStart, setBulkStart] = useState("");
+  const [bulkStepDays, setBulkStepDays] = useState("7");
+  const [bulkDates, setBulkDates] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
 
   const list = kind === "path" ? paths : lessons;
@@ -449,21 +456,55 @@ function AssignmentCreator({
       .slice(0, 50);
   }, [list, query]);
 
+  const selectedPath = useMemo(
+    () => (kind === "path" ? paths.find((p) => p.id === targetId) ?? null : null),
+    [kind, paths, targetId],
+  );
+  const bulkLessons = selectedPath?.lessons ?? [];
+
+  const applyAutoSpread = () => {
+    if (!bulkStart || bulkLessons.length === 0) return;
+    const step = Math.max(1, Number.parseInt(bulkStepDays, 10) || 7);
+    const start = new Date(bulkStart);
+    const out: Record<string, string> = {};
+    bulkLessons.forEach((l, i) => {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i * step);
+      out[l.id] = d.toISOString().slice(0, 10);
+    });
+    setBulkDates(out);
+  };
+
   const submit = () => {
     if (!targetId) {
       toast({ title: t("pickTarget"), variant: "destructive" });
       return;
     }
     startTransition(async () => {
-      const res = await fetch(`/api/classrooms/${classroomId}/assignments`, {
+      const isBulk = kind === "path" && bulkMode && bulkLessons.length > 0;
+      const url = isBulk
+        ? `/api/classrooms/${classroomId}/assignments/bulk`
+        : `/api/classrooms/${classroomId}/assignments`;
+      const body = isBulk
+        ? {
+            note: note.trim() || null,
+            lessons: bulkLessons.map((l) => ({
+              lessonId: l.id,
+              dueAt: bulkDates[l.id]
+                ? new Date(bulkDates[l.id]!).toISOString()
+                : null,
+            })),
+          }
+        : {
+            pathId: kind === "path" ? targetId : null,
+            lessonId: kind === "lesson" ? targetId : null,
+            dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+            note: note.trim() || null,
+          };
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pathId: kind === "path" ? targetId : null,
-          lessonId: kind === "lesson" ? targetId : null,
-          dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-          note: note.trim() || null,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         toast({ title: tc("error"), variant: "destructive" });
@@ -473,6 +514,9 @@ function AssignmentCreator({
       setDueAt("");
       setNote("");
       setQuery("");
+      setBulkMode(false);
+      setBulkStart("");
+      setBulkDates({});
       onClose();
       router.refresh();
     });
@@ -551,29 +595,119 @@ function AssignmentCreator({
             )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="grid gap-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("dueLabel")}
-              </label>
-              <Input
-                type="date"
-                value={dueAt}
-                onChange={(e) => setDueAt(e.target.value)}
+          {kind === "path" && selectedPath && bulkLessons.length > 0 && (
+            <label className="flex cursor-pointer items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm">
+              <input
+                type="checkbox"
+                checked={bulkMode}
+                onChange={(e) => setBulkMode(e.target.checked)}
+                className="mt-0.5"
               />
+              <span>
+                <span className="font-medium">{t("bulkToggle")}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {t("bulkToggleHint", { n: bulkLessons.length })}
+                </span>
+              </span>
+            </label>
+          )}
+
+          {kind === "path" && bulkMode && bulkLessons.length > 0 ? (
+            <div className="grid gap-3 rounded-md border bg-card p-3">
+              <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                <div className="grid gap-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {t("bulkStartLabel")}
+                  </label>
+                  <Input
+                    type="date"
+                    value={bulkStart}
+                    onChange={(e) => setBulkStart(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    {t("bulkStepLabel")}
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={bulkStepDays}
+                    onChange={(e) => setBulkStepDays(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={applyAutoSpread}
+                  disabled={!bulkStart}
+                >
+                  {t("bulkApply")}
+                </Button>
+              </div>
+              <ul className="grid max-h-64 gap-2 overflow-y-auto">
+                {bulkLessons.map((l, i) => (
+                  <li
+                    key={l.id}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-2 text-sm"
+                  >
+                    <span className="text-xs text-muted-foreground">
+                      {i + 1}.
+                    </span>
+                    <span className="truncate">{l.title}</span>
+                    <Input
+                      type="date"
+                      value={bulkDates[l.id] ?? ""}
+                      onChange={(e) =>
+                        setBulkDates((prev) => ({
+                          ...prev,
+                          [l.id]: e.target.value,
+                        }))
+                      }
+                      className="h-8 w-36"
+                    />
+                  </li>
+                ))}
+              </ul>
+              <div className="grid gap-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t("noteLabel")}
+                </label>
+                <Input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={t("notePlaceholder")}
+                  maxLength={2000}
+                />
+              </div>
             </div>
-            <div className="grid gap-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("noteLabel")}
-              </label>
-              <Input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t("notePlaceholder")}
-                maxLength={2000}
-              />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t("dueLabel")}
+                </label>
+                <Input
+                  type="date"
+                  value={dueAt}
+                  onChange={(e) => setDueAt(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t("noteLabel")}
+                </label>
+                <Input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={t("notePlaceholder")}
+                  maxLength={2000}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <DialogFooter>

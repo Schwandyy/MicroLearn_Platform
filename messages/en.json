@@ -439,7 +439,12 @@
     "cancel": "Cancel",
     "assign": "Assign",
     "codesHint": "Codes are valid for 30 days and up to 50 uses.",
-    "codeCopied": "Code copied"
+    "codeCopied": "Code copied",
+    "bulkToggle": "Stagger lessons individually",
+    "bulkToggleHint": "{n} lessons in the path — each with its own due date",
+    "bulkStartLabel": "Start date",
+    "bulkStepLabel": "Days per lesson",
+    "bulkApply": "Auto-spread"
   },
   "consent": {
     "title": "Privacy",

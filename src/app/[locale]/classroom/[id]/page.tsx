@@ -132,6 +132,22 @@ export default async function ClassroomDetailPage({
         slug: true,
         title_de: true,
         title_en: true,
+        courses: {
+          where: { isPublished: true },
+          orderBy: { sortOrder: "asc" },
+          select: {
+            lessons: {
+              where: { isPublished: true },
+              orderBy: { sortOrder: "asc" },
+              select: {
+                id: true,
+                slug: true,
+                title_de: true,
+                title_en: true,
+              },
+            },
+          },
+        },
       },
     }),
     prisma.lesson.findMany({
@@ -197,6 +213,13 @@ export default async function ClassroomDetailPage({
             id: p.id,
             slug: p.slug,
             title: p[titleField],
+            lessons: p.courses
+              .flatMap((c) => c.lessons)
+              .map((l) => ({
+                id: l.id,
+                slug: l.slug,
+                title: l[titleField],
+              })),
           }))}
           lessons={lessons.map((l) => ({
             id: l.id,

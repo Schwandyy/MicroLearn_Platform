@@ -439,7 +439,12 @@
     "cancel": "Abbrechen",
     "assign": "Zuweisen",
     "codesHint": "Codes sind 30 Tage gültig und maximal 50-mal nutzbar.",
-    "codeCopied": "Code kopiert"
+    "codeCopied": "Code kopiert",
+    "bulkToggle": "Lessons einzeln staffeln",
+    "bulkToggleHint": "{n} Lessons im Pfad — je ein eigenes Fälligkeitsdatum",
+    "bulkStartLabel": "Startdatum",
+    "bulkStepLabel": "Tage pro Lesson",
+    "bulkApply": "Automatisch staffeln"
   },
   "consent": {
     "title": "Datenschutz",
