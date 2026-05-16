@@ -6,6 +6,7 @@ import {
   type CurriculumCoverageRow,
   type StudentRow,
 } from "@/server/lib/classroom-report-pdf";
+import { getClassroomCurriculumCoverage } from "@/server/lib/classroom-curriculum";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +59,6 @@ export async function GET(
   }
 
   // Per-student progress (lessons completed, XP, assignment %)
-  const titleField = locale === "en" ? "title_en" : "title_de";
-  const descField = locale === "en" ? "description_en" : "description_de";
-
   const students: StudentRow[] = classroom.members.map((m) => {
     const completedSet = new Set<string>(
       m.user.progress.map((p) => p.lessonId).filter((x): x is string => !!x),
@@ -89,60 +87,37 @@ export async function GET(
   });
 
   // Curriculum coverage (requires state + grade on classroom)
-  let curriculum: {
-    totalStandards: number;
-    coveredStandards: number;
-    rows: CurriculumCoverageRow[];
-  } | null = null;
+  const coverage = await getClassroomCurriculumCoverage({
+    state: classroom.state,
+    grade: classroom.grade,
+    members: classroom.members.map((m) => ({
+      id: m.id,
+      userId: m.user.id,
+    })),
+    locale,
+  });
 
-  if (classroom.state && classroom.grade != null) {
-    const standards = await prisma.curriculumStandard.findMany({
-      where: { state: classroom.state, grade: { lte: classroom.grade } },
-      orderBy: [{ grade: "asc" }, { subject: "asc" }, { sortOrder: "asc" }],
-      include: {
-        lessons: {
-          include: {
-            lesson: {
-              select: {
-                id: true,
-                progress: {
-                  where: { completedAt: { not: null } },
-                  select: { userId: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const memberUserIds = new Set(classroom.members.map((m) => m.user.id));
-
-    const rows: CurriculumCoverageRow[] = standards.map((s) => {
-      const lessons = s.lessons.map((l) => l.lesson);
-      const studentsCovered = new Set<string>();
-      for (const lesson of lessons) {
-        for (const p of lesson.progress) {
-          if (memberUserIds.has(p.userId)) studentsCovered.add(p.userId);
-        }
+  const curriculum:
+    | {
+        totalStandards: number;
+        coveredStandards: number;
+        rows: CurriculumCoverageRow[];
       }
-      return {
-        code: s.code,
-        title: (s[titleField] as string) ?? s.title_de,
-        description: (s[descField] as string | null) ?? s.description_de,
-        subject: s.subject,
-        grade: s.grade,
-        lessonsCovered: lessons.length,
-        studentsCovered: studentsCovered.size,
-      };
-    });
-
-    curriculum = {
-      totalStandards: rows.length,
-      coveredStandards: rows.filter((r) => r.studentsCovered > 0).length,
-      rows,
-    };
-  }
+    | null = coverage
+    ? {
+        totalStandards: coverage.totalStandards,
+        coveredStandards: coverage.coveredStandards,
+        rows: coverage.rows.map((r) => ({
+          code: r.code,
+          title: r.title,
+          description: r.description,
+          subject: r.subject,
+          grade: r.grade,
+          lessonsCovered: r.lessonsCovered,
+          studentsCovered: r.coveredMemberIds.length,
+        })),
+      }
+    : null;
 
   const pdf = await renderClassroomReportPdf({
     locale,

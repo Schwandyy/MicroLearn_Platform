@@ -22,12 +22,14 @@ import {
   BookOpen,
   Copy,
   FileText,
+  GraduationCap,
   Key,
   Link2,
   RefreshCw,
   Trash2,
   Users,
 } from "lucide-react";
+import { CurriculumCoveragePanel } from "@/components/classroom/curriculum-coverage-panel";
 
 interface StudentRow {
   memberId: string;
@@ -71,6 +73,29 @@ interface PathCatalogItem extends CatalogItem {
   lessons: CatalogItem[];
 }
 
+export interface CurriculumRow {
+  id: string;
+  code: string;
+  title: string;
+  description: string | null;
+  subject: string;
+  grade: number;
+  lessonsCovered: number;
+  coveredMemberIds: string[];
+}
+export interface CurriculumData {
+  state: string;
+  grade: number;
+  totalStandards: number;
+  coveredStandards: number;
+  rows: CurriculumRow[];
+}
+export interface StudentCompact {
+  memberId: string;
+  username: string;
+  isActive: boolean;
+}
+
 interface Props {
   classroomId: string;
   students: StudentRow[];
@@ -78,6 +103,8 @@ interface Props {
   assignments: AssignmentRow[];
   paths: PathCatalogItem[];
   lessons: CatalogItem[];
+  curriculum: CurriculumData | null;
+  studentsCompact: StudentCompact[];
 }
 
 export function ClassroomDetailTabs(props: Props) {
@@ -91,6 +118,9 @@ export function ClassroomDetailTabs(props: Props) {
         </TabsTrigger>
         <TabsTrigger value="assignments" className="gap-2">
           <BookOpen className="h-4 w-4" /> {t("tabAssignments")}
+        </TabsTrigger>
+        <TabsTrigger value="curriculum" className="gap-2">
+          <GraduationCap className="h-4 w-4" /> {t("tabCurriculum")}
         </TabsTrigger>
         <TabsTrigger value="codes" className="gap-2">
           <Key className="h-4 w-4" /> {t("tabCodes")}
@@ -110,6 +140,12 @@ export function ClassroomDetailTabs(props: Props) {
           assignments={props.assignments}
           paths={props.paths}
           lessons={props.lessons}
+        />
+      </TabsContent>
+      <TabsContent value="curriculum">
+        <CurriculumCoveragePanel
+          curriculum={props.curriculum}
+          students={props.studentsCompact}
         />
       </TabsContent>
       <TabsContent value="codes">

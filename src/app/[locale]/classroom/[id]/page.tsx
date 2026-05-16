@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/admin/badge";
 import { ChevronLeft, GraduationCap } from "lucide-react";
 import { ClassroomDetailTabs } from "@/components/classroom/classroom-detail-tabs";
+import { getClassroomCurriculumCoverage } from "@/server/lib/classroom-curriculum";
 
 export default async function ClassroomDetailPage({
   params,
@@ -123,6 +124,13 @@ export default async function ClassroomDetailPage({
     };
   });
 
+  const coverage = await getClassroomCurriculumCoverage({
+    state: classroom.state,
+    grade: classroom.grade,
+    members: classroom.members.map((m) => ({ id: m.id, userId: m.user.id })),
+    locale: locale === "en" ? "en" : "de",
+  });
+
   const [paths, lessons] = await Promise.all([
     prisma.learningPath.findMany({
       where: { isPublished: true },
@@ -228,6 +236,31 @@ export default async function ClassroomDetailPage({
             id: l.id,
             slug: l.slug,
             title: l[titleField],
+          }))}
+          curriculum={
+            coverage
+              ? {
+                  state: coverage.state,
+                  grade: coverage.grade,
+                  totalStandards: coverage.totalStandards,
+                  coveredStandards: coverage.coveredStandards,
+                  rows: coverage.rows.map((r) => ({
+                    id: r.id,
+                    code: r.code,
+                    title: r.title,
+                    description: r.description,
+                    subject: r.subject,
+                    grade: r.grade,
+                    lessonsCovered: r.lessonsCovered,
+                    coveredMemberIds: r.coveredMemberIds,
+                  })),
+                }
+              : null
+          }
+          studentsCompact={students.map((s) => ({
+            memberId: s.memberId,
+            username: s.username,
+            isActive: s.isActive,
           }))}
         />
       </div>
