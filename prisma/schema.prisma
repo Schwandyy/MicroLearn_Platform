@@ -18,10 +18,10 @@ datasource db {
 // -----------------------------------------------------------------------------
 
 enum UserRole {
-  STUDENT       // default end-user
-  STUDENT_CODE  // class-code user (no PII, see Schüler-Code system)
-  INSTRUCTOR    // verified content creator
-  TEACHER       // classroom owner
+  STUDENT // default end-user
+  STUDENT_CODE // class-code user (no PII, see Schüler-Code system)
+  INSTRUCTOR // verified content creator
+  TEACHER // classroom owner
   ADMIN
 }
 
@@ -95,22 +95,22 @@ enum ProjectKind {
 }
 
 enum QuizKind {
-  MINI            // inside a lesson, low stakes
-  ASSESSMENT      // initial 8-question placement
-  LESSON_FINAL    // grants XP at the end of a lesson
+  MINI // inside a lesson, low stakes
+  ASSESSMENT // initial 8-question placement
+  LESSON_FINAL // grants XP at the end of a lesson
 }
 
 enum StepKind {
-  INTRO           // "Was bauen wir?" — Cover + 1-2 sentences
-  PARTS           // BOM presentation
-  SAFETY          // safety warning step
-  BUILD           // breadboard build step (image + instruction)
-  CODE_WALK       // code walkthrough with line explanations
-  SIMULATE        // run-the-program preview (own simulator stub)
-  QUIZ            // mini quiz question
-  CELEBRATE       // success screen
-  EXPLAIN         // pure concept explanation with visual
-  SETUP           // software setup with download links and ordered checklist
+  INTRO // "Was bauen wir?" — Cover + 1-2 sentences
+  PARTS // BOM presentation
+  SAFETY // safety warning step
+  BUILD // breadboard build step (image + instruction)
+  CODE_WALK // code walkthrough with line explanations
+  SIMULATE // run-the-program preview (own simulator stub)
+  QUIZ // mini quiz question
+  CELEBRATE // success screen
+  EXPLAIN // pure concept explanation with visual
+  SETUP // software setup with download links and ordered checklist
 }
 
 enum BadgeCategory {
@@ -132,19 +132,19 @@ enum AffiliateMerchant {
 // -----------------------------------------------------------------------------
 
 model User {
-  id                String   @id @default(cuid())
-  email             String?  @unique
-  emailVerified     DateTime?
-  name              String?
-  username          String?  @unique
-  image             String?
-  passwordHash      String?
-  role              UserRole @default(STUDENT)
-  preferredLocale   String   @default("de")
-  marketingOptIn    Boolean  @default(false)
+  id              String    @id @default(cuid())
+  email           String?   @unique
+  emailVerified   DateTime?
+  name            String?
+  username        String?   @unique
+  image           String?
+  passwordHash    String?
+  role            UserRole  @default(STUDENT)
+  preferredLocale String    @default("de")
+  marketingOptIn  Boolean   @default(false)
 
   // Schüler-Code-System
-  classroomMember   ClassroomMember?
+  classroomMember ClassroomMember?
 
   // Relations
   profile           Profile?
@@ -159,14 +159,15 @@ model User {
   xp                XPTransaction[]
   certificates      Certificate[]
   projects          Project[]
+  projectLikes      ProjectLike[]
   comments          Comment[]
   pushSubscriptions PushSubscription[]
-  classroomsTaught  Classroom[]   @relation("ClassroomTeacher")
-  reviewsAuthored   ContentReview[] @relation("ReviewAuthor")
+  classroomsTaught  Classroom[]        @relation("ClassroomTeacher")
+  reviewsAuthored   ContentReview[]    @relation("ReviewAuthor")
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([deletedAt])
 }
@@ -207,17 +208,17 @@ model VerificationToken {
 }
 
 model Profile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  bio             String?
-  country         String?
-  birthYear       Int?
-  currentLevel    LearnerLevel @default(L1_BEGINNER)
-  favoriteBoardIds String[]   @default([])
+  id               String       @id @default(cuid())
+  userId           String       @unique
+  bio              String?
+  country          String?
+  birthYear        Int?
+  currentLevel     LearnerLevel @default(L1_BEGINNER)
+  favoriteBoardIds String[]     @default([])
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // -----------------------------------------------------------------------------
@@ -247,66 +248,66 @@ model Subscription {
 // -----------------------------------------------------------------------------
 
 model Board {
-  id              String     @id @default(cuid())
-  slug            String     @unique
-  name            String
-  manufacturer    String?
-  family          String?    // ESP32, AVR, RP2040, STM32, …
-  imageUrl        String?
-  iconKey         String?    // Lucide icon name fallback
+  id                  String  @id @default(cuid())
+  slug                String  @unique
+  name                String
+  manufacturer        String?
+  family              String? // ESP32, AVR, RP2040, STM32, …
+  imageUrl            String?
+  iconKey             String? // Lucide icon name fallback
   descriptionShort_de String?
   descriptionShort_en String?
 
-  logicLevel      LogicLevel
-  voltageMin      Float
-  voltageMax      Float
-  protocols       Protocol[] @default([])
+  logicLevel LogicLevel
+  voltageMin Float
+  voltageMax Float
+  protocols  Protocol[] @default([])
 
   // i18n content
-  description_de  String     @db.Text
-  description_en  String     @db.Text
+  description_de String @db.Text
+  description_en String @db.Text
 
   // Catalog links
-  affiliateLinks  AffiliateLink[]
+  affiliateLinks AffiliateLink[]
 
-  bomItems        BOMItem[]
-  components      ComponentBoardCompat[]
-  lessons         Lesson[]   @relation("LessonRecommendedBoards")
-  projects        Project[]  @relation("ProjectBoards")
+  bomItems   BOMItem[]
+  components ComponentBoardCompat[]
+  lessons    Lesson[]               @relation("LessonRecommendedBoards")
+  projects   Project[]              @relation("ProjectBoards")
 
-  isActive        Boolean    @default(true)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Component {
-  id              String     @id @default(cuid())
-  slug            String     @unique
-  name            String
-  category        String     // sensor, actuator, display, power, …
-  imageUrl        String?
-  iconKey         String?    // Lucide icon name fallback
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  name     String
+  category String // sensor, actuator, display, power, …
+  imageUrl String?
+  iconKey  String? // Lucide icon name fallback
 
-  logicLevel      LogicLevel
-  voltageMin      Float
-  voltageMax      Float
-  protocols       Protocol[] @default([])
+  logicLevel LogicLevel
+  voltageMin Float
+  voltageMax Float
+  protocols  Protocol[] @default([])
 
-  description_de       String     @db.Text
-  description_en       String     @db.Text
+  description_de      String        @db.Text
+  description_en      String        @db.Text
   // One-line, child-friendly summary used in BOM cards
-  descriptionShort_de  String?
-  descriptionShort_en  String?
+  descriptionShort_de String?
+  descriptionShort_en String?
   // Beginner-suitability hint: which levels typically use this part
-  levelHint            LearnerLevel?
+  levelHint           LearnerLevel?
 
-  affiliateLinks  AffiliateLink[]
-  bomItems        BOMItem[]
-  boards          ComponentBoardCompat[]
+  affiliateLinks AffiliateLink[]
+  bomItems       BOMItem[]
+  boards         ComponentBoardCompat[]
 
-  isActive        Boolean    @default(true)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ComponentBoardCompat {
@@ -327,14 +328,14 @@ model ComponentBoardCompat {
 // -----------------------------------------------------------------------------
 
 model AffiliateProgram {
-  id                   String            @id @default(cuid())
-  merchant             AffiliateMerchant @unique
-  displayName          String
-  urlTemplate          String            // e.g. https://www.az-delivery.de/products/{slug}?ref={trackingId}
-  trackingId           String?
-  isActive             Boolean           @default(true)
-  lastCheckedAt        DateTime?
-  notes                String?
+  id            String            @id @default(cuid())
+  merchant      AffiliateMerchant @unique
+  displayName   String
+  urlTemplate   String // e.g. https://www.az-delivery.de/products/{slug}?ref={trackingId}
+  trackingId    String?
+  isActive      Boolean           @default(true)
+  lastCheckedAt DateTime?
+  notes         String?
 
   links AffiliateLink[]
 
@@ -343,19 +344,19 @@ model AffiliateProgram {
 }
 
 model AffiliateLink {
-  id           String            @id @default(cuid())
-  programId    String
-  productUrl   String            // canonical product URL on merchant
-  productSlug  String?
-  priceCents   Int?
-  currency     String?           @default("EUR")
-  inStock      Boolean?
-  lastSyncedAt DateTime?
+  id             String    @id @default(cuid())
+  programId      String
+  productUrl     String // canonical product URL on merchant
+  productSlug    String?
+  priceCents     Int?
+  currency       String?   @default("EUR")
+  inStock        Boolean?
+  lastSyncedAt   DateTime?
   // Optional pack-size note (e.g. "65er M/M-Set") shown under the buy-button
   packageNote_de String?
   packageNote_en String?
 
-  program   AffiliateProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  program AffiliateProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
 
   componentId String?
   component   Component? @relation(fields: [componentId], references: [id])
@@ -374,42 +375,42 @@ model AffiliateLink {
 // -----------------------------------------------------------------------------
 
 model LearningPath {
-  id              String       @id @default(cuid())
-  slug            String       @unique
-  level           LearnerLevel
-  estimatedHours  Int?
-  coverImage      String?
-  sortOrder       Int          @default(0)
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  level          LearnerLevel
+  estimatedHours Int?
+  coverImage     String?
+  sortOrder      Int          @default(0)
 
-  title_de        String
-  title_en        String
-  summary_de      String       @db.Text
-  summary_en      String       @db.Text
+  title_de   String
+  title_en   String
+  summary_de String @db.Text
+  summary_en String @db.Text
 
-  courses         Course[]
-  userProgress    UserProgress[]
-  certificates    Certificate[]
+  courses      Course[]
+  userProgress UserProgress[]
+  certificates Certificate[]
 
-  isPublished     Boolean      @default(false)
-  publishedAt     DateTime?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Course {
-  id              String       @id @default(cuid())
-  pathId          String
-  slug            String       @unique
-  sortOrder       Int          @default(0)
+  id        String @id @default(cuid())
+  pathId    String
+  slug      String @unique
+  sortOrder Int    @default(0)
 
-  title_de        String
-  title_en        String
-  summary_de      String       @db.Text
-  summary_en      String       @db.Text
+  title_de   String
+  title_en   String
+  summary_de String @db.Text
+  summary_en String @db.Text
 
-  path     LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
-  lessons  Lesson[]
+  path    LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -419,29 +420,29 @@ model Course {
 }
 
 model Lesson {
-  id              String       @id @default(cuid())
-  courseId        String
-  slug            String       @unique
-  sortOrder       Int          @default(0)
-  kind            ProjectKind  @default(CONCEPT)
-  xpReward        Int          @default(50)
+  id               String      @id @default(cuid())
+  courseId         String
+  slug             String      @unique
+  sortOrder        Int         @default(0)
+  kind             ProjectKind @default(CONCEPT)
+  xpReward         Int         @default(50)
   estimatedMinutes Int?
 
-  title_de        String
-  title_en        String
+  title_de       String
+  title_en       String
   // Short "what will I build?" — shown on cover step
-  summary_de      String       @db.Text
-  summary_en      String       @db.Text
+  summary_de     String  @db.Text
+  summary_en     String  @db.Text
   // Legacy long-form body, kept for expert level + fallback rendering
-  body_de         String       @db.Text
-  body_en         String       @db.Text
-  coverImage      String?
-  codeSnippet     String?      @db.Text
-  safetyNotes_de  String?      @db.Text
-  safetyNotes_en  String?      @db.Text
+  body_de        String  @db.Text
+  body_en        String  @db.Text
+  coverImage     String?
+  codeSnippet    String? @db.Text
+  safetyNotes_de String? @db.Text
+  safetyNotes_en String? @db.Text
 
   // Compatibility
-  recommendedBoards Board[]    @relation("LessonRecommendedBoards")
+  recommendedBoards Board[]          @relation("LessonRecommendedBoards")
   bom               BOMItem[]
   quizzes           Quiz[]
   scrapedSources    ScrapedContent[]
@@ -460,43 +461,43 @@ model Lesson {
 
 // One step within a lesson. Drives the Step-Player UI.
 model LessonStep {
-  id              String   @id @default(cuid())
-  lessonId        String
-  sortOrder       Int      @default(0)
-  kind            StepKind
+  id        String   @id @default(cuid())
+  lessonId  String
+  sortOrder Int      @default(0)
+  kind      StepKind
 
   // Bilingual content
-  title_de        String?
-  title_en        String?
-  body_de         String?  @db.Text
-  body_en         String?  @db.Text
+  title_de String?
+  title_en String?
+  body_de  String? @db.Text
+  body_en  String? @db.Text
 
   // Optional visuals + payload — interpretation depends on `kind`
-  imageUrl        String?           // url to step image (breadboard photo etc.)
-  payload         Json?             // structured: { code, lineNotes, breadboard, animation, ... }
+  imageUrl String? // url to step image (breadboard photo etc.)
+  payload  Json? // structured: { code, lineNotes, breadboard, animation, ... }
 
   // Quiz steps reuse Quiz model
-  quizId          String?
-  quiz            Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  quizId String?
+  quiz   Quiz?   @relation(fields: [quizId], references: [id], onDelete: SetNull)
 
-  lesson          Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@index([lessonId, sortOrder])
 }
 
 model BOMItem {
-  id              String   @id @default(cuid())
-  lessonId        String?
-  projectId       String?
-  quantity        Int      @default(1)
-  note_de         String?
-  note_en         String?
+  id        String  @id @default(cuid())
+  lessonId  String?
+  projectId String?
+  quantity  Int     @default(1)
+  note_de   String?
+  note_en   String?
 
-  componentId     String?
-  component       Component? @relation(fields: [componentId], references: [id])
+  componentId String?
+  component   Component? @relation(fields: [componentId], references: [id])
 
-  boardId         String?
-  board           Board?     @relation(fields: [boardId], references: [id])
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id])
 
   affiliateLinkId String?
   affiliateLink   AffiliateLink? @relation(fields: [affiliateLinkId], references: [id])
@@ -510,18 +511,18 @@ model BOMItem {
 // -----------------------------------------------------------------------------
 
 model ScrapedContent {
-  id              String        @id @default(cuid())
-  source          ContentSource
-  sourceUrl       String        @unique
-  fetchedAt       DateTime      @default(now())
-  rawHtml         String        @db.Text
-  parsedTitle     String?
-  parsedMarkdown  String?       @db.Text
-  language        String?       // ISO 639-1, detected
-  notes           String?
+  id             String        @id @default(cuid())
+  source         ContentSource
+  sourceUrl      String        @unique
+  fetchedAt      DateTime      @default(now())
+  rawHtml        String        @db.Text
+  parsedTitle    String?
+  parsedMarkdown String?       @db.Text
+  language       String? // ISO 639-1, detected
+  notes          String?
 
-  lessonId        String?
-  lesson          Lesson?       @relation(fields: [lessonId], references: [id])
+  lessonId String?
+  lesson   Lesson? @relation(fields: [lessonId], references: [id])
 
   review ContentReview?
 
@@ -530,25 +531,25 @@ model ScrapedContent {
 }
 
 model ContentReview {
-  id             String       @id @default(cuid())
-  status         ReviewStatus @default(PENDING)
+  id     String       @id @default(cuid())
+  status ReviewStatus @default(PENDING)
 
-  lessonId       String?      @unique
-  scrapedId      String?      @unique
+  lessonId  String? @unique
+  scrapedId String? @unique
 
   // AI pre-check report (logic, safety, compatibility, language quality)
-  aiFlags        Json?
-  aiSummary_de   String?      @db.Text
-  aiSummary_en   String?      @db.Text
+  aiFlags      Json?
+  aiSummary_de String? @db.Text
+  aiSummary_en String? @db.Text
 
   // Reviewer
-  authorId       String?
-  reviewerNotes  String?      @db.Text
-  decidedAt      DateTime?
+  authorId      String?
+  reviewerNotes String?   @db.Text
+  decidedAt     DateTime?
 
-  lesson         Lesson?         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  scraped        ScrapedContent? @relation(fields: [scrapedId], references: [id], onDelete: Cascade)
-  author         User?           @relation("ReviewAuthor", fields: [authorId], references: [id])
+  lesson  Lesson?         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  scraped ScrapedContent? @relation(fields: [scrapedId], references: [id], onDelete: Cascade)
+  author  User?           @relation("ReviewAuthor", fields: [authorId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -559,15 +560,15 @@ model ContentReview {
 // -----------------------------------------------------------------------------
 
 model UserProgress {
-  id            String   @id @default(cuid())
-  userId        String
-  pathId        String?
-  lessonId      String?
+  id       String  @id @default(cuid())
+  userId   String
+  pathId   String?
+  lessonId String?
 
-  percentage    Int      @default(0)
-  startedAt     DateTime @default(now())
-  completedAt   DateTime?
-  lastSeenAt    DateTime @default(now())
+  percentage  Int       @default(0)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  lastSeenAt  DateTime  @default(now())
 
   user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   path   LearningPath? @relation(fields: [pathId], references: [id], onDelete: Cascade)
@@ -578,12 +579,12 @@ model UserProgress {
 }
 
 model AssessmentResult {
-  id        String       @id @default(cuid())
-  userId    String
-  score     Int          // 0..100
-  level     LearnerLevel
-  answers   Json
-  takenAt   DateTime     @default(now())
+  id      String       @id @default(cuid())
+  userId  String
+  score   Int // 0..100
+  level   LearnerLevel
+  answers Json
+  takenAt DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -591,13 +592,13 @@ model AssessmentResult {
 }
 
 model Quiz {
-  id         String   @id @default(cuid())
-  lessonId   String?
-  kind       QuizKind @default(LESSON_FINAL)
-  title_de   String
-  title_en   String
-  questions  Json     // [{id, prompt_de, prompt_en, options:[{key,label_de,label_en}], correctKey, weight}]
-  passScore  Int      @default(70)
+  id        String   @id @default(cuid())
+  lessonId  String?
+  kind      QuizKind @default(LESSON_FINAL)
+  title_de  String
+  title_en  String
+  questions Json // [{id, prompt_de, prompt_en, options:[{key,label_de,label_en}], correctKey, weight}]
+  passScore Int      @default(70)
 
   lesson  Lesson?      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   results QuizResult[]
@@ -608,13 +609,13 @@ model Quiz {
 }
 
 model QuizResult {
-  id        String   @id @default(cuid())
-  quizId    String
-  userId    String
-  score     Int
-  passed    Boolean
-  answers   Json
-  takenAt   DateTime @default(now())
+  id      String   @id @default(cuid())
+  quizId  String
+  userId  String
+  score   Int
+  passed  Boolean
+  answers Json
+  takenAt DateTime @default(now())
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -623,23 +624,23 @@ model QuizResult {
 }
 
 model Badge {
-  id          String        @id @default(cuid())
-  slug        String        @unique
-  category    BadgeCategory
-  iconUrl     String?
-  xpReward    Int           @default(0)
-  title_de    String
-  title_en    String
-  description_de String     @db.Text
-  description_en String     @db.Text
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  category       BadgeCategory
+  iconUrl        String?
+  xpReward       Int           @default(0)
+  title_de       String
+  title_en       String
+  description_de String        @db.Text
+  description_en String        @db.Text
 
   users UserBadge[]
 }
 
 model UserBadge {
-  userId    String
-  badgeId   String
-  earnedAt  DateTime @default(now())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
@@ -648,24 +649,24 @@ model UserBadge {
 }
 
 model Streak {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  currentDays     Int      @default(0)
-  longestDays     Int      @default(0)
-  lastActiveDay   DateTime?
-  freezesRemaining Int     @default(0)
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  currentDays      Int       @default(0)
+  longestDays      Int       @default(0)
+  lastActiveDay    DateTime?
+  freezesRemaining Int       @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PushSubscription {
-  id        String   @id @default(cuid())
-  userId    String
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  locale    String   @default("de")
-  enabled   Boolean  @default(true)
+  id       String  @id @default(cuid())
+  userId   String
+  endpoint String  @unique
+  p256dh   String
+  auth     String
+  locale   String  @default("de")
+  enabled  Boolean @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -679,8 +680,8 @@ model XPTransaction {
   id        String   @id @default(cuid())
   userId    String
   amount    Int
-  reason    String   // 'LESSON_COMPLETE', 'QUIZ_PERFECT', 'STREAK_BONUS', …
-  refId     String?  // optional pointer to lesson/quiz/project
+  reason    String // 'LESSON_COMPLETE', 'QUIZ_PERFECT', 'STREAK_BONUS', …
+  refId     String? // optional pointer to lesson/quiz/project
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -689,12 +690,12 @@ model XPTransaction {
 }
 
 model Certificate {
-  id              String   @id @default(cuid())
-  userId          String
-  pathId          String
-  pdfUrl          String?
-  issuedAt        DateTime @default(now())
-  publicSlug      String   @unique
+  id         String   @id @default(cuid())
+  userId     String
+  pathId     String
+  pdfUrl     String?
+  issuedAt   DateTime @default(now())
+  publicSlug String   @unique
 
   user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   path LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
@@ -707,20 +708,21 @@ model Certificate {
 // -----------------------------------------------------------------------------
 
 model Project {
-  id              String   @id @default(cuid())
-  authorId        String
-  slug            String   @unique
-  title_de        String
-  title_en        String
-  body_de         String   @db.Text
-  body_en         String   @db.Text
-  coverImage      String?
-  isPublic        Boolean  @default(false)
+  id         String  @id @default(cuid())
+  authorId   String
+  slug       String  @unique
+  title_de   String
+  title_en   String
+  body_de    String  @db.Text
+  body_en    String  @db.Text
+  coverImage String?
+  isPublic   Boolean @default(false)
 
-  bom             BOMItem[]
-  showcase        ProjectShowcase?
-  comments        Comment[]
-  boards          Board[]  @relation("ProjectBoards")
+  bom      BOMItem[]
+  showcase ProjectShowcase?
+  comments Comment[]
+  boards   Board[]          @relation("ProjectBoards")
+  likes    ProjectLike[]
 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
@@ -730,20 +732,33 @@ model Project {
   @@index([authorId])
 }
 
+model ProjectLike {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
 model ProjectShowcase {
-  id          String   @id @default(cuid())
-  projectId   String   @unique
-  featuredAt  DateTime @default(now())
-  rank        Int?
+  id         String   @id @default(cuid())
+  projectId  String   @unique
+  featuredAt DateTime @default(now())
+  rank       Int?
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
-  id          String   @id @default(cuid())
-  authorId    String
-  projectId   String?
-  body        String   @db.Text
+  id        String  @id @default(cuid())
+  authorId  String
+  projectId String?
+  body      String  @db.Text
 
   author  User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -757,23 +772,23 @@ model Comment {
 // -----------------------------------------------------------------------------
 
 model Institution {
-  id          String   @id @default(cuid())
-  name        String
-  country     String?
-  state       String?  // BW, BY, NRW, …
+  id           String  @id @default(cuid())
+  name         String
+  country      String?
+  state        String? // BW, BY, NRW, …
   contactEmail String?
 
-  classrooms  Classroom[]
-  saml        SAMLConfig?
+  classrooms Classroom[]
+  saml       SAMLConfig?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model SAMLConfig {
-  id            String   @id @default(cuid())
-  institutionId String   @unique
-  metadataXml   String   @db.Text
+  id            String @id @default(cuid())
+  institutionId String @unique
+  metadataXml   String @db.Text
   acsUrl        String
   entityId      String
 
@@ -781,11 +796,11 @@ model SAMLConfig {
 }
 
 model Classroom {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   institutionId String?
   teacherId     String
   name          String
-  curriculumTag String?  // e.g. "BW-MINT-9"
+  curriculumTag String? // e.g. "BW-MINT-9"
 
   institution Institution? @relation(fields: [institutionId], references: [id])
   teacher     User         @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
@@ -798,22 +813,22 @@ model Classroom {
 }
 
 model ClassroomCode {
-  id            String   @id @default(cuid())
-  classroomId   String
-  code          String   @unique
-  expiresAt     DateTime
-  maxUses       Int      @default(50)
-  uses          Int      @default(0)
+  id          String   @id @default(cuid())
+  classroomId String
+  code        String   @unique
+  expiresAt   DateTime
+  maxUses     Int      @default(50)
+  uses        Int      @default(0)
 
   classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 }
 
 model ClassroomMember {
-  id            String   @id @default(cuid())
-  classroomId   String
-  userId        String   @unique
-  joinedAt      DateTime @default(now())
-  isActive      Boolean  @default(true)
+  id          String   @id @default(cuid())
+  classroomId String
+  userId      String   @unique
+  joinedAt    DateTime @default(now())
+  isActive    Boolean  @default(true)
 
   classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

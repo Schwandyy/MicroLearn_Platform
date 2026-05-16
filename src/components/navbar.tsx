@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitch } from "@/components/i18n/language-switch";
-import { Cpu } from "lucide-react";
+import { Cpu, Search } from "lucide-react";
 import { auth } from "@/server/auth";
 import { UserMenu } from "@/components/user-menu";
 
@@ -37,6 +37,11 @@ export async function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1">
+          <Button asChild size="icon" variant="ghost" aria-label={t("searchTitle")}>
+            <Link href="/search">
+              <Search className="h-4 w-4" />
+            </Link>
+          </Button>
           <LanguageSwitch />
           {session?.user ? (
             <>

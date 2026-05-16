@@ -14,7 +14,13 @@
     "signIn": "Anmelden",
     "signUp": "Registrieren",
     "signOut": "Abmelden",
-    "languageSwitch": "Sprache"
+    "languageSwitch": "Sprache",
+    "searchTitle": "Suche",
+    "searchPlaceholder": "Suche nach Lessons, Pfaden, Projekten…",
+    "searchEmpty": "Keine Treffer.",
+    "searchPaths": "Lernpfade",
+    "searchLessons": "Lektionen",
+    "searchProjects": "Projekte"
   },
   "home": {
     "heroBadge": "Mikroelektronik strukturiert lernen",

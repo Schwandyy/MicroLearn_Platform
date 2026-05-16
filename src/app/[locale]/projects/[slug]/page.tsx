@@ -10,6 +10,7 @@ import { ImageIcon, Sparkles } from "lucide-react";
 import { CommentsBlock } from "@/components/projects/comments-block";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { ShowcaseToggle } from "@/components/projects/showcase-toggle";
+import { LikeButton } from "@/components/projects/like-button";
 
 export default async function ProjectDetailPage({
   params,
@@ -30,6 +31,7 @@ export default async function ProjectDetailPage({
         orderBy: { createdAt: "asc" },
         include: { author: { select: { id: true, username: true, name: true } } },
       },
+      _count: { select: { likes: true } },
     },
   });
 
@@ -42,6 +44,21 @@ export default async function ProjectDetailPage({
     session?.user?.role === "TEACHER" ||
     session?.user?.role === "INSTRUCTOR";
   if (!project.isPublic && !isOwner && !isAdmin) notFound();
+
+  // Liked by current user?
+  let liked = false;
+  if (session?.user?.id && project.isPublic) {
+    const row = await prisma.projectLike.findUnique({
+      where: {
+        userId_projectId: {
+          userId: session.user.id,
+          projectId: project.id,
+        },
+      },
+      select: { id: true },
+    });
+    liked = Boolean(row);
+  }
 
   const title = locale === "de" ? project.title_de : project.title_en;
   const body = locale === "de" ? project.body_de : project.body_en;
@@ -67,6 +84,14 @@ export default async function ProjectDetailPage({
             {new Date(project.createdAt).toLocaleDateString(locale)}
           </p>
           <div className="flex flex-wrap items-center gap-2">
+            {project.isPublic && (
+              <LikeButton
+                slug={project.slug}
+                initialCount={project._count.likes}
+                initialLiked={liked}
+                loggedIn={Boolean(session?.user?.id)}
+              />
+            )}
             {(isOwner || isAdmin) && (
               <DeleteProjectButton slug={project.slug} />
             )}

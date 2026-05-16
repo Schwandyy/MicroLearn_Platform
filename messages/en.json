@@ -14,7 +14,13 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "signOut": "Sign out",
-    "languageSwitch": "Language"
+    "languageSwitch": "Language",
+    "searchTitle": "Search",
+    "searchPlaceholder": "Search lessons, paths, projects…",
+    "searchEmpty": "No results.",
+    "searchPaths": "Paths",
+    "searchLessons": "Lessons",
+    "searchProjects": "Projects"
   },
   "home": {
     "heroBadge": "Learn microelectronics, structured",
