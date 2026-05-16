@@ -190,7 +190,10 @@ export default async function ClassroomDetailPage({
             </div>
           </div>
           <Button asChild variant="outline" size="sm">
-            <a href={`/api/classrooms/${classroom.id}/report`} download>
+            <a
+              href={`/api/classrooms/${classroom.id}/report?locale=${locale}`}
+              download
+            >
               {t("exportPdf")}
             </a>
           </Button>

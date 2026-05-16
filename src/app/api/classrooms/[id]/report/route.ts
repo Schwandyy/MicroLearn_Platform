@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
+import {
+  renderClassroomReportPdf,
+  type CurriculumCoverageRow,
+  type StudentRow,
+} from "@/server/lib/classroom-report-pdf";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
@@ -11,38 +18,155 @@ export async function GET(
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
   const { id } = await params;
+  const url = new URL(req.url);
+  const localeParam = url.searchParams.get("locale");
+  const locale: "de" | "en" = localeParam === "en" ? "en" : "de";
+  const isAdmin = session.user.role === "ADMIN";
+
   const classroom = await prisma.classroom.findUnique({
     where: { id },
     include: {
+      teacher: { select: { name: true, username: true, email: true } },
       members: {
+        orderBy: { joinedAt: "asc" },
         include: {
           user: {
             include: {
-              progress: { include: { lesson: true } },
-              xp: true,
+              progress: {
+                where: { completedAt: { not: null } },
+                select: { lessonId: true },
+              },
+              xp: { select: { amount: true } },
+            },
+          },
+        },
+      },
+      assignments: {
+        include: {
+          lesson: { select: { id: true } },
+          path: {
+            select: {
+              courses: { select: { lessons: { select: { id: true } } } },
             },
           },
         },
       },
     },
   });
-  if (!classroom || classroom.teacherId !== session.user.id) {
+  if (!classroom || (classroom.teacherId !== session.user.id && !isAdmin)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Simple CSV export (PDF generation will use a worker in Phase 3)
-  const rows: string[] = ["Benutzer,Status,Lektionen abgeschlossen,XP gesamt"];
-  for (const m of classroom.members) {
-    const completed = m.user.progress.filter((p) => p.completedAt).length;
-    const xp = m.user.xp.reduce((s, x) => s + x.amount, 0);
-    const name = (m.user.username ?? "").replace(/"/g, '""');
-    rows.push(`"${name}",${m.isActive ? "aktiv" : "inaktiv"},${completed},${xp}`);
+  // Per-student progress (lessons completed, XP, assignment %)
+  const titleField = locale === "en" ? "title_en" : "title_de";
+  const descField = locale === "en" ? "description_en" : "description_de";
+
+  const students: StudentRow[] = classroom.members.map((m) => {
+    const completedSet = new Set<string>(
+      m.user.progress.map((p) => p.lessonId).filter((x): x is string => !!x),
+    );
+    let assignTotal = 0;
+    let assignDone = 0;
+    for (const a of classroom.assignments) {
+      const lessonIds = a.lesson
+        ? [a.lesson.id]
+        : (a.path?.courses ?? []).flatMap((cc) =>
+            cc.lessons.map((l) => l.id),
+          );
+      if (lessonIds.length === 0) continue;
+      assignTotal += 1;
+      const done = lessonIds.every((lid) => completedSet.has(lid));
+      if (done) assignDone += 1;
+    }
+    return {
+      username: m.user.username ?? m.user.name ?? "(no name)",
+      isActive: m.isActive,
+      completedLessons: completedSet.size,
+      totalXp: m.user.xp.reduce((s, x) => s + x.amount, 0),
+      assignmentsDone: assignDone,
+      assignmentsTotal: assignTotal,
+    };
+  });
+
+  // Curriculum coverage (requires state + grade on classroom)
+  let curriculum: {
+    totalStandards: number;
+    coveredStandards: number;
+    rows: CurriculumCoverageRow[];
+  } | null = null;
+
+  if (classroom.state && classroom.grade != null) {
+    const standards = await prisma.curriculumStandard.findMany({
+      where: { state: classroom.state, grade: { lte: classroom.grade } },
+      orderBy: [{ grade: "asc" }, { subject: "asc" }, { sortOrder: "asc" }],
+      include: {
+        lessons: {
+          include: {
+            lesson: {
+              select: {
+                id: true,
+                progress: {
+                  where: { completedAt: { not: null } },
+                  select: { userId: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const memberUserIds = new Set(classroom.members.map((m) => m.user.id));
+
+    const rows: CurriculumCoverageRow[] = standards.map((s) => {
+      const lessons = s.lessons.map((l) => l.lesson);
+      const studentsCovered = new Set<string>();
+      for (const lesson of lessons) {
+        for (const p of lesson.progress) {
+          if (memberUserIds.has(p.userId)) studentsCovered.add(p.userId);
+        }
+      }
+      return {
+        code: s.code,
+        title: (s[titleField] as string) ?? s.title_de,
+        description: (s[descField] as string | null) ?? s.description_de,
+        subject: s.subject,
+        grade: s.grade,
+        lessonsCovered: lessons.length,
+        studentsCovered: studentsCovered.size,
+      };
+    });
+
+    curriculum = {
+      totalStandards: rows.length,
+      coveredStandards: rows.filter((r) => r.studentsCovered > 0).length,
+      rows,
+    };
   }
-  const csv = rows.join("\n");
-  return new Response(csv, {
+
+  const pdf = await renderClassroomReportPdf({
+    locale,
+    classroomName: classroom.name,
+    teacherName:
+      classroom.teacher.name ??
+      classroom.teacher.username ??
+      classroom.teacher.email ??
+      "—",
+    state: classroom.state,
+    grade: classroom.grade,
+    issuedAt: new Date(),
+    totalStudents: classroom.members.length,
+    activeStudents: classroom.members.filter((m) => m.isActive).length,
+    students,
+    curriculum,
+  });
+
+  const safeName = classroom.name.replace(/[^a-z0-9-_]+/gi, "_").slice(0, 40);
+  return new Response(pdf as unknown as BodyInit, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="classroom-${id}-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="classroom-${safeName}-${new Date().toISOString().slice(0, 10)}.pdf"`,
+      "Cache-Control": "no-store",
     },
   });
 }
