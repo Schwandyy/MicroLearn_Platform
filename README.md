@@ -150,6 +150,17 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Capacitor-Asset-Pipeline: Platzhalter-Generator (`assets/logo.png`
       via sharp+SVG), `pnpm mobile:assets:placeholders` + `pnpm mobile:assets`
 
+### ✅ Phase 6
+
+- [x] One-Click-Opt-out für Wochenmail (signierter HMAC-Token im Mail-Link,
+      `weeklyDigestOptOut` auf User, Settings-Toggle nur für Lehrkräfte)
+- [x] KI-Curriculum-Vorschlag im Creator (Claude bekommt Lesson + Kandidaten,
+      gibt ≤5 Standards + Konfidenz + Begründung zurück, „Übernehmen"-Button)
+- [x] Stripe Currency-Auto-Detect (EUR/CHF, CH/LI → CHF, Pill-Switcher,
+      Annual-Save-Bubble auf Pro-Yearly-Card; `STRIPE_PRICE_*_CHF` envs)
+- [x] Automatische App-Store-Screenshots via Playwright (iOS 6.7", iPad Pro
+      12.9", Android Phone, Auth-Session über `pnpm screenshots:capture-session`)
+
 ### 📱 Mobile-App bauen (Capacitor)
 
 ```bash
