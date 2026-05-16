@@ -20,6 +20,7 @@ import {
   GraduationCap,
   Award,
   Hammer,
+  Sparkles,
 } from "lucide-react";
 
 function initials(name: string): string {
@@ -35,14 +36,19 @@ function initials(name: string): string {
 export function UserMenu({
   name,
   image,
+  canAuthor = false,
+  canTeach = false,
 }: {
   name: string;
   image: string | null;
+  canAuthor?: boolean;
+  canTeach?: boolean;
 }) {
   const tN = useTranslations("nav");
   const tS = useTranslations("settings");
   const tC = useTranslations("certificates");
   const tP = useTranslations("projects");
+  const tCr = useTranslations("create");
 
   return (
     <DropdownMenu>
@@ -76,12 +82,22 @@ export function UserMenu({
             {tC("myCertificates")}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/classroom">
-            <GraduationCap className="mr-2 h-4 w-4" />
-            Classroom
-          </Link>
-        </DropdownMenuItem>
+        {canTeach && (
+          <DropdownMenuItem asChild>
+            <Link href="/classroom">
+              <GraduationCap className="mr-2 h-4 w-4" />
+              {tN("classroom")}
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {canAuthor && (
+          <DropdownMenuItem asChild>
+            <Link href="/create">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {tCr("menuItem")}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/projects/new">
             <Hammer className="mr-2 h-4 w-4" />

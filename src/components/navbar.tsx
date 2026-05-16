@@ -53,6 +53,15 @@ export async function Navbar() {
               <UserMenu
                 name={session.user.name ?? session.user.username ?? "—"}
                 image={session.user.image ?? null}
+                canAuthor={
+                  session.user.role === "TEACHER" ||
+                  session.user.role === "INSTRUCTOR" ||
+                  session.user.role === "ADMIN"
+                }
+                canTeach={
+                  session.user.role === "TEACHER" ||
+                  session.user.role === "ADMIN"
+                }
               />
             </>
           ) : (
