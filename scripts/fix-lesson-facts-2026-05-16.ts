@@ -221,8 +221,141 @@ const patches: Patch[] = [
       "Build five identical mini-circuits side by side on the breadboard:\n1. LED anode (long leg) to GPIO 25, 26, 27, 32, 33 — one per LED.\n2. LED cathode (short leg) to a 220 Ω resistor.\n3. The other end of the resistor to the breadboard's GND rail.\n\nOne single jumper wire connects the GND rail to a GND pin on the ESP32 — a single ground works for all five LEDs.",
     reason: "Body klarer formulieren: GND-Schiene als zentrale Sammelschiene, ein Jumper reicht.",
   },
-  // esp32-mini-roboter Step 3 (CRITICAL pin-wiring):
-  // gleiche Echo-Pegelproblematik wie Ultraschall-Lesson.
+  // Round 3 — esp32-bodenfeuchte Step 1 (MAJOR factual): "Zinksonden" → Edelstahl.
+  {
+    lessonSlug: "esp32-bodenfeuchte",
+    sortOrder: 1,
+    expectsMarker: "Edelstahlsonden",
+    body_de:
+      "Wir nutzen das YL-69-Modul — bestehend aus zwei Edelstahlsonden und einer kleinen Treiberplatine (YL-38) mit analogem Ausgang. Ähnliche Module funktionieren genauso.",
+    body_en:
+      "We're using the YL-69 module — two stainless-steel probes plus a small driver board (YL-38) with an analog output. Similar modules work the same way.",
+    reason: "YL-69 hat Edelstahl- (nicht Zink-) Sonden + YL-38-Treiberplatine korrekt benannt.",
+  },
+  // Round 3 — esp32-dc-motor Step 2 SAFETY (MAJOR factual): 12mA absolut max ist falsch.
+  {
+    lessonSlug: "esp32-dc-motor",
+    sortOrder: 2,
+    expectsMarker: "dauerhaft empfohlene 12 mA",
+    body_de:
+      "Ein GPIO-Pin des ESP32 sollte dauerhaft nicht mehr als 12 mA liefern (absolutes Maximum laut Datenblatt: 40 mA). Ein Motor braucht oft das Zehnfache der dauerhaft empfohlene 12 mA — der Pin würde sofort heiß werden und ausfallen. Deshalb schaltet der MOSFET den großen Motorstrom — der ESP32 steuert nur das Gate mit wenigen mA.",
+    body_en:
+      "An ESP32 GPIO pin should continuously supply no more than 12 mA (absolute max per datasheet: 40 mA). A motor often needs ten times the recommended 12 mA — the pin would heat up and fail. That's why the MOSFET switches the big motor current — the ESP32 only drives the gate with a few mA.",
+    reason: "12mA war als 'absolutes Max' formuliert — ist aber Dauerempfehlung; absolutes Max 40 mA.",
+  },
+  // Round 3 — esp32-dc-motor Step 0 INTRO (MAJOR term-order): PWM wird benutzt
+  // bevor es in Step 3 erklärt wird.
+  {
+    lessonSlug: "esp32-dc-motor",
+    sortOrder: 0,
+    expectsMarker: "schnellem Ein-/Ausschalten",
+    body_de:
+      "Dein ESP32 fährt einen DC-Motor sanft hoch, hält ihn kurz auf Vollgas — und bremst ihn wieder ab. Das geht mit ganz schnellem Ein-/Ausschalten des Stroms (Details kommen gleich in Step 3); geschaltet wird sicher über einen MOSFET.",
+    body_en:
+      "Your ESP32 ramps a DC motor up smoothly, holds full speed for a moment, then ramps it back down. That works by switching the current on and off very fast (we'll explain it in Step 3); the actual switching is done safely through a MOSFET.",
+    reason: "PWM-Begriff war im INTRO benutzt vor Erklärung in Step 3 — durch Plain-Sprache ersetzt.",
+  },
+  // Round 3 — esp32-mpu6050-gyro Step 2 EXPLAIN (MAJOR factual): Beschleunigungs-Physik.
+  {
+    lessonSlug: "esp32-mpu6050-gyro",
+    sortOrder: 2,
+    expectsMarker: "Stützfläche (Normalkraft)",
+    body_de:
+      "DOF steht für „Degrees of Freedom“ — Freiheitsgrade. Drei davon messen Beschleunigung: vorwärts/rückwärts, links/rechts und hoch/runter. Die anderen drei messen Drehung um jede dieser Achsen.\n\nWichtig zu wissen: Ein MEMS-Beschleunigungssensor misst NICHT die Schwerkraft direkt, sondern die mechanische Gegenkraft seiner Stützfläche (Normalkraft). Liegt der Sensor flach auf dem Tisch, drückt der Tisch ihn nach oben mit ~9,8 m/s² — deshalb zeigt die Z-Achse +9,8 m/s² nach oben, obwohl die Schwerkraft eigentlich nach unten zieht.",
+    body_en:
+      "DOF stands for \"degrees of freedom.\" Three of them measure acceleration: forward/back, left/right, up/down. The other three measure rotation around each of those axes.\n\nWorth knowing: a MEMS accelerometer does NOT measure gravity directly. It measures the mechanical counter-force of its support (the normal force). When the sensor lies flat on the table, the table pushes it up at ~9.8 m/s² — that's why Z reads +9.8 m/s² upwards, even though gravity itself pulls down.",
+    reason: "Schwerkraft-Gegenkraft-Vermischung korrigiert: Sensor misst Normalkraft.",
+  },
+  // Round 3 — esp32-mpu6050-gyro Step 3 (MAJOR schematic-mismatch): 5V-Warnung präziser.
+  {
+    lessonSlug: "esp32-mpu6050-gyro",
+    sortOrder: 3,
+    expectsMarker: "MPU-6050-Chip max. 3,46 V VDD",
+    body_de:
+      "VCC des Moduls an 3,3 V, GND an GND, SCL an GPIO 22, SDA an GPIO 21 — das sind die Standard-I²C-Pins des ESP32.\n\n**Wichtig zum Strom:** Der MPU-6050-Chip selbst verträgt am VDD max. 3,46 V (Datenblatt). Das GY-521-Breakout-Board hat zwar einen eigenen 3,3-V-Regler und vertragt deshalb auch 5 V am VCC-Pin — sicherer ist aber 3,3 V, weil dann der Chip auch im Fehlerfall (z. B. Regler defekt) nicht überspannt wird.",
+    body_en:
+      "Module VCC to 3.3 V, GND to GND, SCL to GPIO 22, SDA to GPIO 21 — those are the standard I²C pins on the ESP32.\n\n**About the supply:** the MPU-6050 chip itself tolerates max. 3.46 V VDD per datasheet. The GY-521 breakout has its own 3.3 V regulator and can also take 5 V on VCC, but 3.3 V is safer — even if the regulator ever fails, the chip can't be over-volted.",
+    reason: "5V-Warnung präzisiert: Chip selbst max 3,46 V (Datenblatt), GY-521-Board hat Regler.",
+  },
+  // Round 3 — esp32-dht22-temperature Step 2 EXPLAIN (MAJOR factual): nicht 1-Wire.
+  {
+    lessonSlug: "esp32-dht22-temperature",
+    sortOrder: 2,
+    expectsMarker: "Single-Bus-Protokoll von Aosong",
+    body_de:
+      "Der DHT22 nutzt ein eigenes Single-Bus-Protokoll von Aosong — also EIN Datendraht, im Mikrosekundentakt geht eine Folge aus High/Low durch. Das ist NICHT dasselbe wie der „1-Wire-Bus“ von Dallas (DS18B20 nutzt den): nur der Daten-Pin-Aufbau sieht ähnlich aus. Die DHT-Library übersetzt die Bit-Folge automatisch in Temperatur und Luftfeuchte — du musst das nicht selbst programmieren.",
+    body_en:
+      "The DHT22 uses its own single-bus protocol by Aosong — one data wire, with high/low pulses at microsecond timing. This is NOT the same as the \"1-Wire bus\" from Dallas (used by the DS18B20): only the single-pin layout looks similar. The DHT library decodes the bit stream into temperature and humidity for you — you don't need to write that yourself.",
+    reason: "DHT22 nutzt proprietäres Aosong-Single-Bus, nicht Dallas-1-Wire — Begriffsverwechslung gefixt.",
+  },
+  // Round 3 — esp32-ds18b20-wasser Step 2 EXPLAIN (MAJOR term-order): Pull-Up vor Erklärung.
+  {
+    lessonSlug: "esp32-ds18b20-wasser",
+    sortOrder: 2,
+    expectsMarker: "Pull-Up-Widerstand hält die Datenleitung",
+    body_de:
+      "1-Wire ist ein Protokoll von Dallas Semiconductor: viele Sensoren teilen sich EINE Datenleitung. Jeder Sensor hat eine einmalige ID — der ESP32 spricht sie einzeln an.\n\n**Was ist ein Pull-Up-Widerstand?** Ein Widerstand zwischen Datenleitung und VCC (also +3,3 V). Er hält die Leitung auf einem definierten HIGH-Pegel, wenn gerade niemand „spricht“ — sonst hängt die Leitung in der Luft und der Bus funktioniert nicht. Für 1-Wire ist 4,7 kΩ der Standard-Wert.",
+    body_en:
+      "1-Wire is a protocol from Dallas Semiconductor: several sensors share ONE data line. Every sensor has a unique ID — the ESP32 talks to each one individually.\n\n**What's a pull-up resistor?** A resistor between the data line and VCC (i.e. +3.3 V). It holds the line at a defined HIGH level when nobody is currently \"talking\" — otherwise the line floats and the bus stops working. 4.7 kΩ is the standard pull-up value for 1-Wire.",
+    reason: "Pull-Up-Begriff war vor Erklärung benutzt; jetzt direkt am Ort eingeführt. Auch 'Dallas Semiconductors' → 'Dallas Semiconductor' (singular korrekt).",
+  },
+  // Round 3 — esp32-ds18b20-wasser Step 3 (MAJOR pin-wiring): "5kΩ funktioniert einwandfrei" abschwächen.
+  {
+    lessonSlug: "esp32-ds18b20-wasser",
+    sortOrder: 3,
+    expectsMarker: "4,7-kΩ-Widerstand als Pflicht",
+    body_de:
+      "Rotes Kabel des Fühlers an 3,3 V, schwarzes Kabel an GND, gelbes (Daten-)Kabel an GPIO 4. Jetzt der wichtige Part: einen **4,7-kΩ-Widerstand als Pflicht** zwischen GPIO 4 und 3,3 V ins Breadboard stecken.\n\nKein 4,7 kΩ zur Hand? Zwei 10-kΩ-Widerstände parallel ergeben rechnerisch 5 kΩ — das funktioniert für kurze Kabel und einen einzelnen Sensor, ist aber nicht ideal. Bei langen Kabeln oder mehreren Sensoren am Bus brauchst du den richtigen Wert.",
+    body_en:
+      "Probe red wire to 3.3 V, black wire to GND, yellow (data) wire to GPIO 4. Now the critical part: a **mandatory 4.7 kΩ resistor** between GPIO 4 and 3.3 V on the breadboard.\n\nNo 4.7 kΩ on hand? Two 10 kΩ resistors in parallel give you ~5 kΩ — works for short cables and a single sensor, but isn't ideal. With long cables or multiple sensors on the bus, use the proper value.",
+    reason: "Aussage '5 kΩ funktioniert einwandfrei' war zu sorglos — abgeschwächt mit Bedingungen.",
+  },
+  // Round 3 — esp32-neopixel-strip Step 2 SAFETY (MAJOR safety): 30 → 60 mA pro LED.
+  {
+    lessonSlug: "esp32-neopixel-strip",
+    sortOrder: 2,
+    expectsMarker: "60 mA pro LED",
+    body_de:
+      "Bei VOLLER weißer Helligkeit zieht jede WS2812B-LED bis zu 60 mA (20 mA pro Farbkanal × 3). Acht LEDs auf voller weißer Helligkeit wären also bis zu 480 mA — mehr als ein normaler USB-Port liefert.\n\nDeshalb begrenzen wir im Code die Helligkeit auf 50/255 (ca. 20 %). Damit liegen wir bei rund 96 mA für 8 LEDs — locker im USB-Limit. Für größere Streifen oder dauerhaften Vollast-Betrieb brauchst du ein eigenes 5V-Netzteil.",
+    body_en:
+      "At FULL white brightness each WS2812B LED can draw up to 60 mA (20 mA per color channel × 3). Eight LEDs at full white would be up to 480 mA — more than a standard USB port can supply.\n\nThat's why the code caps brightness at 50/255 (~20 %). With that we land around 96 mA for 8 LEDs — comfortably within USB limits. For longer strips or sustained full brightness you'll want a dedicated 5 V power supply.",
+    reason: "30 mA pro LED gilt nur für eine Farbe; bei weiß sind es 60 mA — Safety-Note korrigiert.",
+  },
+  // Round 3 — esp32-servo-sweep Step 3 (MAJOR pin-wiring): orange-gelb-Verwirrung.
+  {
+    lessonSlug: "esp32-servo-sweep",
+    sortOrder: 3,
+    expectsMarker: "orange (manchmal gelb)",
+    body_de:
+      "Der Servo hat drei Adern: braun = GND (Minus), rot = 5 V, orange (manchmal gelb) = Signal. So verbindest du es: Braun → GND am ESP32, Rot → 5V am ESP32 (oder externe 5V), orange/gelb → Pin GPIO 18 am ESP32.\n\n**Wichtig zum 5V-Pin:** Der 5V-Pin des ESP32 DevKit V1 ist direkt mit USB-VBUS verbunden — er liefert nur dann 5 V, wenn der ESP32 per USB angesteckt ist. Bei kleinen Servos wie dem SG90 reicht das für Tests; bei mehr Last oder gleichzeitiger Last (z. B. Roboter mit Sensor) lieber eine externe 5V-Quelle nutzen.\n\nGPIO ist nur ein anderes Wort für „programmierbarer Anschluss“ — also ein Pin, den du im Code ansteuern kannst.",
+    body_en:
+      "The servo has three wires: brown = GND (minus), red = 5 V, orange (sometimes yellow) = signal. Wiring: Brown → GND on the ESP32, Red → 5V on the ESP32 (or external 5 V), orange/yellow → GPIO 18 on the ESP32.\n\n**About the 5V pin:** the ESP32 DevKit V1's 5V pin is wired directly to USB-VBUS — it only delivers 5 V while the ESP32 is plugged into USB. For small servos like the SG90 that's fine for testing; for heavier loads or combined loads (e.g. a robot with sensor) use an external 5 V supply.\n\nGPIO is just another word for \"programmable pin\" — a pin you can drive from code.",
+    reason: "SG90-Signaldraht ist primär orange (gelb nur fallweise) + 5V-Pin-Quirk + erweiterte 5V-Quelle erklärt.",
+  },
+  // Round 3 — esp32-stepper-motor Step 2 EXPLAIN (MAJOR factual): Half/Full-Step.
+  {
+    lessonSlug: "esp32-stepper-motor",
+    sortOrder: 2,
+    expectsMarker: "Half-Step-Modus mit 2048",
+    body_de:
+      "Ein normaler Motor dreht einfach durch. Ein Schrittmotor hat drinnen mehrere Elektromagnete. Die werden nacheinander angesteuert — so „klickt“ sich die Welle Schritt für Schritt weiter.\n\nDie Standard-Arduino-Stepper-Library steuert den 28BYJ-48 im **Half-Step-Modus mit 2048 Schritten pro Umdrehung** an. Das heißt: 512 Schritte = 90°. Kein Messen nötig — du zählst einfach. (Beim reinen Full-Step wären es 1024 Schritte pro Umdrehung, aber die Standard-Library macht's automatisch in Halbschritten.)",
+    body_en:
+      "A regular motor just spins. A stepper motor has several electromagnets inside, energized one after the other — that's how the shaft \"clicks\" forward step by step.\n\nThe standard Arduino Stepper library drives the 28BYJ-48 in **half-step mode at 2048 steps per revolution**. That means: 512 steps = 90°. No measuring needed — just count. (Pure full-step would be 1024 steps per turn, but the standard library does it in half steps automatically.)",
+    reason: "Half-Step-Modus jetzt explizit benannt (2048 stimmt nur in Half-Step).",
+  },
+  // Round 3 — esp32-rgb-led Step 2 EXPLAIN (MAJOR term-order): PWM "von vorher" ohne vorher.
+  {
+    lessonSlug: "esp32-rgb-led",
+    sortOrder: 2,
+    expectsMarker: "PWM bedeutet: wir schalten",
+    body_de:
+      "Eine RGB-LED kombiniert drei farbige LEDs in einem Gehäuse: Rot, Grün, Blau. Wenn du alle drei in unterschiedlicher Stärke leuchten lässt, mischt sich die Farbe — wie bei Wasserfarben.\n\nDie Stärke regeln wir mit PWM. **PWM bedeutet: wir schalten den Pin ganz schnell ein und aus** (in dieser Lesson 5000 mal pro Sekunde). Das Auge sieht keine Blitze, sondern eine mittlere Helligkeit — je länger pro Periode „an“, desto heller die LED. Pro Farbkanal nehmen wir einen eigenen GPIO und eine eigene PWM-Stufe.",
+    body_en:
+      "An RGB LED combines three colored LEDs in one package: red, green, blue. Drive each at a different intensity and they mix — like watercolor paints.\n\nWe control intensity with PWM. **PWM means: we switch the pin on and off very fast** (5000 times per second in this lesson). The eye doesn't see the flicker — it sees an average brightness. Longer \"on\" per cycle = brighter LED. One GPIO and one PWM channel per color.",
+    reason: "PWM 'von vorher' war Rückverweis ohne Vorher — durch Direkterklärung ersetzt.",
+  },
+  // Round 1 — esp32-mini-roboter Step 3 (CRITICAL pin-wiring):
+  // Echo-Pegelproblematik wie Ultraschall-Lesson.
   {
     lessonSlug: "esp32-mini-roboter",
     sortOrder: 3,
