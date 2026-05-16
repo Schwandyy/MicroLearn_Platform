@@ -25,6 +25,9 @@ const MODEL = process.env.AUDIT_MODEL ?? "claude-sonnet-4-6";
 const MAX_LESSONS = process.env.MAX_LESSONS
   ? Number.parseInt(process.env.MAX_LESSONS, 10)
   : null;
+const SLUGS = process.env.SLUGS
+  ? process.env.SLUGS.split(",").map((s) => s.trim()).filter(Boolean)
+  : null;
 
 type Severity = "critical" | "major" | "minor";
 
@@ -297,7 +300,10 @@ async function main() {
   const client = new Anthropic({ apiKey });
 
   const lessons = await prisma.lesson.findMany({
-    where: { isPublished: true },
+    where: {
+      isPublished: true,
+      ...(SLUGS ? { slug: { in: SLUGS } } : {}),
+    },
     orderBy: [{ course: { sortOrder: "asc" } }, { sortOrder: "asc" }],
     include: {
       steps: { orderBy: { sortOrder: "asc" } },
