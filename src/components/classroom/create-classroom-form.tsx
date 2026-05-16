@@ -7,24 +7,39 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "@/i18n/routing";
 
-const STATE_OPTIONS = [
-  "BW",
-  "BY",
-  "NRW",
-  "HE",
-  "SN",
-  "NI",
-  "RP",
-  "SH",
-  "BE",
-  "HH",
-  "BB",
-  "ST",
-  "MV",
-  "TH",
-  "SL",
-  "HB",
-] as const;
+type StateGroup = { country: "DE" | "AT" | "CH"; codes: string[] };
+
+const STATE_GROUPS: StateGroup[] = [
+  {
+    country: "DE",
+    codes: [
+      "BW",
+      "BY",
+      "NRW",
+      "HE",
+      "SN",
+      "NI",
+      "RP",
+      "SH",
+      "BE",
+      "HH",
+      "BB",
+      "ST",
+      "MV",
+      "TH",
+      "SL",
+      "HB",
+    ],
+  },
+  { country: "AT", codes: ["AT"] },
+  { country: "CH", codes: ["CH"] },
+];
+
+const COUNTRY_LABEL: Record<StateGroup["country"], string> = {
+  DE: "Deutschland",
+  AT: "Österreich",
+  CH: "Schweiz (LP21)",
+};
 
 export function CreateClassroomForm() {
   const t = useTranslations("classroom");
@@ -80,10 +95,14 @@ export function CreateClassroomForm() {
         className="h-10 rounded-md border bg-background px-3 text-sm"
       >
         <option value="">{tcurr("classroomStatePlaceholder")}</option>
-        {STATE_OPTIONS.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
+        {STATE_GROUPS.map((group) => (
+          <optgroup key={group.country} label={COUNTRY_LABEL[group.country]}>
+            {group.codes.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
       <Input
