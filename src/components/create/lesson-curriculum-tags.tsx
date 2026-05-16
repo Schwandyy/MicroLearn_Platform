@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { GraduationCap, Loader2, Plus, X } from "lucide-react";
+import { GraduationCap, Loader2, Plus, Sparkles, X } from "lucide-react";
 
 type Standard = {
   id: string;
@@ -53,6 +53,16 @@ export function LessonCurriculumTags({
   const [selection, setSelection] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [isSaving, startSave] = useTransition();
+  const [suggestions, setSuggestions] = useState<Array<{
+    id: string;
+    code: string;
+    state: string;
+    grade: number;
+    title: string;
+    reason: string;
+    confidence: number;
+  }>>([]);
+  const [isSuggesting, startSuggest] = useTransition();
 
   useEffect(() => {
     let aborted = false;
@@ -126,6 +136,35 @@ export function LessonCurriculumTags({
     });
   };
 
+  const fetchSuggestions = () => {
+    startSuggest(async () => {
+      const params = new URLSearchParams();
+      if (filterState !== "ALL") params.set("state", filterState);
+      if (filterGrade !== "ALL") params.set("grade", filterGrade);
+      params.set("locale", locale);
+      const res = await fetch(
+        `/api/lessons/${lessonId}/curriculum/suggest?${params.toString()}`,
+      );
+      if (!res.ok) {
+        toast({ title: t("suggestError"), variant: "destructive" });
+        return;
+      }
+      const data = await res.json();
+      setSuggestions(data.suggestions ?? []);
+      if ((data.suggestions ?? []).length === 0) {
+        toast({ title: t("suggestEmpty") });
+      }
+    });
+  };
+
+  const acceptSuggestion = (id: string) => {
+    setSelection((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
+
   const remove = (id: string) => {
     startSave(async () => {
       const next = new Set(selection);
@@ -165,7 +204,7 @@ export function LessonCurriculumTags({
                 <DialogDescription>{t("manageHint")}</DialogDescription>
               </DialogHeader>
 
-              <div className="flex flex-wrap gap-2 pb-2">
+              <div className="flex flex-wrap items-center gap-2 pb-2">
                 <select
                   value={filterState}
                   onChange={(e) => setFilterState(e.target.value)}
@@ -190,7 +229,70 @@ export function LessonCurriculumTags({
                     </option>
                   ))}
                 </select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto gap-1.5"
+                  onClick={fetchSuggestions}
+                  disabled={isSuggesting}
+                  title={t("suggestHint")}
+                >
+                  {isSuggesting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                  )}
+                  {t("suggest")}
+                </Button>
               </div>
+
+              {suggestions.length > 0 && (
+                <div className="mb-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+                  <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {t("suggestTitle")}
+                  </div>
+                  <ul className="space-y-2">
+                    {suggestions.map((s) => {
+                      const inSelection = selection.has(s.id);
+                      return (
+                        <li
+                          key={s.id}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => acceptSuggestion(s.id)}
+                            disabled={inSelection}
+                            className="mt-0.5 rounded border bg-background px-2 py-0.5 text-xs font-medium hover:bg-primary hover:text-primary-foreground disabled:cursor-default disabled:opacity-60"
+                          >
+                            {inSelection ? t("suggestAdded") : t("suggestAdd")}
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                              <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-semibold text-primary">
+                                {s.state}
+                              </span>
+                              <span>{t("gradeShort", { grade: s.grade })}</span>
+                              <span className="font-mono">{s.code}</span>
+                              <span className="ml-auto rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-700/30 dark:text-amber-200">
+                                {Math.round(s.confidence * 100)}%
+                              </span>
+                            </div>
+                            <div className="font-medium">{s.title}</div>
+                            {s.reason && (
+                              <p className="text-xs text-muted-foreground">
+                                {s.reason}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
 
               <div className="max-h-[55vh] overflow-y-auto rounded border">
                 {filtered.length === 0 ? (

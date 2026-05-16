@@ -712,6 +712,13 @@
     "classroomState": "Bundesland",
     "classroomGrade": "Klassenstufe",
     "classroomStatePlaceholder": "BW, BY, NRW …",
-    "classroomGradePlaceholder": "z.B. 9"
+    "classroomGradePlaceholder": "z.B. 9",
+    "suggest": "KI-Vorschlag",
+    "suggestHint": "Claude schlägt passende Standards basierend auf Titel und Inhalt der Lesson vor.",
+    "suggestTitle": "Vorschläge von Claude",
+    "suggestAdd": "Übernehmen",
+    "suggestAdded": "✓ markiert",
+    "suggestEmpty": "Kein klarer Treffer — manuell wählen.",
+    "suggestError": "Vorschlag fehlgeschlagen."
   }
 }

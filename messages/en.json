@@ -712,6 +712,13 @@
     "classroomState": "State",
     "classroomGrade": "Grade",
     "classroomStatePlaceholder": "BW, BY, NRW …",
-    "classroomGradePlaceholder": "e.g. 9"
+    "classroomGradePlaceholder": "e.g. 9",
+    "suggest": "AI suggest",
+    "suggestHint": "Claude proposes likely standards based on the lesson title and body.",
+    "suggestTitle": "Suggestions from Claude",
+    "suggestAdd": "Add",
+    "suggestAdded": "✓ added",
+    "suggestEmpty": "No confident match — please pick manually.",
+    "suggestError": "Suggestion failed."
   }
 }
