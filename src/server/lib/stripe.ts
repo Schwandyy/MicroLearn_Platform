@@ -18,20 +18,59 @@ export function requireStripe(): Stripe {
   return stripe;
 }
 
-export const STRIPE_PRICES = {
-  PRO_MONTHLY: process.env.STRIPE_PRICE_PRO_MONTHLY,
-  PRO_YEARLY: process.env.STRIPE_PRICE_PRO_YEARLY,
-  INSTITUTION: process.env.STRIPE_PRICE_INSTITUTION,
-} as const;
+export type CheckoutPlan = "PRO_MONTHLY" | "PRO_YEARLY" | "INSTITUTION";
+export type Currency = "EUR" | "CHF";
 
-export type CheckoutPlan = keyof typeof STRIPE_PRICES;
+const PRICE_MATRIX: Record<CheckoutPlan, Record<Currency, string | undefined>> =
+  {
+    PRO_MONTHLY: {
+      EUR: process.env.STRIPE_PRICE_PRO_MONTHLY,
+      CHF: process.env.STRIPE_PRICE_PRO_MONTHLY_CHF,
+    },
+    PRO_YEARLY: {
+      EUR: process.env.STRIPE_PRICE_PRO_YEARLY,
+      CHF: process.env.STRIPE_PRICE_PRO_YEARLY_CHF,
+    },
+    INSTITUTION: {
+      EUR: process.env.STRIPE_PRICE_INSTITUTION,
+      CHF: process.env.STRIPE_PRICE_INSTITUTION_CHF,
+    },
+  };
+
+/**
+ * Returns the Stripe price-id for a plan in the requested currency, falling
+ * back to EUR when the CHF variant is not configured. Keeps the migration
+ * path safe — markets without CHF prices in Stripe keep working.
+ */
+export function getStripePriceId(
+  plan: CheckoutPlan,
+  currency: Currency = "EUR",
+): string | undefined {
+  return PRICE_MATRIX[plan][currency] ?? PRICE_MATRIX[plan].EUR;
+}
+
+/** Legacy alias — EUR only. Prefer `getStripePriceId(plan, currency)`. */
+export const STRIPE_PRICES = {
+  PRO_MONTHLY: PRICE_MATRIX.PRO_MONTHLY.EUR,
+  PRO_YEARLY: PRICE_MATRIX.PRO_YEARLY.EUR,
+  INSTITUTION: PRICE_MATRIX.INSTITUTION.EUR,
+} as const;
 
 export function priceToTier(
   priceId: string | null | undefined,
 ): "PRO" | "INSTITUTION" | "FREE" {
   if (!priceId) return "FREE";
-  if (priceId === STRIPE_PRICES.PRO_MONTHLY) return "PRO";
-  if (priceId === STRIPE_PRICES.PRO_YEARLY) return "PRO";
-  if (priceId === STRIPE_PRICES.INSTITUTION) return "INSTITUTION";
+  const proIds = [
+    PRICE_MATRIX.PRO_MONTHLY.EUR,
+    PRICE_MATRIX.PRO_MONTHLY.CHF,
+    PRICE_MATRIX.PRO_YEARLY.EUR,
+    PRICE_MATRIX.PRO_YEARLY.CHF,
+  ].filter(Boolean) as string[];
+  if (proIds.includes(priceId)) return "PRO";
+  const instIds = [
+    PRICE_MATRIX.INSTITUTION.EUR,
+    PRICE_MATRIX.INSTITUTION.CHF,
+  ].filter(Boolean) as string[];
+  if (instIds.includes(priceId)) return "INSTITUTION";
   return "FREE";
 }

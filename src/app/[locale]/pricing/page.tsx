@@ -14,15 +14,24 @@ import { ManageSubscriptionButton } from "@/components/pricing/manage-button";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { detectCurrency, isCurrency, type Currency } from "@/server/lib/currency";
 
 export default async function PricingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ currency?: string }>;
 }) {
   const { locale } = await params;
+  const sp = (await searchParams) ?? {};
   setRequestLocale(locale);
   const t = await getTranslations("pricing");
+
+  const requestedCurrency = sp.currency?.toUpperCase();
+  const currency: Currency = isCurrency(requestedCurrency)
+    ? requestedCurrency
+    : await detectCurrency();
 
   const session = await auth();
   const subscription = session?.user?.id
@@ -30,20 +39,47 @@ export default async function PricingPage({
     : null;
   const tier = subscription?.tier ?? "FREE";
 
+  const priceFor = (k: "freePrice" | "proPriceMonthly" | "proPriceYearly" | "institutionPrice") =>
+    currency === "CHF" ? t(`${k}CHF`) : t(k);
+
   const features = (key: "freeFeatures" | "proFeatures" | "institutionFeatures") =>
     (t.raw(key) as string[]) ?? [];
 
   return (
     <div className="container py-12 md:py-16">
-      <div className="mx-auto mb-12 max-w-2xl text-center">
+      <div className="mx-auto mb-10 max-w-2xl text-center">
         <h1 className="text-3xl font-bold md:text-4xl">{t("title")}</h1>
         <p className="mt-3 text-muted-foreground">{t("subtitle")}</p>
+        <div className="mt-4 inline-flex items-center gap-1 rounded-full border bg-background p-1 text-xs">
+          <Link
+            href={{ pathname: "/pricing", query: { currency: "EUR" } }}
+            className={cn(
+              "rounded-full px-3 py-1 transition",
+              currency === "EUR"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            EUR
+          </Link>
+          <Link
+            href={{ pathname: "/pricing", query: { currency: "CHF" } }}
+            className={cn(
+              "rounded-full px-3 py-1 transition",
+              currency === "CHF"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            CHF
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <PlanCard
           name={t("free")}
-          price={t("freePrice")}
+          price={priceFor("freePrice")}
           interval={`/ ${t("month")}`}
           features={features("freeFeatures")}
           highlighted={tier === "FREE"}
@@ -62,9 +98,9 @@ export default async function PricingPage({
 
         <PlanCard
           name={t("pro")}
-          price={t("proPriceMonthly")}
+          price={priceFor("proPriceMonthly")}
           interval={`/ ${t("month")}`}
-          subline={`${t("proPriceYearly")} ${t("billedYearly")}`}
+          subline={`${priceFor("proPriceYearly")} ${t("billedYearly")}`}
           features={features("proFeatures")}
           highlighted={tier === "PRO"}
           accent
@@ -73,12 +109,25 @@ export default async function PricingPage({
               <ManageSubscriptionButton />
             ) : (
               <div className="grid gap-2">
-                <CheckoutButton plan="PRO_MONTHLY">
-                  {t("proCta")} — {t("proPriceMonthly")}/{t("month")}
+                <CheckoutButton plan="PRO_MONTHLY" currency={currency}>
+                  {t("proCta")} — {priceFor("proPriceMonthly")}/{t("month")}
                 </CheckoutButton>
-                <CheckoutButton plan="PRO_YEARLY" variant="outline">
-                  {t("proPriceYearly")}/{t("year")}
-                </CheckoutButton>
+                <div className="relative">
+                  <span className="absolute -top-2 right-3 z-10 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                    {t("annualSave")}
+                  </span>
+                  <CheckoutButton
+                    plan="PRO_YEARLY"
+                    currency={currency}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {priceFor("proPriceYearly")}/{t("year")}
+                  </CheckoutButton>
+                </div>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  {t("annualSaveHint")}
+                </p>
               </div>
             )
           }
@@ -86,7 +135,7 @@ export default async function PricingPage({
 
         <PlanCard
           name={t("institution")}
-          price={t("institutionPrice")}
+          price={priceFor("institutionPrice")}
           interval={`/ ${t("month")}`}
           features={features("institutionFeatures")}
           highlighted={tier === "INSTITUTION"}
@@ -94,7 +143,11 @@ export default async function PricingPage({
             tier === "INSTITUTION" ? (
               <ManageSubscriptionButton />
             ) : (
-              <CheckoutButton plan="INSTITUTION" variant="default">
+              <CheckoutButton
+                plan="INSTITUTION"
+                currency={currency}
+                variant="default"
+              >
                 {t("institutionCta")}
               </CheckoutButton>
             )

@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
-import { requireStripe, STRIPE_PRICES } from "@/server/lib/stripe";
+import { requireStripe, getStripePriceId } from "@/server/lib/stripe";
+import { detectCurrency } from "@/server/lib/currency";
 
 const schema = z.object({
   plan: z.enum(["PRO_MONTHLY", "PRO_YEARLY", "INSTITUTION"]),
+  currency: z.enum(["EUR", "CHF"]).optional(),
 });
 
 export async function POST(req: Request) {
@@ -18,7 +20,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const priceId = STRIPE_PRICES[parsed.data.plan];
+  const currency = parsed.data.currency ?? (await detectCurrency());
+  const priceId = getStripePriceId(parsed.data.plan, currency);
   if (!priceId) {
     return NextResponse.json(
       { error: `Stripe price for ${parsed.data.plan} not configured.` },
@@ -72,9 +75,9 @@ export async function POST(req: Request) {
     allow_promotion_codes: true,
     automatic_tax: { enabled: true },
     billing_address_collection: "required",
-    metadata: { userId: user.id, plan: parsed.data.plan },
+    metadata: { userId: user.id, plan: parsed.data.plan, currency },
     subscription_data: {
-      metadata: { userId: user.id, plan: parsed.data.plan },
+      metadata: { userId: user.id, plan: parsed.data.plan, currency },
     },
   });
 
