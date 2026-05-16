@@ -170,19 +170,18 @@ const patches: Patch[] = [
     expectsMarker: "frequenzen[]",
     reason: "melody[] → frequenzen[] (Text-Code-Konsistenz in CELEBRATE).",
   },
-  // esp32-stepper-motor Step 3 (CRITICAL schematic-mismatch):
-  // Code-Konstruktor erwartet Pin-Reihenfolge (19, 5, 18, 17) — das ist
-  // (IN1, IN3, IN2, IN4) wegen Spulen-Sequenz beim 28BYJ-48. Text muss diese
-  // Reihenfolge erklären, damit der Motor wirklich dreht.
+  // Round 2 — esp32-stepper-motor Step 3 (CRITICAL pin-wiring + schematic-mismatch):
+  // 1) GPIO 5 ist Strapping-Pin, GPIO 17 ist UART2-TX → Wechsel auf {14, 25, 26, 27}.
+  // 2) Pin-Belegung als benannte Konstanten + explizit dokumentierter 28BYJ-48-Quirk.
   {
     lessonSlug: "esp32-stepper-motor",
     sortOrder: 3,
-    expectsMarker: "ULN2003-Platine korrekt mit Reihenfolge IN1, IN3, IN2, IN4",
+    expectsMarker: "IN1 → GPIO 14",
     body_de:
-      "Steck den ULN2003-Treiber zwischen ESP32 und Motor. **Achtung — die Reihenfolge ist ungewöhnlich**, weil die Arduino Stepper-Library die Spulen des 28BYJ-48 in einer bestimmten Sequenz ansteuert.\n\nVerbinde die ULN2003-Platine korrekt mit Reihenfolge IN1, IN3, IN2, IN4:\n- **IN1 → GPIO 19**\n- **IN3 → GPIO 5**\n- **IN2 → GPIO 18**\n- **IN4 → GPIO 17**\n\nVCC der Platine an den **5V-Pin** des ESP32 (kommt vom USB), GND der Platine an GND des ESP32. Den weißen Motorstecker auf die Platine — er passt nur in einer Richtung.\n\nWenn du IN2 und IN3 vertauschst, dreht sich der Motor falsch oder gar nicht. Das ist eine häufige Stolperfalle.",
+      "Steck den ULN2003-Treiber zwischen ESP32 und Motor. Verkabele die ULN2003-Platine **natürlich der Reihe nach**:\n- **IN1 → GPIO 14**\n- **IN2 → GPIO 25**\n- **IN3 → GPIO 26**\n- **IN4 → GPIO 27**\n\nVCC der Platine an den **5V-Pin** des ESP32 (kommt vom USB), GND der Platine an GND des ESP32. Den weißen Motorstecker auf die Platine — er passt nur in einer Richtung.\n\nWir nutzen bewusst GPIO 14/25/26/27, weil das vom ESP32-Bootloader unkritische Pins sind (kein Strapping, kein UART). Damit ruckelt der Motor beim Reset nicht.\n\nIm Code-Schritt siehst du, warum wir die Pins als benannte Konstanten `IN1_PIN`–`IN4_PIN` führen: die Arduino Stepper-Library bekommt sie in der Spulen-Reihenfolge IN1, IN3, IN2, IN4 — das ist eine gut dokumentierte Eigenheit des 28BYJ-48.",
     body_en:
-      "Plug the ULN2003 driver between the ESP32 and the motor. **Heads up — the order is unusual** because the Arduino Stepper library drives the 28BYJ-48 coils in a specific sequence.\n\nWire the ULN2003 board in the order IN1, IN3, IN2, IN4:\n- **IN1 → GPIO 19**\n- **IN3 → GPIO 5**\n- **IN2 → GPIO 18**\n- **IN4 → GPIO 17**\n\nVCC of the board to the ESP32's **5V pin** (sourced from USB), GND of the board to ESP32 GND. The white motor connector fits onto the board only one way.\n\nIf you swap IN2 and IN3 the motor turns the wrong way or not at all. It's a common trap.",
-    reason: "Text-Reihenfolge passte nicht zum Code — Motor lief falsch oder gar nicht.",
+      "Plug the ULN2003 driver between the ESP32 and the motor. Wire the ULN2003 board **straight through**:\n- **IN1 → GPIO 14**\n- **IN2 → GPIO 25**\n- **IN3 → GPIO 26**\n- **IN4 → GPIO 27**\n\nVCC of the board to the ESP32's **5V pin** (sourced from USB), GND of the board to ESP32 GND. The white motor connector fits onto the board only one way.\n\nWe deliberately pick GPIO 14/25/26/27 because those are bootloader-safe (no strapping pin, no UART). The motor won't jitter on reset.\n\nIn the code step you'll see why we keep the pins as named constants `IN1_PIN`–`IN4_PIN`: the Arduino Stepper library receives them in the coil order IN1, IN3, IN2, IN4 — a well-documented quirk of the 28BYJ-48.",
+    reason: "Pin-Wechsel auf bootloader-sichere GPIOs + benannte Konstanten lösen Strapping- und Library-Konventions-Widerspruch in einem Schritt.",
   },
   // esp32-ultraschall-abstand Step 3 (CRITICAL pin-wiring):
   // 5V-Pin am ESP32 DevKit kommt von USB-VBUS — Schüler muss das wissen,
@@ -196,6 +195,31 @@ const patches: Patch[] = [
     body_en:
       "Wire Trig to GPIO 5, Echo to GPIO 18, VCC to the **5V pin** of the ESP32 (not 3.3 V!) and GND to GND.\n\n**About 5 V:** The ESP32 DevKit's 5V pin only delivers 5 V when the board is powered via **USB** — keep it plugged in while testing. On a battery feeding the 3V3 input the HC-SR04 won't work.\n\n**About the Echo pin:** The HC-SR04 outputs **5 V** on the Echo pin, but ESP32 GPIOs are only **3.3 V** tolerant. Without protection that can damage the pin over time. Safe wiring: a voltage divider at the Echo output — e.g. **1 kΩ** (Echo → middle node) and **2 kΩ** (middle node → GND), the middle node goes to GPIO 18. That brings 5 V down to a clean 3.33 V.",
     reason: "5V-Pin-Quirk und Echo-Pin-Pegelproblem waren nicht erklärt — Schüler hätten den ESP32-Pin riskieren oder gar keine Messung bekommen können.",
+  },
+  // Round 2 — esp32-rgb-led Step 5 SIMULATE (MAJOR factual): body widersprach Code-Farbfolge.
+  {
+    lessonSlug: "esp32-rgb-led",
+    sortOrder: 5,
+    expectsMarker: "Rot, Grün, Blau, Gelb, Türkis, Pink",
+    body_de:
+      "Die LED wechselt alle 0,8 Sekunden die Farbe: Rot, Grün, Blau, Gelb, Türkis, Pink — in einer Endlosschleife. Wenn deine LED die falschen Farben zeigt, prüf nochmal Step 3 (Pin-Reihenfolge R/G/B).",
+    body_en:
+      "The LED changes color every 0.8 s: Red, Green, Blue, Yellow, Teal, Pink — in an endless loop. If your LED shows the wrong colors, double-check the R/G/B pin order from Step 3.",
+    reason: "SIMULATE-Beschreibung passte nicht zur Code-Farbsequenz (alt: Orange/Türkis/Magenta — Code hat 6 andere Farben).",
+  },
+  // Round 2 — esp32-lauflicht-5leds Step 3 BUILD-Hinweis bleibt — die Code-PINS müssen
+  // zum BUILD-Text passen. Wir behalten die echten Hardware-Pins 25,26,27,32,33,
+  // die der BUILD-Text nennt; Code-Patch unten ersetzt {16,17,18,19,21}.
+  // Step 3 body braucht nur einen Hinweis zum Strom-Limit:
+  {
+    lessonSlug: "esp32-lauflicht-5leds",
+    sortOrder: 3,
+    expectsMarker: "GPIO 25, 26, 27, 32, 33",
+    body_de:
+      "Baue fünf identische Mini-Schaltungen nebeneinander auf dem Steckbrett:\n1. LED-Anode (langes Bein) an GPIO 25, 26, 27, 32, 33 — je eine pro LED.\n2. LED-Kathode (kurzes Bein) an einen 220-Ω-Widerstand.\n3. Anderes Ende des Widerstands an die GND-Schiene des Steckbretts.\n\nEin einziges Jumper-Kabel verbindet die GND-Schiene mit einem GND-Pin am ESP32 — eine Masse für alle fünf LEDs reicht.",
+    body_en:
+      "Build five identical mini-circuits side by side on the breadboard:\n1. LED anode (long leg) to GPIO 25, 26, 27, 32, 33 — one per LED.\n2. LED cathode (short leg) to a 220 Ω resistor.\n3. The other end of the resistor to the breadboard's GND rail.\n\nOne single jumper wire connects the GND rail to a GND pin on the ESP32 — a single ground works for all five LEDs.",
+    reason: "Body klarer formulieren: GND-Schiene als zentrale Sammelschiene, ein Jumper reicht.",
   },
   // esp32-mini-roboter Step 3 (CRITICAL pin-wiring):
   // gleiche Echo-Pegelproblematik wie Ultraschall-Lesson.
@@ -221,6 +245,22 @@ type GlobalReplace = {
 };
 
 const globalReplaces: GlobalReplace[] = [
+  // Round 2 — neopixel Step 4 BUILD body: GPIO 5 → GPIO 4 + 5V/VIN-Klärung.
+  {
+    lessonSlug: "esp32-neopixel-strip",
+    sortOrder: 4,
+    searches: [
+      {
+        from: "Streifen-Kabel 5V an VIN des ESP32, GND an GND, DIN über einen 470-Ω-Widerstand an GPIO 5. Den Widerstand einfach ins Breadboard stecken, direkt in der Datenleitung.",
+        to: "Streifen-Kabel 5V an den **5V/VIN-Pin** des ESP32 (der schleift USB-5V durch — nur bei USB-Versorgung also wirklich 5 V), GND an GND, DIN über einen 470-Ω-Widerstand an **GPIO 4**. Den Widerstand einfach ins Breadboard stecken, direkt in der Datenleitung. Wir nehmen GPIO 4 statt GPIO 5, weil GPIO 5 ein Strapping-Pin ist und beim Reset Boot-Geflacker verursachen kann.",
+      },
+      {
+        from: "Strip cable 5V to VIN on the ESP32, GND to GND, DIN through a 470 Ω resistor to GPIO 5. Push the resistor into the breadboard directly in the data line.",
+        to: "Strip 5V to the ESP32's **5V/VIN pin** (it passes USB-5V through — so only really 5 V when USB-powered), GND to GND, DIN via a 470 Ω resistor to **GPIO 4**. Slot the resistor straight into the breadboard, in the data line. We use GPIO 4 instead of GPIO 5 — GPIO 5 is a strapping pin and can cause boot flicker on reset.",
+      },
+    ],
+    reason: "GPIO 5 (Strapping) → GPIO 4 + 5V/VIN-Pin als USB-pass-through klar formuliert.",
+  },
   {
     lessonSlug: "esp32-buzzer-melodie",
     sortOrder: 5,
@@ -267,6 +307,43 @@ const payloadReplaces: PayloadReplace[] = [
       { from: "524Hz", to: "523Hz" },
     ],
     reason: "C5 ist 523 Hz, nicht 524 — Quiz-Prompt im Payload korrigieren.",
+  },
+  // Round 2 — rgb-led Step 3 payload: Common-Anode-Hinweis war als Tipp formuliert,
+  // las sich aber wie zur Haupt-LED gehörig → klar als Exkurs markieren.
+  {
+    lessonSlug: "esp32-rgb-led",
+    sortOrder: 3,
+    searches: [
+      {
+        from: "Bei einer Common-Anode-LED das lange Bein an 3,3 V hängen und die Logik umkehren: 255 = aus, 0 = voll an. Außerdem ledcWrite-Werte invertieren (255 − gewünschter Wert).",
+        to: "**Nur falls du eine andere LED-Variante hast (Common-Anode statt Common-Cathode):** das lange Bein an 3,3 V hängen statt an GND und die Logik invertieren (255 = aus, 0 = voll an). Wir verwenden in dieser Lesson aber durchgehend die Common-Cathode-Version aus der Bauteilliste.",
+      },
+      {
+        from: "For a common-anode LED connect the long leg to 3.3 V and invert the logic: 255 = off, 0 = full on. Invert your ledcWrite values accordingly (255 minus desired value).",
+        to: "**Only if you happen to have a common-anode variant** (instead of the common-cathode in the BOM): connect the long leg to 3.3 V instead of GND and invert the logic (255 = off, 0 = full on). This lesson otherwise sticks with the common-cathode version.",
+      },
+    ],
+    reason: "Common-Anode-Hinweis war als Tipp zur Haupt-LED missverständlich — klar als Exkurs für andere Variante umformulieren.",
+  },
+  // Round 2 — ultraschall-abstand Step 3 payload: Widerstands-Werte mit Body konsistent.
+  {
+    lessonSlug: "esp32-ultraschall-abstand",
+    sortOrder: 3,
+    searches: [
+      { from: "10 kΩ + 20 kΩ zwischen Echo und GND, Mitte zu GPIO 18", to: "1 kΩ (Echo → Mitte) + 2 kΩ (Mitte → GND), Mitte zu GPIO 18" },
+      { from: "10 kΩ + 20 kΩ between Echo and GND, middle to GPIO 18", to: "1 kΩ (Echo → middle) + 2 kΩ (middle → GND), middle to GPIO 18" },
+    ],
+    reason: "Body sagt 1k/2k, payload sagte 10k/20k — Widerspruch im selben Step beseitigt.",
+  },
+  // Round 2 — neopixel-strip Step 4 payload: GPIO 5 → GPIO 4 + 5V/VIN-Klärung.
+  {
+    lessonSlug: "esp32-neopixel-strip",
+    sortOrder: 4,
+    searches: [
+      { from: "an GPIO 5", to: "an GPIO 4" },
+      { from: "to GPIO 5", to: "to GPIO 4" },
+    ],
+    reason: "GPIO 5 ist Strapping-Pin → Wechsel auf GPIO 4 auch im Hinweis.",
   },
 ];
 
@@ -346,13 +423,14 @@ void loop() {
     reason: "ledcSetup/ledcAttachPin in ESP32-Arduino-Core v3+ entfernt — Code kompilierte auf aktuellen Installationen nicht mehr.",
   },
   // esp32-lauflicht-5leds CRITICAL: i > 0 lässt LED 0 beim Rücklauf weg.
+  // Round 2: PINS auf {25, 26, 27, 32, 33} um zum BUILD-Text zu passen.
   {
     lessonSlug: "esp32-lauflicht-5leds",
     sortOrder: 4,
-    expectsMarker: "for (int i = NUM_LEDS - 2; i >= 0; i--)",
+    expectsMarker: "LED_PINS[NUM_LEDS] = {25, 26, 27, 32, 33}",
     newCode: `// ESP32 — 5 LEDs jagen sich (Lauflicht)
 const int NUM_LEDS = 5;
-const int LED_PINS[NUM_LEDS] = {16, 17, 18, 19, 21};
+const int LED_PINS[NUM_LEDS] = {25, 26, 27, 32, 33};
 const int STEP_MS = 120;
 
 void setup() {
@@ -425,6 +503,93 @@ void loop() {
   delay(500);
 }`,
     reason: "if (z < 5) triggerte bei 45°-Kippung. Neue Logik: erst flach (z > 8) prüfen, dann senkrecht (|z| < 3).",
+  },
+  // Round 2 — esp32-stepper-motor Code: Pin-Wechsel + benannte Konstanten.
+  {
+    lessonSlug: "esp32-stepper-motor",
+    sortOrder: 4,
+    expectsMarker: "const int IN1_PIN = 14;",
+    newCode: `// ESP32 — 28BYJ-48 Schrittmotor mit ULN2003
+#include <Stepper.h>
+
+// Bootloader-sichere Pins: kein Strapping, kein UART.
+const int IN1_PIN = 14;
+const int IN2_PIN = 25;
+const int IN3_PIN = 26;
+const int IN4_PIN = 27;
+
+// 28BYJ-48 mit Standard-Stepper-Library: die Library will die Spulen-
+// Pins in der Reihenfolge IN1, IN3, IN2, IN4 — gut dokumentierter Quirk.
+const int STEPS_PER_REV = 2048;
+Stepper myStepper(STEPS_PER_REV, IN1_PIN, IN3_PIN, IN2_PIN, IN4_PIN);
+
+void setup() {
+  Serial.begin(115200);
+  myStepper.setSpeed(10);  // ca. 10 U/min — ruhig und zuverlässig
+  Serial.println("Stepper bereit.");
+}
+
+void loop() {
+  Serial.println("90 Grad vorwaerts");
+  myStepper.step(512);    // 512 Schritte = 90 Grad
+  delay(1000);
+
+  Serial.println("90 Grad zurueck");
+  myStepper.step(-512);   // negatives Vorzeichen = Rueckwaerts
+  delay(1000);
+}`,
+    newLines: [
+      { from: 2, to: 2, explain_de: "Eingebaute Stepper-Library — keine Installation nötig.", explain_en: "Built-in Stepper library — no install needed." },
+      { from: 4, to: 8, explain_de: "Pin-Belegung als benannte Konstanten: IN1=14, IN2=25, IN3=26, IN4=27. So passt der Code zum physischen Anschluss am ULN2003.", explain_en: "Named pin constants: IN1=14, IN2=25, IN3=26, IN4=27 — code matches the ULN2003 wiring 1:1." },
+      { from: 12, to: 13, explain_de: "2048 Schritte pro Umdrehung. Beim Library-Konstruktor übergeben wir die Pins in der Reihenfolge IN1, IN3, IN2, IN4 — das ist die Spulen-Aktivierungsreihenfolge des 28BYJ-48.", explain_en: "2048 steps per revolution. We hand the library the pins in IN1, IN3, IN2, IN4 order — that's the 28BYJ-48's coil activation sequence." },
+      { from: 15, to: 19, explain_de: "setup(): Library mit 10 U/min initialisieren.", explain_en: "setup(): initialize at 10 RPM." },
+      { from: 21, to: 29, explain_de: "loop(): 512 Schritte vorwärts (= 90°), dann 512 Schritte zurück.", explain_en: "loop(): 512 steps forward (= 90°), then 512 steps back." },
+    ],
+    reason: "Pin-Wechsel auf bootloader-sichere GPIOs + benannte Konstanten, Spulen-Reihenfolge im Konstruktor klar dokumentiert.",
+  },
+  // Round 2 — esp32-neopixel-strip Code: GPIO 5 → GPIO 4 (kein Strapping-Pin).
+  {
+    lessonSlug: "esp32-neopixel-strip",
+    sortOrder: 5,
+    expectsMarker: "#define PIN      4",
+    newCode: `#include <Adafruit_NeoPixel.h>
+
+// GPIO 4 ist bootloader-sicher (kein Strapping-Pin).
+#define PIN      4
+#define NUM_LEDS 8
+
+Adafruit_NeoPixel strip(NUM_LEDS, PIN, NEO_GRB + NEO_KHZ800);
+
+void setup() {
+  strip.begin();
+  strip.setBrightness(50);
+  strip.show();
+}
+
+uint32_t colorWheel(uint8_t pos) {
+  pos = 255 - pos;
+  if (pos < 85)  return strip.Color(255 - (uint16_t)pos * 3, 0,                          (uint16_t)pos * 3);
+  if (pos < 170) return strip.Color(0,                       (uint16_t)pos * 3 - 255,    255 - (uint16_t)pos * 3);
+                 return strip.Color((uint16_t)pos * 3 - 255, 255 - (uint16_t)pos * 3,    0);
+}
+
+void loop() {
+  static uint8_t hueOffset = 0;
+  for (int i = 0; i < NUM_LEDS; i++) {
+    uint8_t hue = hueOffset + (i * (256 / NUM_LEDS));
+    strip.setPixelColor(i, colorWheel(hue));
+  }
+  strip.show();
+  hueOffset++;
+  delay(20);
+}`,
+    newLines: [
+      { from: 1, to: 6, explain_de: "Library laden, GPIO 4 als Daten-Pin definieren (kein Strapping-Pin → kein Boot-Geflacker), Streifen-Objekt erzeugen.", explain_en: "Load the library, use GPIO 4 as data pin (no strapping pin → no boot flicker), create the strip object." },
+      { from: 8, to: 13, explain_de: "setup(): Streifen starten, Helligkeit auf 50/255 begrenzen, alle LEDs aus.", explain_en: "setup(): start the strip, cap brightness at 50/255, blank all LEDs." },
+      { from: 15, to: 20, explain_de: "colorWheel() rechnet jeden Wert 0–255 in eine RGB-Farbe um. Die uint16_t-Casts verhindern den 8-Bit-Überlauf bei pos * 3.", explain_en: "colorWheel() converts each value 0–255 into an RGB color. The uint16_t casts avoid the 8-bit overflow on pos * 3." },
+      { from: 22, to: 31, explain_de: "Loop schiebt einen wandernden Regenbogen über alle LEDs.", explain_en: "Loop scrolls a moving rainbow across all LEDs." },
+    ],
+    reason: "GPIO 5 ist Strapping-Pin (kann Boot stören) + colorWheel-uint8_t-Überlauf gefixt durch uint16_t-Casts.",
   },
   // esp32-mini-roboter CRITICAL: Code im payload mitten in Serial.p abgeschnitten.
   {
