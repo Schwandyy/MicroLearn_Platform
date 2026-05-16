@@ -93,7 +93,7 @@ export default async function PrivacyPage({
         <h2>5. Cookies</h2>
         <p>
           Wir verwenden technisch notwendige Cookies für Anmeldung und Sprache.
-          Funktionale Cookies (z. B. Theme, „Hab ich"-Marker für Bauteile)
+          Funktionale Cookies (z. B. Theme, &bdquo;Hab ich&ldquo;-Marker für Bauteile)
           werden in Local Storage gespeichert. Eine ausdrückliche Einwilligung
           ist für nicht-notwendige Cookies erforderlich — siehe Cookie-Banner.
         </p>

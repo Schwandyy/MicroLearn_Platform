@@ -26,6 +26,7 @@ import { levelToNumber } from "@/lib/assessment";
 import { pickRecommendedPath } from "@/lib/path-recommendation";
 import { BoardSelector } from "@/components/dashboard/board-selector";
 import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
+import { CheckoutResultBanner } from "@/components/dashboard/checkout-result-banner";
 
 export default async function DashboardPage({
   params,
@@ -205,6 +206,7 @@ export default async function DashboardPage({
 
   return (
     <div className="container py-8 md:py-12">
+      <CheckoutResultBanner />
       <OnboardingTour active={isBeginnerMode} />
       <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <h1 className="text-3xl font-bold md:text-4xl">

@@ -500,6 +500,21 @@
     "deleteButton": "Konto endgültig löschen",
     "deleteSuccess": "Konto gelöscht. Auf Wiedersehen.",
     "avatar": "Profilbild",
-    "uploadAvatar": "Bild hochladen"
+    "uploadAvatar": "Bild hochladen",
+    "sectionSubscription": "Abonnement",
+    "subTierFree": "Kostenlos",
+    "subTierPro": "Pro",
+    "subTierInstitution": "Institution",
+    "subActive": "aktiv",
+    "subTrialing": "Testphase",
+    "subPastDue": "Zahlung offen",
+    "subCanceled": "gekündigt",
+    "subIncomplete": "unvollständig",
+    "subRenewsOn": "Verlängert sich am {date}",
+    "subEndsOn": "Endet am {date}",
+    "manage": "Verwalten (Stripe-Portal)",
+    "upgrade": "Upgraden",
+    "checkoutSuccess": "Willkommen im Pro-Plan! Deine Zahlung war erfolgreich.",
+    "checkoutCancelled": "Checkout abgebrochen — kein Problem, du bleibst auf dem aktuellen Plan."
   }
 }

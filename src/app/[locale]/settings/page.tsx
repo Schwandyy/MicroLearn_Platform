@@ -11,6 +11,7 @@ import {
 import { ProfileForm } from "@/components/settings/profile-form";
 import { DataActions } from "@/components/settings/data-actions";
 import { DangerZone } from "@/components/settings/danger-zone";
+import { SubscriptionPanel } from "@/components/settings/subscription-panel";
 
 export default async function SettingsPage({
   params,
@@ -27,7 +28,7 @@ export default async function SettingsPage({
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { profile: true },
+    include: { profile: true, subscription: true },
   });
 
   return (
@@ -53,6 +54,23 @@ export default async function SettingsPage({
                   (user?.preferredLocale as "de" | "en") ?? "de",
                 marketingOptIn: user?.marketingOptIn ?? false,
               }}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sectionSubscription")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SubscriptionPanel
+              tier={user?.subscription?.tier ?? "FREE"}
+              status={user?.subscription?.status ?? null}
+              currentPeriodEnd={
+                user?.subscription?.currentPeriodEnd?.toISOString() ?? null
+              }
+              cancelAtPeriodEnd={user?.subscription?.cancelAtPeriodEnd ?? false}
+              hasCustomer={Boolean(user?.subscription?.stripeCustomerId)}
             />
           </CardContent>
         </Card>

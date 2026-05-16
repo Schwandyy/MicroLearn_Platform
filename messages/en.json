@@ -500,6 +500,21 @@
     "deleteButton": "Delete account permanently",
     "deleteSuccess": "Account deleted. Goodbye.",
     "avatar": "Avatar",
-    "uploadAvatar": "Upload image"
+    "uploadAvatar": "Upload image",
+    "sectionSubscription": "Subscription",
+    "subTierFree": "Free",
+    "subTierPro": "Pro",
+    "subTierInstitution": "Institution",
+    "subActive": "active",
+    "subTrialing": "trialing",
+    "subPastDue": "payment past due",
+    "subCanceled": "cancelled",
+    "subIncomplete": "incomplete",
+    "subRenewsOn": "Renews on {date}",
+    "subEndsOn": "Ends on {date}",
+    "manage": "Manage (Stripe portal)",
+    "upgrade": "Upgrade",
+    "checkoutSuccess": "Welcome to Pro! Your payment went through.",
+    "checkoutCancelled": "Checkout cancelled — no worries, you stay on your current plan."
   }
 }
