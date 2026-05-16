@@ -4,6 +4,8 @@ import { azDeliveryScraper } from "./az-delivery";
 import { randomNerdScraper } from "./random-nerd";
 import { githubReadmeScraper } from "./github-readme";
 import { wokwiScraper } from "./wokwi";
+import { adafruitLearnScraper } from "./adafruit-learn";
+import { hacksterScraper } from "./hackster";
 import type { Scraper } from "./types";
 
 export const SCRAPERS: Scraper[] = [
@@ -11,7 +13,8 @@ export const SCRAPERS: Scraper[] = [
   randomNerdScraper,
   githubReadmeScraper,
   wokwiScraper,
-  // Weitere folgen: hackster.io, arduino.cc/Tutorial, adafruit.com/learn
+  adafruitLearnScraper,
+  hacksterScraper,
 ];
 
 export async function runScrapers(opts: { perSource?: number } = {}) {
