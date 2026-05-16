@@ -457,5 +457,33 @@
     "browsePaths": "Browse paths",
     "browseProjects": "Browse projects",
     "loading": "Loading …"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account, language and data.",
+    "sectionProfile": "Profile",
+    "sectionAccount": "Account",
+    "sectionData": "Your data",
+    "sectionDanger": "Delete account",
+    "name": "Name",
+    "username": "Username",
+    "usernameLocked": "Read-only",
+    "bio": "Bio",
+    "bioPlaceholder": "What are you learning right now?",
+    "locale": "Language",
+    "marketing": "Send me product updates by email",
+    "save": "Save",
+    "saved": "Saved",
+    "exportTitle": "Export your data",
+    "exportBody": "Download all your data as a JSON file (GDPR Article 15).",
+    "exportButton": "Download export",
+    "deleteTitle": "Delete account and all data",
+    "deleteBody": "Your account will be permanently deleted. This action cannot be undone.",
+    "deleteConfirmLabel": "Type \"DELETE\" to confirm",
+    "deleteConfirmKeyword": "DELETE",
+    "deleteButton": "Delete account permanently",
+    "deleteSuccess": "Account deleted. Goodbye.",
+    "avatar": "Avatar",
+    "uploadAvatar": "Upload image"
   }
 }

@@ -457,5 +457,33 @@
     "browsePaths": "Lernpfade entdecken",
     "browseProjects": "Projekte anschauen",
     "loading": "Lädt …"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Verwalte dein Konto, Sprache und Daten.",
+    "sectionProfile": "Profil",
+    "sectionAccount": "Konto",
+    "sectionData": "Deine Daten",
+    "sectionDanger": "Konto löschen",
+    "name": "Name",
+    "username": "Benutzername",
+    "usernameLocked": "Nur Lese-Modus",
+    "bio": "Über mich",
+    "bioPlaceholder": "Was lernst du gerade?",
+    "locale": "Sprache",
+    "marketing": "Ich möchte Produkt-News per Mail bekommen",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "exportTitle": "Daten exportieren",
+    "exportBody": "Lade alle deine Daten als JSON-Datei herunter (DSGVO Art. 15).",
+    "exportButton": "Export herunterladen",
+    "deleteTitle": "Konto und alle Daten löschen",
+    "deleteBody": "Das Konto wird sofort und unwiderruflich gelöscht. Diese Aktion lässt sich nicht rückgängig machen.",
+    "deleteConfirmLabel": "Tippe „LÖSCHEN“, um zu bestätigen",
+    "deleteConfirmKeyword": "LÖSCHEN",
+    "deleteButton": "Konto endgültig löschen",
+    "deleteSuccess": "Konto gelöscht. Auf Wiedersehen.",
+    "avatar": "Profilbild",
+    "uploadAvatar": "Bild hochladen"
   }
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageSwitch } from "@/components/i18n/language-switch";
 import { Cpu } from "lucide-react";
 import { auth } from "@/server/auth";
+import { UserMenu } from "@/components/user-menu";
 
 export async function Navbar() {
   const t = await getTranslations("nav");
@@ -38,9 +39,15 @@ export async function Navbar() {
         <div className="flex items-center gap-1">
           <LanguageSwitch />
           {session?.user ? (
-            <Button asChild size="sm" variant="ghost">
-              <Link href="/dashboard">{t("dashboard")}</Link>
-            </Button>
+            <>
+              <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+                <Link href="/dashboard">{t("dashboard")}</Link>
+              </Button>
+              <UserMenu
+                name={session.user.name ?? session.user.username ?? "—"}
+                image={session.user.image ?? null}
+              />
+            </>
           ) : (
             <>
               <Button asChild size="sm" variant="ghost">
