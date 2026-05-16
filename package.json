@@ -21,6 +21,7 @@
     "db:audit:kidspeak": "tsx --env-file=.env --env-file=.env.local scripts/audit-lesson-kidspeak.ts",
     "db:fix:affiliate-gaps": "tsx --env-file=.env scripts/fix-affiliate-gaps.ts",
     "db:fix:explain-visuals": "tsx --env-file=.env scripts/fix-explain-visuals.ts",
+    "db:fix:kidspeak-top": "tsx --env-file=.env scripts/fix-kidspeak-top.ts",
     "verify:affiliate": "tsx --env-file=.env scripts/verify-affiliate-links.ts",
     "sync:affiliate": "tsx --env-file=.env scripts/sync-affiliate-links.ts",
     "lessons:generate": "tsx --env-file=.env.local scripts/generate-lesson.ts",

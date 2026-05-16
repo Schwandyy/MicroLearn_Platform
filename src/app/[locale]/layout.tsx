@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { CookieBanner } from "@/components/cookie-banner";
+import { MobileFirstRunTour } from "@/components/onboarding/mobile-first-run-tour";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -33,6 +34,7 @@ export default async function LocaleLayout({
             <main className="flex-1">{children}</main>
             <Footer locale={locale} />
             <CookieBanner />
+            <MobileFirstRunTour />
             <Toaster />
           </SessionProvider>
         </NextIntlClientProvider>

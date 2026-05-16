@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Award, Cpu, Flame, Medal, Sparkles, Trophy } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { StreakPlant } from "./streak-plant";
 
 const ICONS = { Sparkles, Award, Medal, Trophy, Flame, Cpu } as const;
 
@@ -39,46 +40,30 @@ export function StreakBadgeStrip({
 
   return (
     <div className="mb-10 grid gap-3 rounded-2xl border bg-card p-4 md:grid-cols-[1.4fr_1fr] md:gap-5 md:p-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <div className="flex items-center gap-3">
-          <div
-            className={
-              "relative flex h-14 w-14 flex-none items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-500 text-white shadow " +
-              (activeToday ? "animate-pulse" : "")
-            }
-            aria-hidden
-          >
-            <Flame className="h-7 w-7" />
-            <span className="absolute -bottom-1 right-0 rounded-full bg-background px-1.5 text-xs font-bold tabular-nums text-foreground shadow ring-1 ring-border">
-              {currentDays}
-            </span>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
+        <StreakPlant currentDays={currentDays} activeToday={activeToday} />
+        <div className="flex flex-col gap-1.5 text-xs text-muted-foreground md:ml-auto md:items-end">
+          <div>
+            {activeToday ? t("streakActiveToday") : t("streakInactiveToday")}
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {t("streak")}
+          {longestDays > currentDays && (
+            <div className="flex items-center gap-1">
+              <Flame className="h-3 w-3 text-orange-500" />
+              {t("streakRecord", { days: longestDays })}
             </div>
-            <div className="text-2xl font-bold tabular-nums">
-              {currentDays} {currentDays === 1 ? t("streakDayOne") : t("streakDayMany")}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {activeToday ? t("streakActiveToday") : t("streakInactiveToday")}
-              {longestDays > currentDays && (
-                <> · {t("streakRecord", { days: longestDays })}</>
-              )}
-            </div>
+          )}
+          <div className="flex items-center gap-1.5">
+            {dots.map((on, i) => (
+              <span
+                key={i}
+                className={
+                  "h-2 w-2 rounded-full transition-colors " +
+                  (on ? "bg-emerald-500" : "bg-muted")
+                }
+                aria-hidden
+              />
+            ))}
           </div>
-        </div>
-        <div className="flex items-center gap-1.5 md:ml-auto">
-          {dots.map((on, i) => (
-            <span
-              key={i}
-              className={
-                "h-2.5 w-2.5 rounded-full transition-colors " +
-                (on ? "bg-orange-500" : "bg-muted")
-              }
-              aria-hidden
-            />
-          ))}
         </div>
       </div>
 
