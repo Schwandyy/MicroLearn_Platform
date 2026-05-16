@@ -241,7 +241,12 @@
     "tour2Title": "Pick your board",
     "tour2Body": "Tell us which boards you have (e.g. ESP32 or Arduino) and we'll show only matching lessons. You can change this anytime.",
     "tour3Title": "Ask the AI mentor",
-    "tour3Body": "Stuck in a lesson? Tap the sparkle icon bottom-right — the mentor knows your step and helps you patiently."
+    "tour3Body": "Stuck in a lesson? Tap the sparkle icon bottom-right — the mentor knows your step and helps you patiently.",
+    "teacherActivityTitle": "Activity in your classes",
+    "teacherActivityViewAll": "All classes",
+    "teacherActivityCompletion": "completed {lesson}",
+    "teacherActivityJoined": "joined the class",
+    "teacherActivityQuiz": "Quiz: {detail}"
   },
   "common": {
     "loading": "Loading…",

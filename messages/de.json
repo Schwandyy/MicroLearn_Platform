@@ -241,7 +241,12 @@
     "tour2Title": "Wähle dein Board",
     "tour2Body": "Sag uns, welche Boards du hast (z. B. ESP32 oder Arduino) — wir zeigen dir nur passende Lektionen. Du kannst das jederzeit ändern.",
     "tour3Title": "Frag den KI-Mentor",
-    "tour3Body": "Stockst du in einer Lektion? Tipp unten rechts auf das Funkeln-Symbol — der Mentor kennt deinen Schritt und hilft dir geduldig weiter."
+    "tour3Body": "Stockst du in einer Lektion? Tipp unten rechts auf das Funkeln-Symbol — der Mentor kennt deinen Schritt und hilft dir geduldig weiter.",
+    "teacherActivityTitle": "Aktivität in deinen Klassen",
+    "teacherActivityViewAll": "Alle Klassen",
+    "teacherActivityCompletion": "{lesson} abgeschlossen",
+    "teacherActivityJoined": "ist der Klasse beigetreten",
+    "teacherActivityQuiz": "Quiz: {detail}"
   },
   "common": {
     "loading": "Lade…",

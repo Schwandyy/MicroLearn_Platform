@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireSession } from "@/server/auth/require-session";
 import { prisma } from "@/server/db/prisma";
+import { getRecentTeacherActivity } from "@/server/lib/teacher-activity";
+import { TeacherActivityWidget } from "@/components/dashboard/teacher-activity-widget";
 import {
   Card,
   CardContent,
@@ -41,8 +43,10 @@ export default async function DashboardPage({
     locale,
     callbackPath: `/${locale}/dashboard`,
   });
+  const canTeach =
+    session.user.role === "TEACHER" || session.user.role === "ADMIN";
 
-  const [user, xpAgg, streak, paths, allBoards, lastAssessment, certificates] =
+  const [user, xpAgg, streak, paths, allBoards, lastAssessment, certificates, teacherActivity] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id: session.user.id },
@@ -72,6 +76,9 @@ export default async function DashboardPage({
         orderBy: { issuedAt: "desc" },
         take: 3,
       }),
+      canTeach
+        ? getRecentTeacherActivity(session.user.id, 10)
+        : Promise.resolve([]),
     ]);
   const tCert = await getTranslations("certificates");
 
@@ -271,6 +278,10 @@ export default async function DashboardPage({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {canTeach && teacherActivity.length > 0 && (
+        <TeacherActivityWidget items={teacherActivity} locale={locale} />
       )}
 
       {/* Stats — bei aktiven Lernern unter dem Hero */}
