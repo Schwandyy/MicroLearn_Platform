@@ -16,6 +16,8 @@ interface Initial {
   bio: string;
   preferredLocale: "de" | "en";
   marketingOptIn: boolean;
+  weeklyDigestOptOut: boolean;
+  isTeacher: boolean;
 }
 
 export function ProfileForm({ initial }: { initial: Initial }) {
@@ -41,6 +43,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
           bio: form.bio || null,
           preferredLocale: form.preferredLocale,
           marketingOptIn: form.marketingOptIn,
+          weeklyDigestOptOut: form.weeklyDigestOptOut,
         }),
       });
       if (!res.ok) {
@@ -125,6 +128,25 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         />
         <span>{t("marketing")}</span>
       </label>
+
+      {form.isTeacher && (
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            id="weeklyDigest"
+            checked={!form.weeklyDigestOptOut}
+            onCheckedChange={(v) =>
+              set("weeklyDigestOptOut", !Boolean(v))
+            }
+            className="mt-0.5"
+          />
+          <span>
+            <span className="font-medium">{t("weeklyDigest")}</span>
+            <span className="block text-xs text-muted-foreground">
+              {t("weeklyDigestHint")}
+            </span>
+          </span>
+        </label>
+      )}
 
       <div>
         <Button type="submit" disabled={isPending}>

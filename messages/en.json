@@ -557,6 +557,8 @@
     "bioPlaceholder": "What are you learning right now?",
     "locale": "Language",
     "marketing": "Send me product updates by email",
+    "weeklyDigest": "Receive the weekly digest for my classrooms",
+    "weeklyDigestHint": "A Monday morning email with class activity, new completions and curriculum coverage. Only shown if you teach classes.",
     "save": "Save",
     "saved": "Saved",
     "exportTitle": "Export your data",

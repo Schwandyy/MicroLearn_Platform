@@ -29,8 +29,13 @@ export default async function SettingsPage({
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { profile: true, subscription: true },
+    include: {
+      profile: true,
+      subscription: true,
+      classroomsTaught: { select: { id: true }, take: 1 },
+    },
   });
+  const isTeacher = (user?.classroomsTaught?.length ?? 0) > 0;
 
   return (
     <div className="container max-w-2xl py-10">
@@ -54,6 +59,8 @@ export default async function SettingsPage({
                 preferredLocale:
                   (user?.preferredLocale as "de" | "en") ?? "de",
                 marketingOptIn: user?.marketingOptIn ?? false,
+                weeklyDigestOptOut: user?.weeklyDigestOptOut ?? false,
+                isTeacher,
               }}
             />
           </CardContent>

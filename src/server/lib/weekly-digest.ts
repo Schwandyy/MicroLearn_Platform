@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "@/server/db/prisma";
 import { sendEmail } from "@/server/lib/email";
 import { getClassroomCurriculumCoverage } from "@/server/lib/classroom-curriculum";
+import { signUnsubscribeToken } from "@/server/lib/unsubscribe-token";
 
 type Locale = "de" | "en";
 
@@ -38,6 +39,7 @@ const COPY: Record<Locale, {
   topActive: string;
   cta: string;
   footer: string;
+  unsubscribe: string;
   noEmail: string;
 }> = {
   de: {
@@ -65,7 +67,8 @@ const COPY: Record<Locale, {
     topActive: "Top-Aktive",
     cta: "Klasse öffnen",
     footer:
-      "Diesen Wochenbericht erhältst du als Lehrkraft einer aktiven MicroLearn-Klasse. Du kannst dich in den Einstellungen jederzeit abmelden.",
+      "Diesen Wochenbericht erhältst du als Lehrkraft einer aktiven MicroLearn-Klasse.",
+    unsubscribe: "Mit einem Klick abbestellen",
     noEmail: "Lehrkraft ohne hinterlegte E-Mail-Adresse — Versand übersprungen.",
   },
   en: {
@@ -93,7 +96,8 @@ const COPY: Record<Locale, {
     topActive: "Top contributors",
     cta: "Open classroom",
     footer:
-      "You receive this digest as the teacher of an active MicroLearn classroom. You can opt out any time in your settings.",
+      "You receive this digest as the teacher of an active MicroLearn classroom.",
+    unsubscribe: "One-click unsubscribe",
     noEmail: "Teacher without email on file — skipping.",
   },
 };
@@ -137,10 +141,18 @@ export async function runWeeklyDigest(opts: { dry?: boolean } = {}): Promise<{
   const classrooms = await prisma.classroom.findMany({
     where: {
       members: { some: { isActive: true } },
+      teacher: { weeklyDigestOptOut: false },
     },
     include: {
       teacher: {
-        select: { name: true, username: true, email: true, preferredLocale: true },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          preferredLocale: true,
+          weeklyDigestOptOut: true,
+        },
       },
       members: {
         include: {
@@ -314,6 +326,8 @@ export async function buildDigest(opts: {
     classroom.teacher.email ??
     "";
   const classUrl = `${APP_URL}/${locale}/classroom/${classroom.id}`;
+  const unsubToken = signUnsubscribeToken(classroom.teacher.id, "weekly");
+  const unsubUrl = `${APP_URL}/api/unsubscribe?u=${encodeURIComponent(classroom.teacher.id)}&k=weekly&t=${unsubToken}&locale=${locale}`;
 
   const text = renderText({
     c,
@@ -328,6 +342,7 @@ export async function buildDigest(opts: {
     coverage,
     coveredDelta,
     classUrl,
+    unsubUrl,
   });
 
   const html = renderHtml({
@@ -343,6 +358,7 @@ export async function buildDigest(opts: {
     coverage,
     coveredDelta,
     classUrl,
+    unsubUrl,
   });
 
   return {
@@ -368,6 +384,7 @@ type RenderInput = {
   coverage: Awaited<ReturnType<typeof getClassroomCurriculumCoverage>>;
   coveredDelta: number;
   classUrl: string;
+  unsubUrl: string;
 };
 
 function renderText(i: RenderInput): string {
@@ -407,6 +424,8 @@ function renderText(i: RenderInput): string {
   lines.push("");
   lines.push("—");
   lines.push(c.footer);
+  lines.push("");
+  lines.push(`${c.unsubscribe}: ${i.unsubUrl}`);
   return lines.join("\n");
 }
 
@@ -499,8 +518,13 @@ function renderHtml(i: RenderInput): string {
           </a>
         </td></tr>
 
-        <tr><td style="padding:18px 28px 24px;color:#999;font-size:11px;line-height:1.5;text-align:center">
+        <tr><td style="padding:18px 28px 8px;color:#999;font-size:11px;line-height:1.5;text-align:center">
           ${escapeHtml(c.footer)}
+        </td></tr>
+        <tr><td style="padding:0 28px 24px;font-size:11px;text-align:center">
+          <a href="${escapeHtml(i.unsubUrl)}" style="color:#888;text-decoration:underline">
+            ${escapeHtml(c.unsubscribe)}
+          </a>
         </td></tr>
       </table>
     </td></tr>
@@ -516,10 +540,12 @@ type ClassroomShape = Awaited<
   ReturnType<typeof prisma.classroom.findMany>
 >[number] & {
   teacher: {
+    id: string;
     name: string | null;
     username: string | null;
     email: string | null;
     preferredLocale: string;
+    weeklyDigestOptOut: boolean;
   };
   members: Array<{
     id: string;

@@ -557,6 +557,8 @@
     "bioPlaceholder": "Was lernst du gerade?",
     "locale": "Sprache",
     "marketing": "Ich möchte Produkt-News per Mail bekommen",
+    "weeklyDigest": "Wochenbericht für meine Klassen erhalten",
+    "weeklyDigestHint": "Montagmorgen eine Mail mit Klassen-Aktivität, neuen Abschlüssen und Lehrplan-Abdeckung. Nur sichtbar, wenn du Klassen unterrichtest.",
     "save": "Speichern",
     "saved": "Gespeichert",
     "exportTitle": "Daten exportieren",

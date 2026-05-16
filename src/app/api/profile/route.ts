@@ -16,6 +16,7 @@ const schema = z.object({
   bio: z.string().trim().max(2000).nullable().optional(),
   preferredLocale: z.enum(["de", "en"]).optional(),
   marketingOptIn: z.boolean().optional(),
+  weeklyDigestOptOut: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -30,13 +31,22 @@ export async function PATCH(req: Request) {
       { status: 400 },
     );
   }
-  const { name, image, bio, preferredLocale, marketingOptIn } = parsed.data;
+  const {
+    name,
+    image,
+    bio,
+    preferredLocale,
+    marketingOptIn,
+    weeklyDigestOptOut,
+  } = parsed.data;
 
   const userUpdate: Record<string, unknown> = {};
   if (name !== undefined) userUpdate.name = name;
   if (image !== undefined) userUpdate.image = image;
   if (preferredLocale !== undefined) userUpdate.preferredLocale = preferredLocale;
   if (marketingOptIn !== undefined) userUpdate.marketingOptIn = marketingOptIn;
+  if (weeklyDigestOptOut !== undefined)
+    userUpdate.weeklyDigestOptOut = weeklyDigestOptOut;
 
   await prisma.$transaction(async (tx) => {
     if (Object.keys(userUpdate).length) {
