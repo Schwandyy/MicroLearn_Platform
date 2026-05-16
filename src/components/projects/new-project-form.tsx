@@ -12,6 +12,7 @@ import { ImageUpload } from "./image-upload";
 
 export function NewProjectForm() {
   const t = useTranslations("projects");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -36,7 +37,7 @@ export function NewProjectForm() {
       if (!res.ok) {
         toast({
           title: t("createTitle"),
-          description: json?.error ?? "Error",
+          description: json?.error ?? tc("error"),
           variant: "destructive",
         });
         return;

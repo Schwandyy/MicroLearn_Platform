@@ -245,13 +245,15 @@
   },
   "common": {
     "loading": "Loading…",
-    "error": "Something went wrong.",
+    "error": "Error",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "retryLater": "Please try again later.",
+    "saved": "Saved"
   },
   "paths": {
     "title": "Learning paths",
@@ -356,7 +358,8 @@
       "SAML/SSO, priority support"
     ],
     "institutionCta": "Request demo",
-    "managePortal": "Manage subscription"
+    "managePortal": "Manage subscription",
+    "stripeUnavailable": "Stripe is unreachable"
   },
   "mentor": {
     "title": "AI Mentor",
@@ -628,5 +631,8 @@
     "submitHint": "We'll notify you once review is done.",
     "submitted": "Submitted — thanks!",
     "fillRequired": "Please fill course, title and summary."
+  },
+  "admin": {
+    "commentDeleteConfirm": "Really delete this comment?"
   }
 }

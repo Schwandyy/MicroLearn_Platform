@@ -20,6 +20,7 @@ interface Initial {
 
 export function ProfileForm({ initial }: { initial: Initial }) {
   const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -43,7 +44,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
         }),
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       toast({ title: t("saved") });

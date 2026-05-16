@@ -244,14 +244,16 @@
     "tour3Body": "Stockst du in einer Lektion? Tipp unten rechts auf das Funkeln-Symbol — der Mentor kennt deinen Schritt und hilft dir geduldig weiter."
   },
   "common": {
-    "loading": "Lädt…",
-    "error": "Etwas ist schiefgelaufen.",
+    "loading": "Lade…",
+    "error": "Fehler",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "back": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "retryLater": "Bitte später erneut versuchen.",
+    "saved": "Gespeichert"
   },
   "paths": {
     "title": "Lernpfade",
@@ -356,7 +358,8 @@
       "SAML/SSO, Prioritäts-Support"
     ],
     "institutionCta": "Demo anfragen",
-    "managePortal": "Abo verwalten"
+    "managePortal": "Abo verwalten",
+    "stripeUnavailable": "Stripe nicht erreichbar"
   },
   "mentor": {
     "title": "KI-Mentor",
@@ -628,5 +631,8 @@
     "submitHint": "Wir melden uns per Benachrichtigung, sobald die Prüfung durch ist.",
     "submitted": "Eingereicht — danke!",
     "fillRequired": "Bitte Kurs, Titel und Kurzbeschreibung ausfüllen."
+  },
+  "admin": {
+    "commentDeleteConfirm": "Kommentar wirklich löschen?"
   }
 }

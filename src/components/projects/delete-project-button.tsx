@@ -9,6 +9,7 @@ import { Trash2 } from "lucide-react";
 
 export function DeleteProjectButton({ slug }: { slug: string }) {
   const t = useTranslations("projects");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -18,7 +19,7 @@ export function DeleteProjectButton({ slug }: { slug: string }) {
     startTransition(async () => {
       const res = await fetch(`/api/projects/${slug}`, { method: "DELETE" });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.push("/projects");

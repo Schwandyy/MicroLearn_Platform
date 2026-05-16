@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ export function LikeButton({
   loggedIn: boolean;
 }) {
   const router = useRouter();
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [liked, setLiked] = useState(initialLiked);
@@ -33,7 +35,7 @@ export function LikeButton({
       const method = liked ? "DELETE" : "POST";
       const res = await fetch(`/api/projects/${slug}/like`, { method });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       const body = await res.json().catch(() => null);

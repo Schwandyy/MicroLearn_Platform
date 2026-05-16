@@ -75,6 +75,7 @@ export function StepPlayer({
   mentorAvailable: boolean;
 }) {
   const t = useTranslations("lesson");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [stepIndex, setStepIndex] = useState(0);
@@ -102,7 +103,7 @@ export function StepPlayer({
         method: "POST",
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       const data: { certificate?: { publicSlug: string } | null } = await res

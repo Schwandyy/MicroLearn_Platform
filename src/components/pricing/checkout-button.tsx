@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,8 @@ export function CheckoutButton({
   variant?: ButtonProps["variant"];
 }) {
   const [isPending, startTransition] = useTransition();
+  const tc = useTranslations("common");
+  const tP = useTranslations("pricing");
   const { toast } = useToast();
 
   const onClick = () =>
@@ -32,8 +35,8 @@ export function CheckoutButton({
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.url) {
         toast({
-          title: "Stripe nicht erreichbar",
-          description: body.error ?? "Bitte später erneut versuchen.",
+          title: tP("stripeUnavailable"),
+          description: body.error ?? tc("retryLater"),
           variant: "destructive",
         });
         return;

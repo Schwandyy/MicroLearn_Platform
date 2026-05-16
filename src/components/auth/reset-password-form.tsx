@@ -11,6 +11,7 @@ import { CheckCircle2 } from "lucide-react";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -47,7 +48,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           setError(t("resetInvalid"));
           return;
         }
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       setDone(true);

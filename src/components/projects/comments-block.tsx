@@ -31,6 +31,7 @@ export function CommentsBlock({
   comments: CommentView[];
 }) {
   const t = useTranslations("projects");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -47,7 +48,7 @@ export function CommentsBlock({
         body: JSON.stringify({ body }),
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       setText("");
@@ -62,7 +63,7 @@ export function CommentsBlock({
         method: "DELETE",
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.refresh();

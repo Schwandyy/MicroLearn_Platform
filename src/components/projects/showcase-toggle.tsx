@@ -18,6 +18,7 @@ export function ShowcaseToggle({
   initialRank: number | null;
 }) {
   const t = useTranslations("projects");
+  const tc = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -39,7 +40,7 @@ export function ShowcaseToggle({
         }),
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.refresh();

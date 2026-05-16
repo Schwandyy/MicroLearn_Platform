@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ export function ReviewActions({
 }) {
   const [notes, setNotes] = useState("");
   const [isPending, startTransition] = useTransition();
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
 
@@ -31,7 +33,7 @@ export function ReviewActions({
       });
       if (!res.ok) {
         toast({
-          title: "Fehler",
+          title: tc("error"),
           description: await res.text().catch(() => undefined),
           variant: "destructive",
         });

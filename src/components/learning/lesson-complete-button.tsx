@@ -15,6 +15,7 @@ export function LessonCompleteButton({
   alreadyCompleted: boolean;
 }) {
   const t = useTranslations("lesson");
+  const tc = useTranslations("common");
   const [done, setDone] = useState(alreadyCompleted);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -35,7 +36,7 @@ export function LessonCompleteButton({
         method: "POST",
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       const body = await res.json();

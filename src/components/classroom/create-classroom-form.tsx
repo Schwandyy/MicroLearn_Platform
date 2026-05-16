@@ -9,6 +9,7 @@ import { useRouter } from "@/i18n/routing";
 
 export function CreateClassroomForm() {
   const t = useTranslations("classroom");
+  const tc = useTranslations("common");
   const [name, setName] = useState("");
   const [curriculumTag, setCurriculumTag] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -28,7 +29,7 @@ export function CreateClassroomForm() {
         }),
       });
       if (!res.ok) {
-        toast({ title: "Fehler", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       setName("");

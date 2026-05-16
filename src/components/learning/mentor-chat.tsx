@@ -22,6 +22,7 @@ export function MentorChat({
   stepContext?: { title: string; body: string; kind: string } | null;
 }) {
   const t = useTranslations("mentor");
+  const tc = useTranslations("common");
   const locale = useLocale() as "de" | "en";
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -72,7 +73,7 @@ export function MentorChat({
         return;
       }
       if (!res.ok || !res.body) {
-        setErrorMessage("Error");
+        setErrorMessage(tc("error"));
         setMessages(messages);
         return;
       }
@@ -103,7 +104,7 @@ export function MentorChat({
                 ];
               });
             } else if (evt.type === "error") {
-              setErrorMessage(evt.message ?? "Error");
+              setErrorMessage(evt.message ?? tc("error"));
             }
           } catch {
             // ignore parse errors on partial frames

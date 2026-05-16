@@ -126,6 +126,7 @@ function StudentsPanel({
   assignments: AssignmentRow[];
 }) {
   const t = useTranslations("classroom");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -142,7 +143,7 @@ function StudentsPanel({
         },
       );
       if (!res.ok) {
-        toast({ title: "Fehler", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.refresh();
@@ -305,6 +306,7 @@ function AssignmentsPanel({
   lessons: CatalogItem[];
 }) {
   const t = useTranslations("classroom");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -317,7 +319,7 @@ function AssignmentsPanel({
         { method: "DELETE" },
       );
       if (!res.ok) {
-        toast({ title: "Fehler", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.refresh();
@@ -428,6 +430,7 @@ function AssignmentCreator({
   lessons: CatalogItem[];
 }) {
   const t = useTranslations("classroom");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [kind, setKind] = useState<"path" | "lesson">("path");
@@ -463,7 +466,7 @@ function AssignmentCreator({
         }),
       });
       if (!res.ok) {
-        toast({ title: "Fehler", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       setTargetId("");
@@ -594,6 +597,7 @@ function CodesPanel({
   codes: CodeRow[];
 }) {
   const t = useTranslations("classroom");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -604,7 +608,7 @@ function CodesPanel({
         method: "POST",
       });
       if (!res.ok) {
-        toast({ title: "Fehler", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       router.refresh();

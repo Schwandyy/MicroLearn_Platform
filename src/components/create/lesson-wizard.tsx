@@ -58,6 +58,7 @@ const nextUid = () => `s${++stepCounter}_${Date.now()}`;
 
 export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) {
   const t = useTranslations("create");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -150,7 +151,7 @@ export function LessonWizard({ courseGroups }: { courseGroups: CourseGroup[] }) 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         toast({
-          title: data?.error ?? "Fehler",
+          title: data?.error ?? tc("error"),
           variant: "destructive",
         });
         return;

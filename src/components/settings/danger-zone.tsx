@@ -11,6 +11,7 @@ import { Trash2 } from "lucide-react";
 
 export function DangerZone() {
   const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState("");
@@ -27,7 +28,7 @@ export function DangerZone() {
         body: JSON.stringify({ confirm: confirm.trim().toUpperCase() }),
       });
       if (!res.ok) {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: tc("error"), variant: "destructive" });
         return;
       }
       toast({ title: t("deleteSuccess") });
