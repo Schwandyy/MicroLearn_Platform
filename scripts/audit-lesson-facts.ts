@@ -134,10 +134,10 @@ const FINDINGS_TOOL = {
 function extractJson(text: string): string {
   // Strategy 1: properly fenced ```json … ```
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (fenced) return fenced[1];
+  if (fenced && fenced[1]) return fenced[1];
   // Strategy 2: opening fence without closing (truncated output) — take everything after it
   const openFence = text.match(/```(?:json)?\s*([\s\S]*)$/i);
-  if (openFence) return openFence[1];
+  if (openFence && openFence[1]) return openFence[1];
   // Strategy 3: greedy {…} from first { to last }
   const first = text.indexOf("{");
   const last = text.lastIndexOf("}");
@@ -148,30 +148,30 @@ function extractJson(text: string): string {
 function fmtStep(s: {
   sortOrder: number;
   kind: string;
-  title_de: string;
-  body_de: string;
+  title_de: string | null;
+  body_de: string | null;
   payload: unknown;
 }): string {
   const payloadText = s.payload
     ? "\n  payload: " + JSON.stringify(s.payload).slice(0, 4000)
     : "";
-  return `Step ${s.sortOrder} [${s.kind}] "${s.title_de}":\n  ${s.body_de.slice(0, 2000)}${payloadText}`;
+  return `Step ${s.sortOrder} [${s.kind}] "${s.title_de ?? ""}":\n  ${(s.body_de ?? "").slice(0, 2000)}${payloadText}`;
 }
 
 async function auditOne(
   client: Anthropic,
   lesson: {
     slug: string;
-    title_de: string;
-    summary_de: string;
-    body_de: string;
+    title_de: string | null;
+    summary_de: string | null;
+    body_de: string | null;
     codeSnippet: string | null;
     safetyNotes_de: string | null;
     steps: Array<{
       sortOrder: number;
       kind: string;
-      title_de: string;
-      body_de: string;
+      title_de: string | null;
+      body_de: string | null;
       payload: unknown;
     }>;
     bom: Array<{
@@ -225,11 +225,11 @@ async function auditOne(
     : "(keine Quizzes)";
 
   const userMessage = `LESSON: ${lesson.slug}
-Titel: ${lesson.title_de}
-Summary: ${lesson.summary_de}
+Titel: ${lesson.title_de ?? ""}
+Summary: ${lesson.summary_de ?? ""}
 
 BODY:
-${lesson.body_de.slice(0, 1500)}
+${(lesson.body_de ?? "").slice(0, 1500)}
 
 STEPS (${lesson.steps.length}):
 ${stepsText}
@@ -278,7 +278,7 @@ Audit die Lesson. Antworte ausschließlich mit dem JSON-Schema.`;
       .trim();
     return {
       lessonSlug: lesson.slug,
-      lessonTitle: lesson.title_de,
+      lessonTitle: lesson.title_de ?? "",
       findings: [],
       raw: text.slice(0, 1500),
     };
@@ -286,7 +286,7 @@ Audit die Lesson. Antworte ausschließlich mit dem JSON-Schema.`;
 
   return {
     lessonSlug: lesson.slug,
-    lessonTitle: lesson.title_de,
+    lessonTitle: lesson.title_de ?? "",
     findings,
   };
 }

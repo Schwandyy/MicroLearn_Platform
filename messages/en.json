@@ -397,6 +397,10 @@
     "sourceAuto": "detected",
     "resolve": "Resolve"
   },
+  "unverified": {
+    "title": "Not yet verified on real hardware",
+    "body": "A member of our team hasn't physically built this lesson on real hardware yet. Some pin assignments, code snippets or BOM entries may still need adjustments. Feel free to try it — and flag any issue via the help prompt at the bottom."
+  },
   "paths": {
     "title": "Learning paths",
     "subtitle": "Structured routes through microelectronics — pick by level or board.",

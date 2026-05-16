@@ -36,6 +36,7 @@ import {
   type CompletionPayload,
 } from "./lesson-completion-modal";
 import { HelpRequestPrompt } from "./help-request-prompt";
+import { UnverifiedLessonBanner } from "./unverified-banner";
 
 export type StepKind =
   | "INTRO"
@@ -75,6 +76,7 @@ export function StepPlayer({
   alreadyCompleted,
   mentorAvailable,
   firmware,
+  verifiedOnHardware,
 }: {
   lessonId: string;
   lessonTitle: string;
@@ -87,6 +89,7 @@ export function StepPlayer({
   alreadyCompleted: boolean;
   mentorAvailable: boolean;
   firmware: LessonFirmware | null;
+  verifiedOnHardware: boolean;
 }) {
   const t = useTranslations("lesson");
   const tc = useTranslations("common");
@@ -145,6 +148,7 @@ export function StepPlayer({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      {!verifiedOnHardware && <UnverifiedLessonBanner />}
       <header className="border-b px-4 py-3">
         <div className="container flex items-center gap-4">
           <button

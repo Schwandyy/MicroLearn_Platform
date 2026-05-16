@@ -777,7 +777,7 @@ async function applyStepPatch(p: Patch): Promise<"applied" | "skipped" | "missin
     select: { id: true, body_de: true },
   });
   if (!step) return "missing";
-  if (p.expectsMarker && step.body_de.includes(p.expectsMarker)) return "skipped";
+  if (p.expectsMarker && (step.body_de ?? "").includes(p.expectsMarker)) return "skipped";
 
   const data: Record<string, unknown> = {};
   if (p.title_de) data.title_de = p.title_de;
@@ -796,8 +796,8 @@ async function applyGlobalReplace(g: GlobalReplace): Promise<"applied" | "skippe
     select: { id: true, body_de: true, body_en: true },
   });
   if (!step) return "missing";
-  let de = step.body_de;
-  let en = step.body_en;
+  let de = step.body_de ?? "";
+  let en = step.body_en ?? "";
   let changed = false;
   for (const { from, to } of g.searches) {
     if (de.includes(from)) {

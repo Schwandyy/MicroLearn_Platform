@@ -248,7 +248,7 @@ async function applyStepPatch(p: Patch): Promise<"applied" | "skipped" | "missin
     select: { id: true, body_de: true },
   });
   if (!step) return "missing";
-  if (p.expectsMarker && step.body_de.includes(p.expectsMarker)) return "skipped";
+  if (p.expectsMarker && (step.body_de ?? "").includes(p.expectsMarker)) return "skipped";
 
   const data: Record<string, unknown> = {};
   if (p.title_de) data.title_de = p.title_de;

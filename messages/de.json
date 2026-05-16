@@ -397,6 +397,10 @@
     "sourceAuto": "festgestellt",
     "resolve": "Erledigt"
   },
+  "unverified": {
+    "title": "Noch nicht auf echter Hardware verifiziert",
+    "body": "Diese Lesson wurde noch nicht von einem Mitglied unseres Teams auf realer Hardware nachgebaut. Es kann sein, dass einzelne Pinbelegungen, Code-Snippets oder Bauteilangaben angepasst werden müssen. Probier sie gerne aus — und melde uns Fehler über den Hilferuf unten."
+  },
   "paths": {
     "title": "Lernpfade",
     "subtitle": "Strukturierte Wege durch die Mikroelektronik — wähle nach Level oder Board.",

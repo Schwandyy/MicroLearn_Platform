@@ -490,6 +490,12 @@ model Lesson {
   isPublished Boolean   @default(false)
   publishedAt DateTime?
 
+  // Hardware-Verifikation: gesetzt wenn die Lesson auf echter Hardware
+  // nachgebaut und erfolgreich durchgespielt wurde. Lessons ohne diesen
+  // Stempel dürfen im Frontend einen „In Überarbeitung"-Hinweis tragen.
+  verifiedOnHardwareAt DateTime?
+  verifiedOnHardwareBy String?   // User-ID der Lehrkraft/Admin
+
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())

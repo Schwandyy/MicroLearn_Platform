@@ -152,6 +152,7 @@ export default async function LessonPage({
       alreadyCompleted={Boolean(progress?.completedAt)}
       mentorAvailable={mentorAvailable}
       firmware={firmware}
+      verifiedOnHardware={Boolean(lesson.verifiedOnHardwareAt)}
     />
   );
 }
