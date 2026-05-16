@@ -6,6 +6,7 @@ import {
   r2Configured,
   MAX_UPLOAD_BYTES,
 } from "@/server/lib/r2";
+import { ugcLimit } from "@/server/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,13 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Upload-Storage ist nicht konfiguriert." },
       { status: 503 },
+    );
+  }
+  const rl = await ugcLimit("upload", session.user.id);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Zu viele Uploads in kurzer Zeit." },
+      { status: 429 },
     );
   }
   const parsed = schema.safeParse(await req.json().catch(() => null));

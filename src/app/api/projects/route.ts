@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { uniqueSlug } from "@/server/lib/slug";
+import { ugcLimit } from "@/server/lib/ratelimit";
 
 const createSchema = z.object({
   title: z.string().trim().min(3).max(120),
@@ -21,6 +22,14 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  }
+
+  const rl = await ugcLimit("project", session.user.id);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Zu viele Projekte in kurzer Zeit. Versuche es später nochmal." },
+      { status: 429 },
+    );
   }
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null));

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
+import { ugcLimit } from "@/server/lib/ratelimit";
 
 export async function POST(
   _req: Request,
@@ -14,6 +15,13 @@ export async function POST(
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project || !project.isPublic) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const rl = await ugcLimit("like", session.user.id);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Zu viele Likes in kurzer Zeit." },
+      { status: 429 },
+    );
   }
   await prisma.projectLike
     .create({

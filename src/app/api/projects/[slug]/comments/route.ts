@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
+import { ugcLimit } from "@/server/lib/ratelimit";
 
 const schema = z.object({ body: z.string().trim().min(2).max(2000) });
 
@@ -17,6 +18,13 @@ export async function POST(
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project || !project.isPublic) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const rl = await ugcLimit("comment", session.user.id);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Zu viele Kommentare in kurzer Zeit." },
+      { status: 429 },
+    );
   }
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
