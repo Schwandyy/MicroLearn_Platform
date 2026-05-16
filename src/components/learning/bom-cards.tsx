@@ -257,14 +257,29 @@ function BomCard({
           </div>
         </div>
 
-        {!owned && primary && (
+        {!owned && primary && (() => {
+          // Preis-Spread berechnen: wenn der teuerste Anbieter > 3× günstigster
+          // ist, handelt es sich i.d.R. um Pro-Stück vs. Multi-Pack.
+          const pricedOptions = item.affiliates.filter((a) => a.priceCents != null);
+          const minPrice = pricedOptions.length
+            ? Math.min(...pricedOptions.map((a) => a.priceCents!))
+            : null;
+          const maxPrice = pricedOptions.length
+            ? Math.max(...pricedOptions.map((a) => a.priceCents!))
+            : null;
+          const hasBigSpread =
+            minPrice !== null &&
+            maxPrice !== null &&
+            minPrice > 0 &&
+            maxPrice / minPrice >= 3;
+          return (
           <div className="grid gap-1.5">
             <Button asChild size="sm" className="h-auto w-full py-2">
               <a
                 href={primary.url}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="flex flex-col items-start gap-0.5"
+                className="flex flex-col items-start gap-1"
               >
                 <span className="flex w-full items-center gap-2">
                   <ShoppingCart className="h-4 w-4 flex-shrink-0" />
@@ -273,17 +288,23 @@ function BomCard({
                   </span>
                   {primary.priceCents != null && (
                     <span className="tabular-nums font-bold">
+                      {others.length > 0 ? "ab " : ""}
                       {formatPrice(primary.priceCents, primary.currency)}
                     </span>
                   )}
                 </span>
                 {primary.packageNote && (
-                  <span className="ml-6 text-[10px] font-normal opacity-80">
+                  <span className="ml-6 inline-flex items-center rounded-sm bg-white/15 px-1.5 py-0.5 text-[11px] font-medium">
                     {primary.packageNote}
                   </span>
                 )}
               </a>
             </Button>
+            {hasBigSpread && (
+              <p className="rounded-md bg-amber-100 px-2 py-1 text-[11px] leading-snug text-amber-900 dark:bg-amber-900/30 dark:text-amber-100">
+                {t("packSpreadHint")}
+              </p>
+            )}
 
             {others.length > 0 && (
               <div>
@@ -332,7 +353,8 @@ function BomCard({
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );

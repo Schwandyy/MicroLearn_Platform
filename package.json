@@ -17,6 +17,7 @@
     "db:seed:badges": "tsx --env-file=.env scripts/seed-badges.ts",
     "db:fix:setup-bom": "tsx --env-file=.env scripts/fix-setup-bom.ts",
     "db:audit:boms": "tsx --env-file=.env scripts/audit-boms.ts",
+    "db:fix:affiliate-gaps": "tsx --env-file=.env scripts/fix-affiliate-gaps.ts",
     "verify:affiliate": "tsx --env-file=.env scripts/verify-affiliate-links.ts",
     "sync:affiliate": "tsx --env-file=.env scripts/sync-affiliate-links.ts",
     "lessons:generate": "tsx --env-file=.env.local scripts/generate-lesson.ts",

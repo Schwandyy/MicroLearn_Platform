@@ -422,6 +422,7 @@
     "buyNow": "Buy here",
     "buyAlsoAt": "Also available at",
     "moreOptions": "More sellers",
+    "packSpreadHint": "Prices vary widely — some sellers ship single pieces, others multi-packs. Check the pack note next to the price.",
     "bomTotalLabel": "Still to buy",
     "bomTotalAll": "Everything together",
     "bomTotalHint": "Cheapest seller per part × quantity — rough estimate only.",

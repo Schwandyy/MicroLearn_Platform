@@ -57,7 +57,7 @@ async function main() {
       merchant: "AMAZON_DE",
       productUrl: "https://www.amazon.de/s?k=micro+usb+datenkabel+1m&tag=microlearn-21",
       priceCents: 599,
-      packageNote_de: "Such-Ergebnis · achte auf „Datenkabel"",
+      packageNote_de: 'Such-Ergebnis · achte auf „Datenkabel"',
       packageNote_en: 'Search result · look for "data cable"',
     },
   ];
@@ -122,7 +122,7 @@ async function main() {
         lessonId: lesson.id,
         componentId: cable.id,
         quantity: 1,
-        note_de: "Achte auf „Datenkabel" — reine Lade-Kabel funktionieren nicht.",
+        note_de: 'Achte auf „Datenkabel" — reine Lade-Kabel funktionieren nicht.',
         note_en: 'Look for "data cable" — power-only cables will not work.',
       },
     });
