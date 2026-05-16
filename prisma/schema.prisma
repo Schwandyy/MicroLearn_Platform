@@ -113,6 +113,14 @@ enum StepKind {
   SETUP // software setup with download links and ordered checklist
 }
 
+enum NotificationType {
+  COMMENT
+  LIKE
+  ASSIGNMENT
+  LESSON_PUBLISHED
+  SYSTEM
+}
+
 enum BadgeCategory {
   MILESTONE
   STREAK
@@ -164,6 +172,7 @@ model User {
   pushSubscriptions PushSubscription[]
   classroomsTaught  Classroom[]        @relation("ClassroomTeacher")
   reviewsAuthored   ContentReview[]    @relation("ReviewAuthor")
+  notifications     Notification[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -837,6 +846,22 @@ model ClassroomMember {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([classroomId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?          @db.Text
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }
 
 model ClassroomAssignment {

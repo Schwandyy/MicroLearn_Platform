@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { ugcLimit } from "@/server/lib/ratelimit";
+import { createNotification } from "@/server/lib/notifications";
 
 const schema = z.object({ body: z.string().trim().min(2).max(2000) });
 
@@ -38,5 +39,24 @@ export async function POST(
       body: parsed.data.body,
     },
   });
+
+  if (project.authorId !== session.user.id) {
+    const author = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { username: true, name: true },
+    });
+    const who = author?.username ?? author?.name ?? "Jemand";
+    const projectTitle = project.title_de;
+    await createNotification({
+      userId: project.authorId,
+      type: "COMMENT",
+      title: `${who} hat dein Projekt kommentiert`,
+      body: `${projectTitle}: „${parsed.data.body.slice(0, 140)}${
+        parsed.data.body.length > 140 ? "…" : ""
+      }"`,
+      link: `/projects/${project.slug}`,
+    });
+  }
+
   return NextResponse.json({ ok: true, id: comment.id }, { status: 201 });
 }

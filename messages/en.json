@@ -553,5 +553,16 @@
     "upgrade": "Upgrade",
     "checkoutSuccess": "Welcome to Pro! Your payment went through.",
     "checkoutCancelled": "Checkout cancelled — no worries, you stay on your current plan."
+  },
+  "notifications": {
+    "ariaLabel": "Open notifications",
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "empty": "No notifications yet.",
+    "justNow": "just now",
+    "minutesAgo": "{n}m ago",
+    "hoursAgo": "{n}h ago",
+    "daysAgo": "{n}d ago"
   }
 }

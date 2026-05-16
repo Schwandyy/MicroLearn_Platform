@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { ugcLimit } from "@/server/lib/ratelimit";
+import { createNotification } from "@/server/lib/notifications";
 
 export async function POST(
   _req: Request,
@@ -23,11 +24,27 @@ export async function POST(
       { status: 429 },
     );
   }
-  await prisma.projectLike
+  const created = await prisma.projectLike
     .create({
       data: { userId: session.user.id, projectId: project.id },
     })
-    .catch(() => undefined); // idempotent: bereits-geliked = OK
+    .catch(() => null); // idempotent: bereits-geliked = OK
+
+  if (created && project.authorId !== session.user.id) {
+    const liker = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { username: true, name: true },
+    });
+    const who = liker?.username ?? liker?.name ?? "Jemand";
+    await createNotification({
+      userId: project.authorId,
+      type: "LIKE",
+      title: `${who} mag dein Projekt`,
+      body: project.title_de,
+      link: `/projects/${project.slug}`,
+    });
+  }
+
   const count = await prisma.projectLike.count({
     where: { projectId: project.id },
   });

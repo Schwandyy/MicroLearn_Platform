@@ -553,5 +553,16 @@
     "upgrade": "Upgraden",
     "checkoutSuccess": "Willkommen im Pro-Plan! Deine Zahlung war erfolgreich.",
     "checkoutCancelled": "Checkout abgebrochen — kein Problem, du bleibst auf dem aktuellen Plan."
+  },
+  "notifications": {
+    "ariaLabel": "Benachrichtigungen öffnen",
+    "title": "Benachrichtigungen",
+    "markAllRead": "Alle als gelesen",
+    "loading": "Lade…",
+    "empty": "Du hast noch keine Benachrichtigungen.",
+    "justNow": "gerade eben",
+    "minutesAgo": "vor {n} Min.",
+    "hoursAgo": "vor {n} Std.",
+    "daysAgo": "vor {n} Tagen"
   }
 }

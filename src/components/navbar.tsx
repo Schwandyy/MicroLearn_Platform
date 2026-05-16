@@ -5,6 +5,7 @@ import { LanguageSwitch } from "@/components/i18n/language-switch";
 import { Cpu, Search } from "lucide-react";
 import { auth } from "@/server/auth";
 import { UserMenu } from "@/components/user-menu";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export async function Navbar() {
   const t = await getTranslations("nav");
@@ -45,6 +46,7 @@ export async function Navbar() {
           <LanguageSwitch />
           {session?.user ? (
             <>
+              <NotificationBell />
               <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
                 <Link href="/dashboard">{t("dashboard")}</Link>
               </Button>

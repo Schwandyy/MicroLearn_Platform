@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
+import { createManyNotifications } from "@/server/lib/notifications";
 
 const schema = z
   .object({
@@ -57,6 +58,36 @@ export async function POST(
       dueAt: parsed.data.dueAt ? new Date(parsed.data.dueAt) : null,
       note: parsed.data.note ?? null,
     },
+    include: {
+      path: { select: { slug: true, title_de: true } },
+      lesson: { select: { slug: true, title_de: true } },
+    },
   });
+
+  const members = await prisma.classroomMember.findMany({
+    where: { classroomId: id, isActive: true },
+    select: { userId: true },
+  });
+  const target = created.lesson
+    ? { title: created.lesson.title_de, link: `/lessons/${created.lesson.slug}` }
+    : created.path
+      ? { title: created.path.title_de, link: `/paths/${created.path.slug}` }
+      : null;
+
+  if (target && members.length > 0) {
+    const dueSuffix = created.dueAt
+      ? ` (fällig am ${created.dueAt.toLocaleDateString("de-DE")})`
+      : "";
+    await createManyNotifications(
+      members.map((m) => ({
+        userId: m.userId,
+        type: "ASSIGNMENT",
+        title: `Neue Aufgabe in „${classroom.name}"`,
+        body: `${target.title}${dueSuffix}`,
+        link: target.link,
+      })),
+    );
+  }
+
   return NextResponse.json({ id: created.id });
 }
