@@ -319,6 +319,39 @@
       "repeatHint": "You've completed this lesson. Pick a path now."
     }
   },
+  "flash": {
+    "title": "Flash directly to your board",
+    "subtitle": "WebSerial · {chip} · one click — no Arduino IDE needed",
+    "cta": "Connect board + flash",
+    "stageFetching": "Loading firmware…",
+    "stageConnecting": "Connecting to USB port…",
+    "stagePreparing": "Talking to bootloader…",
+    "stageFlashing": "Writing flash…",
+    "done": "Success — your board is now running the sketch.",
+    "doneBody": "If the LED doesn't blink right away, press the RESET button briefly.",
+    "again": "Flash again",
+    "error": "Flashing failed",
+    "errorHint": "Common causes: wrong USB port, board in wrong mode (hold BOOT, then press RESET), or another program is holding the port.",
+    "retry": "Try again",
+    "chipDetected": "Chip detected: {chip}",
+    "logToggle": "Show technical log",
+    "downloadBin": "Download firmware file",
+    "unsupportedTitle": "Your browser doesn't support this",
+    "unsupportedBody": "Direct flashing uses WebSerial, currently only in Chromium-based desktop browsers.",
+    "unsupportedBullet1": "Chrome (desktop)",
+    "unsupportedBullet2": "Edge or Brave",
+    "unsupportedBullet3": "Or: download the .bin and flash manually with esptool.py / Arduino IDE.",
+    "log": {
+      "fetching": "→ Loading firmware: {url}",
+      "fetched": "✓ {kb} KB loaded",
+      "requestPort": "→ Pick a USB port…",
+      "connecting": "→ Connecting to bootloader…",
+      "chipDetected": "✓ Chip: {chip}",
+      "flashingAt": "→ Flash at address {address}",
+      "flashed": "✓ Flash written",
+      "reset": "✓ Board reset"
+    }
+  },
   "common": {
     "loading": "Loading…",
     "error": "Error",

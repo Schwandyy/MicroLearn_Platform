@@ -161,6 +161,18 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Automatische App-Store-Screenshots via Playwright (iOS 6.7", iPad Pro
       12.9", Android Phone, Auth-Session über `pnpm screenshots:capture-session`)
 
+### ✅ Phase 7.2 — WebSerial-Flash direkt aus dem Lesson-Player
+
+- [x] `<EspFlashButton>` (`src/components/learning/esp-flash-button.tsx`)
+      mit `esptool-js@0.6`, Connect → Detect-Chip → Flash → Live-Progress + Log
+- [x] Lesson-Schema: `firmwareUrl`, `firmwareChip`, `firmwareFlashAddress`
+- [x] Step-Player rendert Flash-Karte unter `CODE_WALK`-Steps mit Firmware-URL
+- [x] Fallback-Karte für Safari/Firefox/iOS mit `.bin`-Download + esptool.py-Hinweis
+- [x] DSGVO-konform: explizite User-Port-Auswahl via `navigator.serial.requestPort()`,
+      kein stiller USB-Zugriff
+- Detail-Doku: [`docs/webserial-flash.md`](docs/webserial-flash.md)
+- Offen für 7.2.1: Admin-Wizard-Feld für firmwareUrl + GitHub-Action für `.bin`-Build
+
 ### ✅ Phase 7.1 — Zero-Setup-Onboarding
 
 - [x] Starter-Flow `/start`: Intro → Hardware/Simulator-Wahl → Mini-Lesson → Celebrate

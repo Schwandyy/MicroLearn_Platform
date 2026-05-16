@@ -5,7 +5,11 @@ import { requireSession } from "@/server/auth/require-session";
 import { getUserEntitlement } from "@/server/lib/access";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
-import { StepPlayer, type StepView } from "@/components/learning/step-player";
+import {
+  StepPlayer,
+  type StepView,
+  type LessonFirmware,
+} from "@/components/learning/step-player";
 import type { BomItemView, BomAffiliateOption } from "@/components/learning/bom-cards";
 import type { StepKind } from "@prisma/client";
 
@@ -116,6 +120,23 @@ export default async function LessonPage({
     };
   });
 
+  const allowedChips = new Set([
+    "esp32",
+    "esp32s3",
+    "esp32c3",
+    "esp32s2",
+    "esp8266",
+  ]);
+  const firmware: LessonFirmware | null = lesson.firmwareUrl
+    ? {
+        url: lesson.firmwareUrl,
+        chip: allowedChips.has(lesson.firmwareChip ?? "")
+          ? (lesson.firmwareChip as LessonFirmware["chip"])
+          : null,
+        flashAddress: lesson.firmwareFlashAddress ?? null,
+      }
+    : null;
+
   return (
     <StepPlayer
       lessonId={lesson.id}
@@ -130,6 +151,7 @@ export default async function LessonPage({
       locale={l}
       alreadyCompleted={Boolean(progress?.completedAt)}
       mentorAvailable={mentorAvailable}
+      firmware={firmware}
     />
   );
 }

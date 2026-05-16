@@ -319,6 +319,39 @@
       "repeatHint": "Du hast diese Stunde schon abgeschlossen. Suche dir jetzt einen Lernpfad."
     }
   },
+  "flash": {
+    "title": "Direkt auf Board flashen",
+    "subtitle": "WebSerial · {chip} · ein Klick — kein Arduino-IDE-Setup nötig",
+    "cta": "Mit Board verbinden + flashen",
+    "stageFetching": "Firmware wird geladen…",
+    "stageConnecting": "Verbinde mit USB-Port…",
+    "stagePreparing": "Bootloader sprechen lassen…",
+    "stageFlashing": "Schreibe Flash…",
+    "done": "Erfolg — dein Board läuft jetzt mit dem Sketch.",
+    "doneBody": "Wenn die LED nicht direkt blinkt, drück kurz den RESET-Knopf am Board.",
+    "again": "Nochmal flashen",
+    "error": "Flashen fehlgeschlagen",
+    "errorHint": "Häufige Ursachen: falscher USB-Port, Board im falschen Modus (BOOT-Taste halten, dann RESET), oder ein anderes Programm hat den Port belegt.",
+    "retry": "Nochmal versuchen",
+    "chipDetected": "Chip erkannt: {chip}",
+    "logToggle": "Technisches Protokoll anzeigen",
+    "downloadBin": "Firmware-Datei herunterladen",
+    "unsupportedTitle": "Dein Browser unterstützt das nicht",
+    "unsupportedBody": "Direkt-Flashen funktioniert über WebSerial — das gibt es aktuell nur in Chromium-basierten Browsern auf dem Desktop.",
+    "unsupportedBullet1": "Chrome (Desktop)",
+    "unsupportedBullet2": "Edge oder Brave",
+    "unsupportedBullet3": "Oder: .bin-Datei herunterladen und manuell mit esptool.py / Arduino IDE flashen.",
+    "log": {
+      "fetching": "→ Firmware laden: {url}",
+      "fetched": "✓ {kb} KB geladen",
+      "requestPort": "→ USB-Port wählen…",
+      "connecting": "→ Verbinde mit Bootloader…",
+      "chipDetected": "✓ Chip: {chip}",
+      "flashingAt": "→ Flash an Adresse {address}",
+      "flashed": "✓ Flash geschrieben",
+      "reset": "✓ Board neu gestartet"
+    }
+  },
   "common": {
     "loading": "Lade…",
     "error": "Fehler",

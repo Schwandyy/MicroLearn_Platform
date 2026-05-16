@@ -456,6 +456,11 @@ model Lesson {
   safetyNotes_de String? @db.Text
   safetyNotes_en String? @db.Text
 
+  // Optional WebSerial flash (Chrome/Edge only)
+  firmwareUrl          String?
+  firmwareChip         String? // "esp32" | "esp32s3" | "esp32c3" | "esp32s2" | "esp8266"
+  firmwareFlashAddress String? // e.g. "0x10000" (default 0x10000 for ESP32 Arduino sketch)
+
   // Compatibility
   recommendedBoards Board[]          @relation("LessonRecommendedBoards")
   bom               BOMItem[]

@@ -30,6 +30,7 @@ import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
 import { Esp32PinVisual } from "./esp32-pin-visual";
 import { MentorChat } from "./mentor-chat";
+import { EspFlashButton } from "./esp-flash-button";
 
 export type StepKind =
   | "INTRO"
@@ -51,6 +52,12 @@ export interface StepView {
   payload: Record<string, unknown> | null;
 }
 
+export interface LessonFirmware {
+  url: string;
+  chip: "esp32" | "esp32s3" | "esp32c3" | "esp32s2" | "esp8266" | null;
+  flashAddress: string | null;
+}
+
 export function StepPlayer({
   lessonId,
   lessonTitle,
@@ -62,6 +69,7 @@ export function StepPlayer({
   locale,
   alreadyCompleted,
   mentorAvailable,
+  firmware,
 }: {
   lessonId: string;
   lessonTitle: string;
@@ -73,6 +81,7 @@ export function StepPlayer({
   locale: "de" | "en";
   alreadyCompleted: boolean;
   mentorAvailable: boolean;
+  firmware: LessonFirmware | null;
 }) {
   const t = useTranslations("lesson");
   const tc = useTranslations("common");
@@ -155,6 +164,7 @@ export function StepPlayer({
               safetyNotes={safetyNotes}
               xpReward={xpReward}
               locale={locale}
+              firmware={firmware}
               onQuizPass={() =>
                 setQuizPassed((prev) =>
                   prev[current.id] ? prev : { ...prev, [current.id]: true },
@@ -213,6 +223,7 @@ function StepBody({
   safetyNotes,
   xpReward,
   locale,
+  firmware,
   onQuizPass,
 }: {
   step: StepView;
@@ -222,6 +233,7 @@ function StepBody({
   safetyNotes: string | null;
   xpReward: number;
   locale: "de" | "en";
+  firmware: LessonFirmware | null;
   onQuizPass: () => void;
 }) {
   const t = useTranslations("lesson");
@@ -321,6 +333,13 @@ function StepBody({
             )}
           </header>
           <CodeWalkthrough code={code} lines={lines} locale={locale} />
+          {firmware?.url && (
+            <EspFlashButton
+              firmwareUrl={firmware.url}
+              chip={firmware.chip}
+              flashAddress={firmware.flashAddress}
+            />
+          )}
         </div>
       );
     }
