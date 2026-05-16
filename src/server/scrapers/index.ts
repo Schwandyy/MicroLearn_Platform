@@ -6,6 +6,8 @@ import { githubReadmeScraper } from "./github-readme";
 import { wokwiScraper } from "./wokwi";
 import { adafruitLearnScraper } from "./adafruit-learn";
 import { hacksterScraper } from "./hackster";
+import { sparkfunLearnScraper } from "./sparkfun-learn";
+import { pimoroniLearnScraper } from "./pimoroni-learn";
 import type { Scraper } from "./types";
 
 export const SCRAPERS: Scraper[] = [
@@ -15,6 +17,8 @@ export const SCRAPERS: Scraper[] = [
   wokwiScraper,
   adafruitLearnScraper,
   hacksterScraper,
+  sparkfunLearnScraper,
+  pimoroniLearnScraper,
 ];
 
 export async function runScrapers(opts: { perSource?: number } = {}) {
