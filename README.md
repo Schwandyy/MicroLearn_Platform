@@ -148,7 +148,9 @@ export MICROLEARN_MOBILE_URL=https://app.microlearn.example
 pnpm mobile:add:ios       # benötigt Xcode + CocoaPods
 pnpm mobile:add:android   # benötigt Android Studio + JDK 17
 
-# 3) Icons + Splash aus assets/icon.png + assets/splash.png (1024×1024)
+# 3) Icons + Splash erzeugen
+#    Optional: Platzhalter erzeugen, wenn assets/logo.png noch nicht designt ist
+pnpm mobile:assets:placeholders
 pnpm mobile:assets
 
 # 4) Web → native syncen + öffnen
