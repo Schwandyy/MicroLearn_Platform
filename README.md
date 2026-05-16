@@ -115,14 +115,23 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Push-Notifications (VAPID, Streak-Reminder Cron 18:00 UTC)
 - [x] Cookie-Banner (DSGVO, localStorage)
 
-### 🚧 Phase 3 (next)
+### ✅ Phase 3
 
-- [ ] Lehrplan-Mapping (BW/BY/NRW MINT-Curricula)
-- [ ] PDF-Zertifikate (Worker mit puppeteer-core / @react-pdf/renderer)
-- [ ] Hackster/Adafruit/Arduino-Tutorial-Scraper
-- [ ] Wokwi-Premium-Proxy (serverseitiger Key für privat-Projekte)
-- [ ] Community-Projekte (Showcase + Kommentare)
-- [ ] Mobile App Wrapper (Capacitor)
+- [x] Community-Projekte (Showcase, Likes, Kommentare, UGC-Rate-Limits)
+- [x] Klassen-Workflow (Bulk-Assignment, Detail-Tabs, Teacher-Aktivität)
+- [x] Creator-Flow (Step-Bilder, Drag-Reorder, Lesson-Edit, Onboarding)
+- [x] Moderation + Legal (Admin-Dashboard, Impressum, AGB, Footer)
+- [x] PDF-Zertifikate (@react-pdf/renderer, OG-Image, Verify-QR)
+- [x] Lehrplan-Mapping (CurriculumStandard für BW/BY/NRW MINT,
+      Lehrer-Tagging im Creator, /paths-Filter, Klassen-State+Grade)
+- [x] Content-Scraper: Adafruit Learn + Hackster.io (ATOM-Feeds)
+
+### 🧭 Phase 4 (next)
+
+- [ ] Capacitor Mobile-Wrapper (iOS + Android via PWA-Bridge)
+- [ ] Curriculum-Standards für AT (Lehrplan Sek I/II) und CH (LP21)
+- [ ] Lehrer-Reporting-PDF mit Curriculum-Coverage
+- [ ] Mehr Scraper-Quellen (Sparkfun Learn, Pimoroni Learn)
 
 ---
 
