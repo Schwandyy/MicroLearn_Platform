@@ -670,5 +670,30 @@
   },
   "admin": {
     "commentDeleteConfirm": "Really delete this comment?"
+  },
+  "curriculum": {
+    "title": "Curriculum mapping",
+    "manage": "Edit",
+    "manageTitle": "Map to curriculum standards",
+    "manageHint": "Tick every standard this lesson covers. Schools can then find content that fits their curriculum.",
+    "empty": "No curriculum standards linked yet.",
+    "loading": "Loading…",
+    "noMatches": "No standards match this filter.",
+    "anyState": "All states",
+    "anyGrade": "All grades",
+    "gradeShort": "Gr. {grade}",
+    "save": "Save",
+    "saved": "Curriculum tags saved",
+    "saveError": "Save failed",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "filterByCurriculum": "Curriculum filter",
+    "filterReset": "Reset filter",
+    "matchesFound": "{count, plural, =0 {No matching content} =1 {1 item matches your curriculum} other {# items match your curriculum}}",
+    "matchBadge": "Matches your curriculum",
+    "classroomState": "State",
+    "classroomGrade": "Grade",
+    "classroomStatePlaceholder": "BW, BY, NRW …",
+    "classroomGradePlaceholder": "e.g. 9"
   }
 }

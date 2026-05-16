@@ -460,6 +460,7 @@ model Lesson {
   progress          UserProgress[]
   steps             LessonStep[]
   assignments       ClassroomAssignment[]
+  curriculumLinks   LessonCurriculumStandard[]
 
   isPublished Boolean   @default(false)
   publishedAt DateTime?
@@ -811,7 +812,11 @@ model Classroom {
   institutionId String?
   teacherId     String
   name          String
-  curriculumTag String? // e.g. "BW-MINT-9"
+  curriculumTag String? // legacy freeform tag, deprecated by state+grade below
+  // Optional curriculum scope of the class. When set, lessons can be matched
+  // against CurriculumStandard rows for this state + grade.
+  state         String? // e.g. "BW", "BY", "NRW"
+  grade         Int? // e.g. 9
 
   institution Institution? @relation(fields: [institutionId], references: [id])
   teacher     User         @relation("ClassroomTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
@@ -822,6 +827,8 @@ model Classroom {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([state, grade])
 }
 
 model ClassroomCode {
@@ -879,4 +886,39 @@ model ClassroomAssignment {
   createdAt DateTime @default(now())
 
   @@index([classroomId])
+}
+
+// -----------------------------------------------------------------------------
+// Curriculum / Lehrplan-Mapping (BW, BY, NRW MINT-Curricula etc.)
+// -----------------------------------------------------------------------------
+
+model CurriculumStandard {
+  id             String  @id @default(cuid())
+  country        String  @default("DE")
+  state          String // "BW", "BY", "NRW", …
+  grade          Int // 5..13
+  subject        String // "NwT", "Informatik", "Physik", "Technik", "MINT"
+  code           String // e.g. "BW-NwT-9-EL-01"
+  title_de       String
+  title_en       String
+  description_de String? @db.Text
+  description_en String? @db.Text
+  sortOrder      Int     @default(0)
+
+  lessons LessonCurriculumStandard[]
+
+  @@unique([state, code])
+  @@index([state, grade])
+  @@index([state, grade, subject])
+}
+
+model LessonCurriculumStandard {
+  lessonId   String
+  standardId String
+
+  lesson   Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  standard CurriculumStandard @relation(fields: [standardId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, standardId])
+  @@index([standardId])
 }

@@ -670,5 +670,30 @@
   },
   "admin": {
     "commentDeleteConfirm": "Kommentar wirklich löschen?"
+  },
+  "curriculum": {
+    "title": "Lehrplan-Bezug",
+    "manage": "Bearbeiten",
+    "manageTitle": "Lehrplan-Standards zuordnen",
+    "manageHint": "Markiere alle Bildungsstandards, zu denen diese Lesson passt. Schulen finden so passgenaue Inhalte.",
+    "empty": "Noch keine Lehrplan-Standards verknüpft.",
+    "loading": "Lade…",
+    "noMatches": "Keine Standards für diesen Filter.",
+    "anyState": "Alle Bundesländer",
+    "anyGrade": "Alle Klassen",
+    "gradeShort": "Kl. {grade}",
+    "save": "Speichern",
+    "saved": "Lehrplan-Tags gespeichert",
+    "saveError": "Speichern fehlgeschlagen",
+    "cancel": "Abbrechen",
+    "remove": "Entfernen",
+    "filterByCurriculum": "Lehrplan-Filter",
+    "filterReset": "Filter zurücksetzen",
+    "matchesFound": "{count, plural, =0 {Keine passenden Inhalte} =1 {1 Inhalt passt zum Lehrplan} other {# Inhalte passen zum Lehrplan}}",
+    "matchBadge": "Passt zu deinem Lehrplan",
+    "classroomState": "Bundesland",
+    "classroomGrade": "Klassenstufe",
+    "classroomStatePlaceholder": "BW, BY, NRW …",
+    "classroomGradePlaceholder": "z.B. 9"
   }
 }

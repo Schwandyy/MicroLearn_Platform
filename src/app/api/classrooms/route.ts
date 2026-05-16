@@ -7,6 +7,8 @@ import { getUserEntitlement } from "@/server/lib/access";
 const schema = z.object({
   name: z.string().min(1).max(120),
   curriculumTag: z.string().max(40).nullable().optional(),
+  state: z.string().trim().max(8).nullable().optional(),
+  grade: z.number().int().min(1).max(13).nullable().optional(),
 });
 
 export async function POST(req: Request) {
@@ -24,10 +26,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
+  const stateValue = parsed.data.state?.toUpperCase() || null;
   const classroom = await prisma.classroom.create({
     data: {
       name: parsed.data.name,
       curriculumTag: parsed.data.curriculumTag ?? null,
+      state: stateValue,
+      grade: parsed.data.grade ?? null,
       teacherId: session.user.id,
     },
   });

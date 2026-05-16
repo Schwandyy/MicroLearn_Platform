@@ -8,6 +8,7 @@ import { Badge } from "@/components/admin/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, Lock } from "lucide-react";
 import { LessonWizard } from "@/components/create/lesson-wizard";
+import { LessonCurriculumTags } from "@/components/create/lesson-curriculum-tags";
 
 const ALLOWED_ROLES = new Set(["TEACHER", "INSTRUCTOR", "ADMIN"]);
 const ALLOWED_STEP_KINDS = new Set([
@@ -151,6 +152,10 @@ export default async function EditLessonPage({
       <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         {t("wizardHint")}
       </p>
+
+      <div className="mb-6">
+        <LessonCurriculumTags lessonId={lesson.id} editable={editable} />
+      </div>
 
       {editable ? (
         <LessonWizard

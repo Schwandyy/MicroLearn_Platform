@@ -1,0 +1,200 @@
+[
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 8,
+    "code": "BW-NwT-8-EL-01",
+    "title_de": "Elektrische Grundbauteile",
+    "title_en": "Basic electrical components",
+    "description_de": "Schülerinnen und Schüler kennen Widerstand, Kondensator, LED und Diode und können einfache Schaltungen aufbauen.",
+    "description_en": "Students know resistor, capacitor, LED and diode and can build simple circuits.",
+    "sortOrder": 10
+  },
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 9,
+    "code": "BW-NwT-9-EL-01",
+    "title_de": "Mikrocontroller-Grundlagen",
+    "title_en": "Microcontroller basics",
+    "description_de": "Aufbau und Funktionsweise eines Mikrocontrollers; einfache Programme zum Schalten digitaler Ausgänge.",
+    "description_en": "Architecture and operation of a microcontroller; simple programs that toggle digital outputs.",
+    "sortOrder": 20
+  },
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 9,
+    "code": "BW-NwT-9-EL-02",
+    "title_de": "Sensoren und Messwerterfassung",
+    "title_en": "Sensors and data acquisition",
+    "description_de": "Temperatur-, Licht- und Tastsensoren auslesen, Werte interpretieren und auf dem Display ausgeben.",
+    "description_en": "Read temperature, light and touch sensors, interpret values and display them.",
+    "sortOrder": 30
+  },
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 9,
+    "code": "BW-NwT-9-EL-03",
+    "title_de": "Aktoren steuern",
+    "title_en": "Driving actuators",
+    "description_de": "LED, Motor und Servo gezielt ansteuern, PWM verstehen und anwenden.",
+    "description_en": "Drive LED, motor and servo, understand and use PWM.",
+    "sortOrder": 40
+  },
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 10,
+    "code": "BW-NwT-10-IF-01",
+    "title_de": "Algorithmische Steuerungen",
+    "title_en": "Algorithmic control",
+    "description_de": "Schleifen, Bedingungen und Zustandsautomaten in Mikrocontroller-Programmen.",
+    "description_en": "Loops, conditions and state machines in microcontroller programs.",
+    "sortOrder": 50
+  },
+  {
+    "state": "BW",
+    "subject": "NwT",
+    "grade": 10,
+    "code": "BW-NwT-10-IF-02",
+    "title_de": "Vernetzte Systeme (IoT-Grundlagen)",
+    "title_en": "Networked systems (IoT basics)",
+    "description_de": "WLAN-fähige Mikrocontroller, einfacher HTTP-Aufruf, Sicherheitsbewusstsein.",
+    "description_en": "Wi-Fi-capable microcontrollers, simple HTTP requests, security awareness.",
+    "sortOrder": 60
+  },
+  {
+    "state": "BY",
+    "subject": "NT",
+    "grade": 7,
+    "code": "BY-NT-7-EL-01",
+    "title_de": "Stromkreis und Schaltsymbole",
+    "title_en": "Circuits and circuit symbols",
+    "description_de": "Aufbau einfacher Stromkreise, Reihen- und Parallelschaltung, Zeichnen von Schaltplänen.",
+    "description_en": "Building simple circuits, series and parallel, drawing schematics.",
+    "sortOrder": 10
+  },
+  {
+    "state": "BY",
+    "subject": "Physik",
+    "grade": 8,
+    "code": "BY-PH-8-EL-01",
+    "title_de": "Elektrische Größen und Messungen",
+    "title_en": "Electrical quantities and measurements",
+    "description_de": "Spannung, Strom, Widerstand; Ohmsches Gesetz; sicheres Messen mit dem Multimeter.",
+    "description_en": "Voltage, current, resistance; Ohm's law; safe multimeter use.",
+    "sortOrder": 20
+  },
+  {
+    "state": "BY",
+    "subject": "Informatik",
+    "grade": 9,
+    "code": "BY-IF-9-MC-01",
+    "title_de": "Mikrocontroller programmieren",
+    "title_en": "Programming microcontrollers",
+    "description_de": "Einführung in eingebettete Systeme, GPIO, Eingabe-/Ausgabeprogrammierung.",
+    "description_en": "Introduction to embedded systems, GPIO, input/output programming.",
+    "sortOrder": 30
+  },
+  {
+    "state": "BY",
+    "subject": "Informatik",
+    "grade": 10,
+    "code": "BY-IF-10-MC-01",
+    "title_de": "Sensoren, Aktoren, Datenfluss",
+    "title_en": "Sensors, actuators, data flow",
+    "description_de": "Eingebettete Systeme als EVA-Prinzip; Beispielprojekte mit Sensorik und Steuerung.",
+    "description_en": "Embedded systems as input-process-output; example projects with sensors and control.",
+    "sortOrder": 40
+  },
+  {
+    "state": "BY",
+    "subject": "Informatik",
+    "grade": 10,
+    "code": "BY-IF-10-NET-01",
+    "title_de": "Netzwerke und Daten im Internet",
+    "title_en": "Networks and data on the internet",
+    "description_de": "Datenübertragung, Adressierung, einfache Web-APIs, Datenschutz.",
+    "description_en": "Data transfer, addressing, simple web APIs, data protection.",
+    "sortOrder": 50
+  },
+  {
+    "state": "NRW",
+    "subject": "Physik",
+    "grade": 7,
+    "code": "NRW-PH-7-EL-01",
+    "title_de": "Elektrische Stromkreise",
+    "title_en": "Electrical circuits",
+    "description_de": "Aufbau von Stromkreisen, Leiter und Nichtleiter, einfache Schaltungen.",
+    "description_en": "Building circuits, conductors and insulators, simple wiring.",
+    "sortOrder": 10
+  },
+  {
+    "state": "NRW",
+    "subject": "Physik",
+    "grade": 8,
+    "code": "NRW-PH-8-EL-01",
+    "title_de": "Elektrik: Spannung, Stromstärke, Widerstand",
+    "title_en": "Electricity: voltage, current, resistance",
+    "description_de": "Quantitative Beschreibung des Stromkreises; Anwendungsbeispiele.",
+    "description_en": "Quantitative description of circuits; applied examples.",
+    "sortOrder": 20
+  },
+  {
+    "state": "NRW",
+    "subject": "Informatik",
+    "grade": 7,
+    "code": "NRW-IF-7-AL-01",
+    "title_de": "Algorithmen und Programmieren",
+    "title_en": "Algorithms and programming",
+    "description_de": "Erste Algorithmen, blockbasiertes Programmieren, Wiederholungen, Verzweigungen.",
+    "description_en": "First algorithms, block-based programming, loops, branches.",
+    "sortOrder": 30
+  },
+  {
+    "state": "NRW",
+    "subject": "Informatik",
+    "grade": 9,
+    "code": "NRW-IF-9-MC-01",
+    "title_de": "Daten verarbeiten mit Mikrocontrollern",
+    "title_en": "Processing data with microcontrollers",
+    "description_de": "Eingebettete Systeme als reale Anwendung von Algorithmen; Sensorik und Steuerung.",
+    "description_en": "Embedded systems as real-world algorithms; sensors and control.",
+    "sortOrder": 40
+  },
+  {
+    "state": "NRW",
+    "subject": "Informatik",
+    "grade": 10,
+    "code": "NRW-IF-10-NET-01",
+    "title_de": "Vernetzte Systeme und Datenschutz",
+    "title_en": "Networked systems and data protection",
+    "description_de": "Client/Server, einfache Web-APIs, DSGVO-Grundlagen, sichere Kommunikation.",
+    "description_en": "Client/server, simple web APIs, GDPR basics, secure communication.",
+    "sortOrder": 50
+  },
+  {
+    "state": "NRW",
+    "subject": "Technik",
+    "grade": 9,
+    "code": "NRW-TE-9-EL-01",
+    "title_de": "Elektronische Schaltungen entwerfen",
+    "title_en": "Designing electronic circuits",
+    "description_de": "Eigene Schaltungen planen, simulieren, aufbauen und dokumentieren.",
+    "description_en": "Plan, simulate, build and document own circuits.",
+    "sortOrder": 60
+  },
+  {
+    "state": "NRW",
+    "subject": "Technik",
+    "grade": 10,
+    "code": "NRW-TE-10-MC-01",
+    "title_de": "Mechatronische Systeme mit Mikrocontroller",
+    "title_en": "Mechatronic systems with microcontrollers",
+    "description_de": "Sensorik, Aktorik, einfache Regelungen, Projektdokumentation.",
+    "description_en": "Sensors, actuators, basic control, project documentation.",
+    "sortOrder": 70
+  }
+]
