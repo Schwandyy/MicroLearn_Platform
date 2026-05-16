@@ -561,7 +561,9 @@
     "reviewEditConfig": "Change grade",
     "reviewCta": "Create class",
     "reviewEmpty": "No matching lessons for this grade yet. You can still create the class manually.",
+    "reviewAiBadge": "Curriculum-matched with Claude — standards & ordering are tailored to your state/grade.",
     "week": "Week {num}",
+    "grade": "Gr. {num}",
     "creating": "Creating class…"
   },
   "classroom": {

@@ -172,8 +172,18 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Confirm-Pfad legt Klassenraum an + Bulk-Assign in einem Rutsch
 - [x] Manuelles `<CreateClassroomForm>` bleibt parallel, Label wechselt auf
       „Klasse manuell anlegen" wenn schon 0 Klassen + Wizard sichtbar
-- 📋 Offen Phase 7.4.1: Claude-Ranking der Lesson-Kandidaten + Curriculum-Standard-Match
-      (Standards-Tabelle steckt bereit aus Phase 6)
+
+### ✅ Phase 7.4.1 — Claude-Ranking + Curriculum-Match im Teacher-Wizard
+
+- [x] Pool von 4 → 12 Kandidaten, sortiert nach Standards-Match-Count
+      (für State+Grade), dann Level-Fit, dann Path/Course-Order.
+- [x] Pro Kandidat: existierende `curriculumLinks` werden auf State + `grade ≤ teacher.grade`
+      gefiltert und als `matchedStandards` durchgereicht — keine erfundenen Standards.
+- [x] Ein einziger Claude-Call wählt aus dem Pool die finalen 4 Wochen
+      inkl. 1-Satz-Begründung pro Pick (Lehrplan-Bezug + didaktische Reihenfolge);
+      Fallback auf deterministisches Top-4 ohne API-Key / leere Pool-Matches.
+- [x] Review-Stage rendert pro Lesson: Standard-Code-Badges (max 3) +
+      kursive Begründung + globales „mit Claude gematcht"-Badge wenn `aiRanked`.
 
 ### ✅ Phase 7.3 — Eltern-Monatsbericht (silent Pro-Conversion-Driver)
 

@@ -17,10 +17,20 @@ import {
   CalendarClock,
   Pencil,
   CheckCircle2,
+  BookOpenCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Stage = "intro" | "config" | "loading" | "review" | "creating";
+
+interface MatchedStandard {
+  id: string;
+  code: string;
+  state: string;
+  grade: number;
+  subject: string;
+  title: string;
+}
 
 interface SuggestedLesson {
   lessonId: string;
@@ -32,6 +42,8 @@ interface SuggestedLesson {
   estimatedMinutes: number | null;
   weekIndex: number;
   dueAt: string;
+  matchedStandards: MatchedStandard[];
+  curriculumReason: string | null;
 }
 
 interface Suggestion {
@@ -40,6 +52,7 @@ interface Suggestion {
   grade: number | null;
   level: string;
   lessons: SuggestedLesson[];
+  aiRanked: boolean;
 }
 
 const STATE_OPTIONS: Array<{ code: string; label: string; country: "DE" | "AT" | "CH" }> = [
@@ -282,6 +295,12 @@ export function TeacherStartWizard() {
               <p className="text-sm text-muted-foreground">
                 {t("reviewBody")}
               </p>
+              {suggestion.aiRanked && (
+                <p className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                  <Sparkles className="h-3 w-3" />
+                  {t("reviewAiBadge")}
+                </p>
+              )}
             </div>
 
             <div className="grid gap-1.5">
@@ -303,9 +322,9 @@ export function TeacherStartWizard() {
                 suggestion.lessons.map((lesson, i) => (
                   <div
                     key={lesson.lessonId}
-                    className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[1fr_auto] sm:items-center"
+                    className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[1fr_auto] sm:items-start"
                   >
-                    <div className="grid gap-1">
+                    <div className="grid gap-1.5">
                       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         {t("week", { num: i + 1 })}
                       </div>
@@ -315,6 +334,25 @@ export function TeacherStartWizard() {
                       <p className="line-clamp-2 text-xs text-muted-foreground">
                         {locale === "de" ? lesson.summary_de : lesson.summary_en}
                       </p>
+                      {lesson.matchedStandards.length > 0 && (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <BookOpenCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          {lesson.matchedStandards.map((s) => (
+                            <span
+                              key={s.id}
+                              title={`${s.title} (${s.subject}, ${t("grade", { num: s.grade })})`}
+                              className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                            >
+                              {s.code}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {lesson.curriculumReason && (
+                        <p className="mt-0.5 text-xs italic text-muted-foreground">
+                          &ldquo;{lesson.curriculumReason}&rdquo;
+                        </p>
+                      )}
                     </div>
                     <div className="grid gap-1">
                       <Label

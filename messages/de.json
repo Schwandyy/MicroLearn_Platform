@@ -561,7 +561,9 @@
     "reviewEditConfig": "Stufe ändern",
     "reviewCta": "Klasse anlegen",
     "reviewEmpty": "Wir haben für diese Stufe noch keine passenden Lessons. Du kannst die Klasse trotzdem manuell anlegen.",
+    "reviewAiBadge": "Lehrplan-gematcht mit Claude — Standards & Reihenfolge sind auf dein Bundesland/Klasse zugeschnitten.",
     "week": "Woche {num}",
+    "grade": "Kl. {num}",
     "creating": "Klasse wird erstellt…"
   },
   "classroom": {
