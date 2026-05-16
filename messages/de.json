@@ -224,7 +224,17 @@
     "recommendedEmpty": "Aktuell gibt es noch keine fertigen Projekte für diese Boards — wir arbeiten daran.",
     "recommendedStart": "Loslegen",
     "recommendedReplay": "Nochmal",
-    "duration": "{min} Min"
+    "duration": "{min} Min",
+    "tourSkip": "Überspringen",
+    "tourNext": "Weiter",
+    "tourPrev": "Zurück",
+    "tourStart": "Los gehts!",
+    "tour1Title": "Willkommen bei MicroLearn",
+    "tour1Body": "Schritt für Schritt vom ersten Anschalten einer LED bis zu vernetzten Sensoren. Wir machen das gemeinsam — in deinem Tempo.",
+    "tour2Title": "Wähle dein Board",
+    "tour2Body": "Sag uns, welche Boards du hast (z. B. ESP32 oder Arduino) — wir zeigen dir nur passende Lektionen. Du kannst das jederzeit ändern.",
+    "tour3Title": "Frag den KI-Mentor",
+    "tour3Body": "Stockst du in einer Lektion? Tipp unten rechts auf das Funkeln-Symbol — der Mentor kennt deinen Schritt und hilft dir geduldig weiter."
   },
   "common": {
     "loading": "Lädt…",

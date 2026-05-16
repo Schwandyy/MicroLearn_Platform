@@ -224,7 +224,17 @@
     "recommendedEmpty": "We don't have ready projects for these boards yet — we're working on it.",
     "recommendedStart": "Start",
     "recommendedReplay": "Replay",
-    "duration": "{min} min"
+    "duration": "{min} min",
+    "tourSkip": "Skip",
+    "tourNext": "Next",
+    "tourPrev": "Back",
+    "tourStart": "Let's go!",
+    "tour1Title": "Welcome to MicroLearn",
+    "tour1Body": "Step by step, from your first LED to networked sensors. We'll do this together — at your pace.",
+    "tour2Title": "Pick your board",
+    "tour2Body": "Tell us which boards you have (e.g. ESP32 or Arduino) and we'll show only matching lessons. You can change this anytime.",
+    "tour3Title": "Ask the AI mentor",
+    "tour3Body": "Stuck in a lesson? Tap the sparkle icon bottom-right — the mentor knows your step and helps you patiently."
   },
   "common": {
     "loading": "Loading…",
