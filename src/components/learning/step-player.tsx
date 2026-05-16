@@ -415,6 +415,10 @@ function StepBody({
       const showBreadboardExplainer = Boolean(
         (payload as { showBreadboardExplainer?: boolean }).showBreadboardExplainer,
       );
+      const hasSpecificVisual = Boolean(highlightPin || showBreadboardExplainer);
+      // Fallback-Hero: thematisches Emoji + Gradient, damit EXPLAIN-Steps
+      // ohne spezifisches Diagramm trotzdem visuell aufgewertet sind.
+      const heroEmoji = pickExplainEmoji(step.title, step.body);
       return (
         <div className="space-y-5">
           <header>
@@ -422,6 +426,13 @@ function StepBody({
           </header>
           {highlightPin && <Esp32PinVisual highlightPin={highlightPin} />}
           {showBreadboardExplainer && <Breadboard explainerMode buildStage="all" />}
+          {!hasSpecificVisual && (
+            <div className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/10 to-emerald-500/10 py-10">
+              <span className="text-7xl" role="img" aria-hidden>
+                {heroEmoji}
+              </span>
+            </div>
+          )}
           <Card>
             <CardContent className="p-6">
               <p className="text-base leading-relaxed">{step.body}</p>
@@ -605,6 +616,36 @@ function NextButton({
       )}
     </div>
   );
+}
+
+// Fallback-Hero für EXPLAIN-Steps ohne spezifisches Diagramm. Pickt ein
+// Emoji basierend auf Stichwörtern in Titel + Body. Kein KI-Aufruf —
+// einfache Heuristik, im Zweifel der allgemeine Lampe-Emoji.
+function pickExplainEmoji(title: string, body: string): string {
+  const haystack = `${title} ${body}`.toLowerCase();
+  const rules: Array<[RegExp, string]> = [
+    [/wlan|wifi|wi-?fi/, "📶"],
+    [/mqtt|broker/, "📡"],
+    [/firmware|ota|update/, "📦"],
+    [/temperatur|hitze|kalt|warm/, "🌡️"],
+    [/luftdruck|barometer|wetter|atmosphäre|höhe/, "🌤️"],
+    [/feuchte|wasser|pflanze|boden/, "💧"],
+    [/licht|hell|dunkel|fotowiderstand|ldr/, "💡"],
+    [/ultraschall|abstand|fledermaus/, "🦇"],
+    [/bewegung|pir/, "🚶"],
+    [/oled|display|bildschirm|pixel/, "📺"],
+    [/neopixel|farb|rgb/, "🎨"],
+    [/motor|drehung|servo|stepper|antrieb/, "⚙️"],
+    [/buzzer|ton|melodie|musik|hertz/, "🎵"],
+    [/gyro|lage|beschleunig|orientierung/, "🧭"],
+    [/strom|spannung|widerstand|ohm|volt/, "⚡"],
+    [/pin|gpio|schaltung|verbindung/, "🔌"],
+    [/webserver|http|browser/, "🌐"],
+  ];
+  for (const [pat, emoji] of rules) {
+    if (pat.test(haystack)) return emoji;
+  }
+  return "💡";
 }
 
 interface SetupChecklistItem {
