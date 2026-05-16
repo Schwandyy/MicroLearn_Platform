@@ -153,9 +153,9 @@ function fmtStep(s: {
   payload: unknown;
 }): string {
   const payloadText = s.payload
-    ? "\n  payload: " + JSON.stringify(s.payload).slice(0, 1200)
+    ? "\n  payload: " + JSON.stringify(s.payload).slice(0, 4000)
     : "";
-  return `Step ${s.sortOrder} [${s.kind}] "${s.title_de}":\n  ${s.body_de.slice(0, 1200)}${payloadText}`;
+  return `Step ${s.sortOrder} [${s.kind}] "${s.title_de}":\n  ${s.body_de.slice(0, 2000)}${payloadText}`;
 }
 
 async function auditOne(
@@ -198,7 +198,7 @@ async function auditOne(
         .join("\n")
     : "  (leer)";
   const codeText = lesson.codeSnippet
-    ? lesson.codeSnippet.slice(0, 2000)
+    ? lesson.codeSnippet.slice(0, 8000)
     : "(kein Code-Snippet)";
   const quizText = lesson.quizzes.length
     ? lesson.quizzes
