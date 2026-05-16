@@ -138,6 +138,18 @@ docker-compose.yml              # Postgres 16 + MeiliSearch v1.11
 - [x] Capacitor Mobile-Wrapper (iOS + Android via PWA-Bridge, server.url
       zeigt auf die produktive Next.js-Deployment, www/ als Bootstrap-Shell)
 
+### ✅ Phase 5
+
+- [x] Live Coverage-Heatmap im Teacher-Dashboard (Standards × Schüler:innen,
+      sticky Header/Spalte, geteilte Coverage-Logik mit dem PDF)
+- [x] Wochenbericht-Mail via Resend (Cron Montags 07:00 UTC,
+      bilingualer HTML+Text-Digest mit Stat-Karten + Top-Aktiven)
+- [x] App-Store-Submission-Pack in `docs/store/` (iOS PrivacyInfo,
+      DE+EN-Listings für App Store + Play Console, Review-Notes,
+      Data-Safety-Formular, Screenshot-Guide)
+- [x] Capacitor-Asset-Pipeline: Platzhalter-Generator (`assets/logo.png`
+      via sharp+SVG), `pnpm mobile:assets:placeholders` + `pnpm mobile:assets`
+
 ### 📱 Mobile-App bauen (Capacitor)
 
 ```bash
