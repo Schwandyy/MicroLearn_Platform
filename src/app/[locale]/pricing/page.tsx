@@ -143,13 +143,22 @@ export default async function PricingPage({
             tier === "INSTITUTION" ? (
               <ManageSubscriptionButton />
             ) : (
-              <CheckoutButton
-                plan="INSTITUTION"
-                currency={currency}
-                variant="default"
-              >
-                {t("institutionCta")}
-              </CheckoutButton>
+              <div className="grid gap-2">
+                <Button asChild size="lg">
+                  <Link href="/pilot">{t("pilotCta")}</Link>
+                </Button>
+                <CheckoutButton
+                  plan="INSTITUTION"
+                  currency={currency}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t("institutionCta")}
+                </CheckoutButton>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  {t("pilotHint")}
+                </p>
+              </div>
             )
           }
         />

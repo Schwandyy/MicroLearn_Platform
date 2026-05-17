@@ -190,6 +190,7 @@ model User {
   notifications     Notification[]
   helpRequests      HelpRequest[]      @relation("HelpRequestStudent")
   helpResolutions   HelpRequest[]      @relation("HelpRequestResolver")
+  institutionAdminships InstitutionAdmin[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -843,9 +844,58 @@ model Institution {
 
   classrooms Classroom[]
   saml       SAMLConfig?
+  // 1:1 — gesetzt sobald die Schule entweder im Pilot ist oder gekauft hat
+  subscription InstitutionSubscription?
+  // Schul-Admin(s): Direktor:in oder IT — können Lehrkräfte einladen, Lizenz verwalten
+  admins InstitutionAdmin[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Schul-Lizenz (Pilot oder bezahlt). Parallel zu Subscription auf User-Ebene —
+// jeder User in einer Klasse einer Institution mit aktiver (oder trialing)
+// InstitutionSubscription bekommt Pro-Entitlement, ohne selbst zu zahlen.
+model InstitutionSubscription {
+  id                   String             @id @default(cuid())
+  institutionId        String             @unique
+  tier                 SubscriptionTier   @default(INSTITUTION)
+  status               SubscriptionStatus @default(TRIALING)
+  seats                Int                @default(30)
+  // Pilot oder Stripe?
+  isPilot              Boolean            @default(true)
+  pilotStartedAt       DateTime           @default(now())
+  trialEndsAt          DateTime?
+  // Stripe-Felder leer solange isPilot=true
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  // Geschätzte Anzahl Schüler (für Sales-Funnel + Lizenz-Aufstockung)
+  estimatedStudentCount Int?
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, trialEndsAt])
+}
+
+// Schul-Admin-Verknüpfung. Ein User kann Admin mehrerer Institutionen sein
+// (z.B. Schulträger). Rolle bleibt auf User.role, hier nur die Verknüpfung.
+model InstitutionAdmin {
+  id            String   @id @default(cuid())
+  institutionId String
+  userId        String
+  invitedAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, userId])
+  @@index([userId])
 }
 
 model SAMLConfig {
