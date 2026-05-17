@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Breadboard } from "./breadboard-svg";
+import { BlinkSchematic } from "./blink-schematic";
 import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
@@ -329,14 +330,31 @@ function StepBody({
               <p className="mt-2 text-muted-foreground">{step.body}</p>
             )}
           </header>
-          <Breadboard
-            ledColor={(payload as { ledColor?: "red" | "green" | "yellow" | "blue" }).ledColor ?? "red"}
-            highlightWires={
-              ((payload as { highlightWires?: ("3v3" | "gnd" | "signal")[] })
-                .highlightWires) ?? []
-            }
-            buildStage={buildStage}
-          />
+          {(payload as { schematic?: string }).schematic === "blink-premium" ? (
+            <BlinkSchematic
+              buildStage={
+                buildStage === "all"
+                  ? "all"
+                  : buildStage === 1
+                    ? 1
+                    : buildStage === 2
+                      ? 2
+                      : 3
+              }
+            />
+          ) : (
+            <Breadboard
+              ledColor={
+                (payload as { ledColor?: "red" | "green" | "yellow" | "blue" })
+                  .ledColor ?? "red"
+              }
+              highlightWires={
+                ((payload as { highlightWires?: ("3v3" | "gnd" | "signal")[] })
+                  .highlightWires) ?? []
+              }
+              buildStage={buildStage}
+            />
+          )}
           {instruction && (
             <Card>
               <CardContent className="p-4">

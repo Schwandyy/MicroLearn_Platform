@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Breadboard } from "./breadboard-svg";
+import { BlinkSchematic } from "./blink-schematic";
 import { Button } from "@/components/ui/button";
 import { Play, Square, AlertTriangle, Lightbulb, MinusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ interface SimPayload {
   expectedBehavior_en?: string;
   animation?: "blink" | "solid" | "fade" | "pulse";
   ledColor?: "red" | "green" | "yellow" | "blue";
+  schematic?: "blink-premium";
 }
 
 type GndChoice = "minus" | "plus" | "missing";
@@ -68,12 +70,26 @@ export function MiniSimulator({
 
   return (
     <div className="grid gap-4">
-      <Breadboard
-        ledOn={running && isCorrect}
-        ledColor={payload.ledColor ?? "red"}
-        ledAnimation={animation === "off" ? "off" : animation}
-        highlightWires={running && !isCorrect ? [] : ["gnd"]}
-      />
+      {payload.schematic === "blink-premium" ? (
+        <BlinkSchematic
+          ledOn={running && isCorrect}
+          ledAnimation={
+            !running || !isCorrect
+              ? "off"
+              : animation === "solid"
+                ? "solid"
+                : "blink"
+          }
+          buildStage="all"
+        />
+      ) : (
+        <Breadboard
+          ledOn={running && isCorrect}
+          ledColor={payload.ledColor ?? "red"}
+          ledAnimation={animation === "off" ? "off" : animation}
+          highlightWires={running && !isCorrect ? [] : ["gnd"]}
+        />
+      )}
 
       <div className="grid gap-2">
         <p className="text-sm font-semibold">{t("simChoiceHeading")}</p>
