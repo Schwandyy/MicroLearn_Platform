@@ -182,6 +182,7 @@ export function StepPlayer({
               xpReward={xpReward}
               locale={locale}
               firmware={firmware}
+              alreadyCompleted={alreadyCompleted}
               onQuizPass={() =>
                 setQuizPassed((prev) =>
                   prev[current.id] ? prev : { ...prev, [current.id]: true },
@@ -255,6 +256,7 @@ function StepBody({
   xpReward,
   locale,
   firmware,
+  alreadyCompleted,
   onQuizPass,
 }: {
   step: StepView;
@@ -265,6 +267,7 @@ function StepBody({
   xpReward: number;
   locale: "de" | "en";
   firmware: LessonFirmware | null;
+  alreadyCompleted: boolean;
   onQuizPass: () => void;
 }) {
   const t = useTranslations("lesson");
@@ -405,9 +408,12 @@ function StepBody({
           <Trophy className="mx-auto h-16 w-16 text-amber-500" />
           <h1 className="text-3xl font-bold">{t("celebrateTitle")}</h1>
           <p className="text-lg text-muted-foreground">
-            {t("celebrateBody", {
-              xp: ((payload as { xpAward?: number }).xpAward) ?? xpReward,
-            })}
+            {alreadyCompleted
+              ? t("celebrateBodyReplay")
+              : t("celebrateBody", {
+                  xp:
+                    ((payload as { xpAward?: number }).xpAward) ?? xpReward,
+                })}
           </p>
         </div>
       );

@@ -463,7 +463,7 @@
     "buyNow": "Buy here",
     "buyAlsoAt": "Also available at",
     "moreOptions": "More sellers",
-    "packSpreadHint": "Prices vary widely — some sellers ship single pieces, others multi-packs. Check the pack note next to the price.",
+    "packSpreadHint": "Single piece vs. multi-pack — check the pack note next to the price.",
     "bomTotalLabel": "Still to buy",
     "bomTotalAll": "Everything together",
     "bomTotalHint": "Cheapest seller per part × quantity — rough estimate only.",
@@ -493,6 +493,7 @@
     "simulatorHint": "This is just a browser preview. We'll show you how to upload the code to a real ESP32 next.",
     "celebrateTitle": "Done! 🎉",
     "celebrateBody": "You mastered the lesson. You've earned {xp} XP.",
+    "celebrateBodyReplay": "You ran through the lesson again — good practice. Since you'd already completed it, no new XP this time.",
     "finish": "Finish",
     "summaryLabel": "What's it about?",
     "saveAndExit": "Save & exit"

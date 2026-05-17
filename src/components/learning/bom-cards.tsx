@@ -196,32 +196,12 @@ function BomCard({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden transition",
+        "relative transition",
         owned && "border-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10",
       )}
     >
-      {/* Toggle: sichtbarer "Hab ich"-Schalter oben rechts */}
-      <button
-        type="button"
-        aria-label={owned ? t("haveItChecked") : t("haveItToggle")}
-        onClick={onToggle}
-        className={cn(
-          "absolute right-2 top-2 z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
-          owned
-            ? "border-emerald-400 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200"
-            : "border-border bg-background text-muted-foreground hover:border-primary hover:bg-muted hover:text-foreground",
-        )}
-      >
-        {owned ? (
-          <CheckCircle2 className="h-4 w-4" />
-        ) : (
-          <Circle className="h-4 w-4" />
-        )}
-        <span>{owned ? t("haveItChecked") : t("haveItToggle")}</span>
-      </button>
-
-      <CardContent className="grid gap-3 p-4 pr-24 pt-10 sm:pt-4">
-        {/* Header: Bild mit Quantity-Badge + Name */}
+      <CardContent className="grid gap-3 p-4">
+        {/* Header: Bild mit Quantity-Badge + Name + „Hab ich"-Toggle als Icon */}
         <div className="flex items-start gap-3">
           <div className="relative h-16 w-16 flex-shrink-0">
             <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-muted">
@@ -245,10 +225,30 @@ function BomCard({
               {item.quantity}×
             </span>
           </div>
-          <div className="min-w-0 flex-1 pt-1">
-            <h3 className="break-words text-sm font-semibold leading-tight">
-              {item.name}
-            </h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start gap-2">
+              <h3 className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight">
+                {item.name}
+              </h3>
+              <button
+                type="button"
+                aria-label={owned ? t("haveItChecked") : t("haveItToggle")}
+                title={owned ? t("haveItChecked") : t("haveItToggle")}
+                onClick={onToggle}
+                className={cn(
+                  "flex-shrink-0 rounded-full border p-1 transition",
+                  owned
+                    ? "border-emerald-400 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200"
+                    : "border-border bg-background text-muted-foreground hover:border-primary hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {owned ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <Circle className="h-5 w-5" />
+                )}
+              </button>
+            </div>
             {item.descriptionShort && (
               <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
                 {item.descriptionShort}
@@ -283,18 +283,18 @@ function BomCard({
               >
                 <span className="flex w-full items-center gap-2">
                   <ShoppingCart className="h-4 w-4 flex-shrink-0" />
-                  <span className="flex-1 truncate text-left">
+                  <span className="min-w-0 flex-1 text-left">
                     {primary.programDisplayName}
                   </span>
                   {primary.priceCents != null && (
-                    <span className="tabular-nums font-bold">
+                    <span className="flex-shrink-0 whitespace-nowrap tabular-nums font-bold">
                       {others.length > 0 ? "ab " : ""}
                       {formatPrice(primary.priceCents, primary.currency)}
                     </span>
                   )}
                 </span>
                 {primary.packageNote && (
-                  <span className="ml-6 inline-flex items-center rounded-sm bg-white/15 px-1.5 py-0.5 text-[11px] font-medium">
+                  <span className="ml-6 inline-block max-w-full whitespace-normal break-words rounded-sm bg-white/15 px-1.5 py-0.5 text-left text-[11px] font-medium leading-snug">
                     {primary.packageNote}
                   </span>
                 )}
