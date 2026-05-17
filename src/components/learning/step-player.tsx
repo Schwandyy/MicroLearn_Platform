@@ -167,7 +167,9 @@ export function StepPlayer({
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="container max-w-2xl py-6 md:py-8">
+        {/* pb-32 schafft Platz oberhalb des sticky Footers — sonst werden
+            Quiz-Optionen / Simulator-Choices vom „Weiter"-Button überdeckt. */}
+        <div className="container max-w-2xl py-6 pb-32 md:py-8 md:pb-32">
           {!current ? (
             <p>—</p>
           ) : (

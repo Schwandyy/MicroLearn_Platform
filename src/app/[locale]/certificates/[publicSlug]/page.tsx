@@ -1,8 +1,29 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/server/db/prisma";
 import { CertificateActions } from "@/components/certificates/certificate-actions";
+
+// Liefert die kanonische App-URL: NEXT_PUBLIC_APP_URL bevorzugt, sonst aus den
+// Request-Headers rekonstruiert (x-forwarded-host/host + https). Vermeidet
+// „http://localhost:3030"-Links in Zertifikaten, die in Production geteilt werden.
+async function getCanonicalBaseUrl(): Promise<string> {
+  const env = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  if (env && !env.includes("localhost") && !env.includes("127.0.0.1")) return env;
+  try {
+    const h = await headers();
+    const forwarded = h.get("x-forwarded-host");
+    const host = forwarded ?? h.get("host") ?? "";
+    if (!host || host.includes("localhost") || host.includes("127.0.0.1")) {
+      return env; // Fallback auf evtl. localhost — nur lokal sichtbar
+    }
+    const proto = h.get("x-forwarded-proto") ?? "https";
+    return `${proto}://${host}`;
+  } catch {
+    return env;
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -65,8 +86,9 @@ export default async function PublicCertificatePage({
     month: "long",
     day: "numeric",
   });
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-  const verifyUrl = `${appUrl}/${locale}/certificates/${publicSlug}`;
+  const appUrl = await getCanonicalBaseUrl();
+  const isLocalOnly = !appUrl || appUrl.includes("localhost") || appUrl.includes("127.0.0.1");
+  const verifyUrl = isLocalOnly ? "" : `${appUrl}/${locale}/certificates/${publicSlug}`;
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-amber-50 via-white to-amber-50 py-10 dark:from-amber-950/40 dark:via-background dark:to-amber-950/40">
@@ -104,9 +126,16 @@ export default async function PublicCertificatePage({
               <p>
                 {t("issued")} {issued}
               </p>
-              <p className="font-mono break-all">
-                {t("verify")}: {verifyUrl || publicSlug}
-              </p>
+              {verifyUrl ? (
+                <p className="font-mono break-all">
+                  {t("verify")}: {verifyUrl}
+                </p>
+              ) : (
+                <p className="font-mono">
+                  {t("verify")}:&nbsp;
+                  <span className="select-all">{publicSlug}</span>
+                </p>
+              )}
               <p className="mx-auto inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                 <span aria-hidden>✓</span>
                 {t("verifiedBadge")}

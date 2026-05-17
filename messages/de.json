@@ -479,6 +479,8 @@
     "buildIt": "Bau es zusammen",
     "understandCode": "Verstehe den Code",
     "tapToExplain": "Tippe auf eine Zeile für die Erklärung",
+    "copyCode": "Code kopieren",
+    "copied": "Kopiert!",
     "runProgram": "Simulation starten",
     "stopProgram": "Simulation stoppen",
     "whatHappens": "So sieht es im Simulator aus",
@@ -729,9 +731,9 @@
     "remove": "Entfernen"
   },
   "certificates": {
-    "title": "Mein Zertifikat",
+    "title": "Abschluss-Zertifikat",
     "awarded": "wird verliehen an",
-    "for": "für den Abschluss von",
+    "for": "für den erfolgreichen Abschluss von",
     "issued": "Ausgestellt am",
     "verify": "Verifizierung",
     "verifyHint": "Diese URL belegt die Echtheit des Zertifikats.",

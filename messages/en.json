@@ -479,6 +479,8 @@
     "buildIt": "Build it",
     "understandCode": "Understand the code",
     "tapToExplain": "Tap a line for the explanation",
+    "copyCode": "Copy code",
+    "copied": "Copied!",
     "runProgram": "Start simulator",
     "stopProgram": "Stop simulator",
     "whatHappens": "How it looks in the simulator",
@@ -729,9 +731,9 @@
     "remove": "Remove"
   },
   "certificates": {
-    "title": "My certificate",
+    "title": "Certificate of Completion",
     "awarded": "is awarded to",
-    "for": "for completing",
+    "for": "for the successful completion of",
     "issued": "Issued on",
     "verify": "Verification",
     "verifyHint": "This URL proves the authenticity of the certificate.",
