@@ -27,6 +27,18 @@ interface BreadboardProps {
    * gerendert. Default `true`. EXPLAIN-Steps setzen das auf false.
    */
   showCircuit?: boolean;
+  /**
+   * `false` = ESP32 wird NICHT gerendert (leeres Brett). Default `true`.
+   * Wird im EXPLAIN-Step „Was ist das Steckbrett?" auf false gesetzt,
+   * damit der Schüler erst das Brett alleine sieht.
+   */
+  showEsp?: boolean;
+  /**
+   * `true` = zeigt den ESP32 NICHT eingesteckt, sondern SCHWEBEND über dem
+   * Brett mit Pfeil nach unten — illustriert „so steckst du ihn rein".
+   * Aktiviert automatisch `showEsp` (ESP wird gerendert) und das Brett ohne Schaltung.
+   */
+  showInsertHint?: boolean;
   className?: string;
 }
 
@@ -55,13 +67,19 @@ const COL_LABELS = Array.from({ length: NUM_COLS }, (_, i) => String(i + 1));
 // ESP32 belegt Spalten 1–15 (Index 0–14). USB-Seite oben (Spalte 1).
 const ESP_FIRST_COL = 0;
 const ESP_LAST_COL = 14;
-// Pins, die wir für die Blink-Lesson brauchen — Position auf der ESP32-Karte:
-// Linke Seite (Reihe e, also obere Hälfte): 3V3 in Spalte 1, GND in Spalte 14, GPIO 2 in Spalte 4
-// (vereinfacht — auf echten Boards liegt GPIO 2 typischerweise rechts; didaktisch
-// sortieren wir die wichtigen Pins so, dass die Verkabelung kreuzungsfrei bleibt).
-const PIN_3V3_COL = 0;   // -> Label "1"
-const PIN_GPIO2_COL = 3; // -> Label "4"
-const PIN_GND_COL = 13;  // -> Label "14"
+// Pin-Positionen wie auf einem echten ESP32-DevKit-V1 (USB nach links):
+//   BOTTOM-Pinreihe (auf Brett-Reihe e):
+//     3V3(1), GND(2), D15(3), D2(4), D4(5), RX2(6), TX2(7), D5(8),
+//     D18(9), D19(10), D21(11), RX0(12), TX0(13), D22(14), D23(15)
+//   TOP-Pinreihe (auf Brett-Reihe f):
+//     VIN(1), GND(2), D13(3), D12(4), D14(5), D27(6), D26(7), D25(8),
+//     D33(9), D32(10), D35(11), D34(12), VN(13), VP(14), EN(15)
+// Für die Blink-Lesson nutzen wir 3V3-Pin (BOTTOM Spalte 1) und GPIO 2 = D2
+// (BOTTOM Spalte 4). GND nehmen wir vom TOP-GND-Pin (TOP Spalte 2 = Brett-
+// Reihe f Spalte 2) — kürzester Weg zur Minus-Schiene unten.
+const PIN_3V3_COL = 0;   // Spalte 1, BOTTOM-Reihe (Brett Reihe e)
+const PIN_GPIO2_COL = 3; // Spalte 4, BOTTOM-Reihe (Brett Reihe e)
+const PIN_GND_COL = 1;   // Spalte 2, TOP-Reihe (Brett Reihe f)
 
 /**
  * Steckbrett-Visualisierung — ESP32 sitzt MIT seinen Pins IN der Breadboard-
@@ -76,6 +94,8 @@ export function Breadboard({
   buildStage = "all",
   explainerMode = false,
   showCircuit,
+  showEsp = true,
+  showInsertHint = false,
   className,
 }: BreadboardProps) {
   // EXPLAIN-Modus blendet die Schaltung defaultmäßig aus — User soll erst
@@ -119,12 +139,18 @@ export function Breadboard({
   const ledCathodeCol = 8; // Label "9"
 
   const totalWidth = COL_X0 + NUM_COLS * COL_DX + 40;
-  const totalHeight = 290;
+  // Im Explainer-Mode reservieren wir oben + unten extra Platz, damit
+  // Pin-Position-Callouts (3V3, GPIO 2 oben, GND unten) AUSSERHALB des
+  // Brett-Korpus liegen und keine Reihen überdecken. Im Insert-Hint-Modus
+  // brauchen wir oben noch mehr Platz für den schwebenden ESP.
+  const padTop = showInsertHint ? 140 : explainerMode ? 70 : 0;
+  const padBottom = explainerMode ? 70 : 0;
+  const totalHeight = 290 + padTop + padBottom;
 
   return (
     <div className={cn("relative mx-auto w-full max-w-3xl", className)}>
       <svg
-        viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+        viewBox={`0 ${-padTop} ${totalWidth} ${totalHeight}`}
         xmlns="http://www.w3.org/2000/svg"
         className="block w-full"
         role="img"
@@ -146,8 +172,10 @@ export function Breadboard({
           )}
         </defs>
 
-        {/* Steckbrett-Korpus */}
-        <rect x="14" y="60" width={totalWidth - 28} height="220" rx="10" fill="#fef9e7" stroke="#facc15" strokeWidth="1.5" />
+        {/* Steckbrett-Korpus — weißes ABS wie ein echtes MB-102 */}
+        <rect x="14" y="60" width={totalWidth - 28} height="220" rx="10" fill="#fafafa" stroke="#d1d5db" strokeWidth="1.5" />
+        {/* Subtile Plastik-Textur */}
+        <rect x="16" y="62" width={totalWidth - 32} height="216" rx="9" fill="none" stroke="#e5e7eb" strokeWidth="0.6" opacity="0.7" />
 
         {/* Plus-Schiene (rot) — Beschriftung nur an den Rändern, damit
             sie nicht mit den Bauteilen in der Mitte kollidiert. */}
@@ -155,32 +183,12 @@ export function Breadboard({
         <line x1="22" y1="75" x2={totalWidth - 22} y2="75" stroke="#dc2626" strokeWidth="1.5" />
         <text x="16" y="79" textAnchor="end" fontSize="14" fontWeight="800" fill="#dc2626">+</text>
         <text x={totalWidth - 16} y="79" textAnchor="start" fontSize="14" fontWeight="800" fill="#dc2626">+</text>
-        {explainerMode && (
-          <>
-            <text x="48" y="79" textAnchor="start" fontSize="8" fontWeight="700" fill="#dc2626" letterSpacing="0.5">
-              Plus
-            </text>
-            <text x={totalWidth - 48} y="79" textAnchor="end" fontSize="8" fontWeight="700" fill="#dc2626" letterSpacing="0.5">
-              Plus
-            </text>
-          </>
-        )}
 
         {/* Minus-Schiene (blau) */}
         <rect x="22" y="258" width={totalWidth - 44} height="14" rx="3" fill="#dbeafe" />
         <line x1="22" y1="265" x2={totalWidth - 22} y2="265" stroke="#2563eb" strokeWidth="1.5" />
         <text x="16" y="269" textAnchor="end" fontSize="14" fontWeight="800" fill="#2563eb">−</text>
         <text x={totalWidth - 16} y="269" textAnchor="start" fontSize="14" fontWeight="800" fill="#2563eb">−</text>
-        {explainerMode && (
-          <>
-            <text x="48" y="269" textAnchor="start" fontSize="8" fontWeight="700" fill="#2563eb" letterSpacing="0.5">
-              Minus
-            </text>
-            <text x={totalWidth - 48} y="269" textAnchor="end" fontSize="8" fontWeight="700" fill="#2563eb" letterSpacing="0.5">
-              Minus
-            </text>
-          </>
-        )}
 
         {/* Punkte der Plus-/Minus-Schienen */}
         {Array.from({ length: NUM_COLS }).map((_, col) => (
@@ -260,164 +268,360 @@ export function Breadboard({
           </g>
         ))}
 
-        {/* ====== ESP32 IM Breadboard — über die Mittelrille ====== */}
-        {/* Der ESP32-PCB-Korpus liegt OBEN auf den Pins (verdeckt Reihen e + f). */}
-        <g>
-          {/* USB-Stecker links/oben (am Schmalende) */}
-          <rect
-            x={colX(ESP_FIRST_COL) - 14}
-            y={CHANNEL_Y - 14}
-            width="14"
-            height="28"
-            rx="2"
-            fill="#9ca3af"
-            stroke="#4b5563"
-            strokeWidth="1"
-          />
-          <text
-            x={colX(ESP_FIRST_COL) - 7}
-            y={CHANNEL_Y + 24}
-            textAnchor="middle"
-            fontSize="8"
-            fontWeight="700"
-            fill="#64748b"
-          >
-            USB
-          </text>
+        {/* ====== ESP32 DevKit V1 — realistisch nachempfunden ======
+            Im Insert-Hint-Modus zeigen wir den ESP schwebend ÜBER dem Brett
+            (transform translate-Y nach oben) mit einem Pfeil nach unten — so
+            visualisieren wir „so steckst du ihn rein". */}
+        {showEsp && (() => {
+          const bodyX = colX(ESP_FIRST_COL) - 10;
+          const bodyY = UPPER_ROWS_Y[4]! - 13;
+          const bodyW = colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) + 20;
+          const bodyH = LOWER_ROWS_Y[0]! - UPPER_ROWS_Y[4]! + 26;
+          // Linker Bereich = Spalten 1-6 (Buttons, USB, AMS1117, CP2102)
+          // Rechter Bereich = Spalten 7-15 (ESP-WROOM-32 Modul)
+          const wroomX = colX(6) - 3;
+          const wroomY = bodyY + 5;
+          const wroomW = colX(ESP_LAST_COL) - colX(6) + 6;
+          const wroomH = bodyH - 10;
+          const insertOffset = showInsertHint ? -110 : 0;
+          return (
+            <g transform={`translate(0, ${insertOffset})`} opacity={showInsertHint ? 0.92 : 1}>
+              {/* PCB-Korpus — mattschwarz mit Silkscreen-Rand */}
+              <rect
+                x={bodyX}
+                y={bodyY}
+                width={bodyW}
+                height={bodyH}
+                rx="3"
+                fill="#0a1018"
+                stroke="#0f172a"
+                strokeWidth="1.2"
+              />
+              {/* Silkscreen-Innenrand (heller Strich an PCB-Kante) */}
+              <rect
+                x={bodyX + 2}
+                y={bodyY + 2}
+                width={bodyW - 4}
+                height={bodyH - 4}
+                rx="2"
+                fill="none"
+                stroke="#475569"
+                strokeWidth="0.3"
+                opacity="0.6"
+              />
 
-          {/* PCB-Korpus des ESP32 (dunkel) — überspannt Reihen e + f */}
-          <rect
-            x={colX(ESP_FIRST_COL) - 7}
-            y={UPPER_ROWS_Y[4]! - 6}
-            width={colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) + 14}
-            height={LOWER_ROWS_Y[0]! - UPPER_ROWS_Y[4]! + 12}
-            rx="3"
-            fill="#0b0f19"
-            stroke="#1f2937"
-            strokeWidth="1.2"
-          />
-          {/* Silberner ESP-WROOM-32-Block (Antennen-Mäander angedeutet) */}
-          <rect
-            x={colX(ESP_FIRST_COL) + 6}
-            y={CHANNEL_Y - 10}
-            width={colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) - 12}
-            height="20"
-            rx="2"
-            fill="#d1d5db"
-            stroke="#6b7280"
-            strokeWidth="0.6"
-          />
-          <text
-            x={(colX(ESP_FIRST_COL) + colX(ESP_LAST_COL)) / 2}
-            y={CHANNEL_Y + 2}
-            textAnchor="middle"
-            fontSize="8"
-            fontWeight="800"
-            fill="#0b0f19"
-            fontFamily="ui-monospace,monospace"
-            letterSpacing="0.5"
-          >
-            ESP32-WROOM-32
-          </text>
-        </g>
+              {/* USB-Mikro-Stecker — silbern, links außerhalb des PCB */}
+              <rect
+                x={bodyX - 12}
+                y={CHANNEL_Y - 9}
+                width="13"
+                height="18"
+                rx="1.5"
+                fill="#9ca3af"
+                stroke="#374151"
+                strokeWidth="0.8"
+              />
+              <rect x={bodyX - 10} y={CHANNEL_Y - 6} width="9" height="12" rx="0.8" fill="#1f2937" />
 
-        {/* Pin-Position-Hinweise — nur im EXPLAIN-Modus, damit BUILD-Steps
-            nicht durch sich überlagernde Beschriftungen unleserlich werden.
-            In BUILD/SIMULATE führt der Body-Text + Highlight zu den richtigen
-            Spalten; mehr Labels verwirren mehr als sie helfen. */}
-        {explainerMode && (
+              {/* EN-Button (oben links) und BOOT-Button (unten links) — kleine Tact-Switches */}
+              <rect x={bodyX + 3} y={bodyY + 3} width="8" height="8" rx="1.2" fill="#1e293b" stroke="#475569" strokeWidth="0.4" />
+              <circle cx={bodyX + 7} cy={bodyY + 7} r="2" fill="#0f172a" />
+              <text x={bodyX + 7} y={bodyY + 18} textAnchor="middle" fontSize="3.5" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">EN</text>
+
+              <rect x={bodyX + 3} y={bodyY + bodyH - 11} width="8" height="8" rx="1.2" fill="#1e293b" stroke="#475569" strokeWidth="0.4" />
+              <circle cx={bodyX + 7} cy={bodyY + bodyH - 7} r="2" fill="#0f172a" />
+              <text x={bodyX + 7} y={bodyY + bodyH - 14} textAnchor="middle" fontSize="3.5" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">BOOT</text>
+
+              {/* AMS1117 Spannungsregler — kleines Rechteck mit oranger Tab */}
+              <rect x={bodyX + 14} y={bodyY + 4} width="14" height="7" rx="0.5" fill="#1e293b" stroke="#374151" strokeWidth="0.3" />
+              <rect x={bodyX + 14} y={bodyY + 4} width="14" height="2" fill="#ea580c" opacity="0.85" />
+              <text x={bodyX + 21} y={bodyY + 9.5} textAnchor="middle" fontSize="3" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">AMS1117</text>
+
+              {/* CP2102 USB-Serial-IC — kleines schwarzes Quadrat */}
+              <rect x={bodyX + 14} y={bodyY + bodyH - 11} width="10" height="7" rx="0.5" fill="#0f172a" stroke="#374151" strokeWidth="0.3" />
+              <text x={bodyX + 19} y={bodyY + bodyH - 6.5} textAnchor="middle" fontSize="2.8" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">CP2102</text>
+
+              {/* ESP-WROOM-32 Modul — silbern, rechts auf dem PCB (nicht zentriert) */}
+              <rect
+                x={wroomX}
+                y={wroomY}
+                width={wroomW}
+                height={wroomH}
+                rx="1.5"
+                fill="#e2e8f0"
+                stroke="#475569"
+                strokeWidth="0.6"
+              />
+              {/* Antennen-Mäander rechts oben am Modul */}
+              <path
+                d={`M ${wroomX + wroomW - 14} ${wroomY + 4}
+                    L ${wroomX + wroomW - 4} ${wroomY + 4}
+                    L ${wroomX + wroomW - 4} ${wroomY + 8}
+                    L ${wroomX + wroomW - 14} ${wroomY + 8}
+                    L ${wroomX + wroomW - 14} ${wroomY + 12}
+                    L ${wroomX + wroomW - 4} ${wroomY + 12}`}
+                fill="none"
+                stroke="#0f172a"
+                strokeWidth="0.6"
+              />
+              <text
+                x={wroomX + (wroomW - 16) / 2}
+                y={wroomY + wroomH / 2 + 3}
+                textAnchor="middle"
+                fontSize="8"
+                fontWeight="800"
+                fill="#0f172a"
+                fontFamily="ui-monospace,monospace"
+                letterSpacing="0.6"
+              >
+                ESP-WROOM-32
+              </text>
+
+              {/* Goldene Pin-Header — SMD-Style Lötauge mit Pin-Spitze, sichtbar
+                  AUF dem PCB an den Brett-Loch-Positionen. Rendered NACH dem PCB-
+                  Body, sodass die Pins sichtbar bleiben. */}
+              {Array.from({ length: 15 }).map((_, i) => {
+                const isActiveTop = i === PIN_3V3_COL || i === PIN_GPIO2_COL;
+                const isActiveBottom = i === PIN_GND_COL;
+                const topStroke = i === PIN_3V3_COL ? "#b91c1c" : i === PIN_GPIO2_COL ? "#15803d" : "#92400e";
+                return (
+                  <g key={`esp-pin-${i}`}>
+                    {/* Pin-Sockel oben (Reihe e) — schwarzer Plastikrahmen + Pin-Spitze */}
+                    <rect
+                      x={colX(i) - 3.6}
+                      y={UPPER_ROWS_Y[4]! - 3.6}
+                      width="7.2"
+                      height="7.2"
+                      rx="0.8"
+                      fill="#1a1a1a"
+                      stroke={isActiveTop ? topStroke : "#374151"}
+                      strokeWidth={isActiveTop ? "1.4" : "0.5"}
+                    />
+                    <rect
+                      x={colX(i) - 2}
+                      y={UPPER_ROWS_Y[4]! - 2}
+                      width="4"
+                      height="4"
+                      rx="0.4"
+                      fill="#facc15"
+                    />
+                    {/* Pin-Sockel unten (Reihe f) */}
+                    <rect
+                      x={colX(i) - 3.6}
+                      y={LOWER_ROWS_Y[0]! - 3.6}
+                      width="7.2"
+                      height="7.2"
+                      rx="0.8"
+                      fill="#1a1a1a"
+                      stroke={isActiveBottom ? "#1d4ed8" : "#374151"}
+                      strokeWidth={isActiveBottom ? "1.4" : "0.5"}
+                    />
+                    <rect
+                      x={colX(i) - 2}
+                      y={LOWER_ROWS_Y[0]! - 2}
+                      width="4"
+                      height="4"
+                      rx="0.4"
+                      fill="#facc15"
+                    />
+                  </g>
+                );
+              })}
+
+              {/* Wir verzichten bewusst auf Mini-Pin-Labels neben jedem Pin —
+                  bei 26px Spaltenabstand wird die Schrift zu klein, um lesbar
+                  zu sein. Die WICHTIGEN Pins (3V3, GPIO 2, GND) sind durch die
+                  Floating-Callouts oberhalb/unterhalb des Bretts beschriftet —
+                  das reicht didaktisch und vermeidet Info-Overload. */}
+            </g>
+          );
+        })()}
+
+        {/* Insert-Hint-Pfeile — drei dicke Pfeile zwischen ESP (schwebend) und
+            Brett, damit klar ist: ESP wird von oben in beide Pin-Reihen gedrückt. */}
+        {showInsertHint && (
           <g>
-            {/* 3V3 — kleines Label unten am ESP32-Body bei Spalte 1 */}
-            <g>
-              <line
-                x1={colX(PIN_3V3_COL)}
-                y1={CHANNEL_Y - 6}
-                x2={colX(PIN_3V3_COL)}
-                y2={CHANNEL_Y + 6}
-                stroke="#fca5a5"
-                strokeWidth="1.4"
-              />
-              <text
-                x={colX(PIN_3V3_COL)}
-                y={LOWER_ROWS_Y[0]! + 18}
-                textAnchor="middle"
-                fontSize="9"
-                fontWeight="800"
-                fill="#dc2626"
-                fontFamily="ui-monospace,monospace"
-              >
-                3V3
-              </text>
-            </g>
-            {/* GPIO 2 — kleines Label unten am ESP32-Body bei Spalte 4 */}
-            <g>
-              <line
-                x1={colX(PIN_GPIO2_COL)}
-                y1={CHANNEL_Y - 6}
-                x2={colX(PIN_GPIO2_COL)}
-                y2={CHANNEL_Y + 6}
-                stroke="#86efac"
-                strokeWidth="1.4"
-              />
-              <text
-                x={colX(PIN_GPIO2_COL)}
-                y={LOWER_ROWS_Y[0]! + 18}
-                textAnchor="middle"
-                fontSize="9"
-                fontWeight="800"
-                fill="#15803d"
-                fontFamily="ui-monospace,monospace"
-              >
-                GPIO 2
-              </text>
-            </g>
-            {/* GND — kleines Label unten am ESP32-Body bei Spalte 14 */}
-            <g>
-              <line
-                x1={colX(PIN_GND_COL)}
-                y1={CHANNEL_Y - 6}
-                x2={colX(PIN_GND_COL)}
-                y2={CHANNEL_Y + 6}
-                stroke="#93c5fd"
-                strokeWidth="1.4"
-              />
-              <text
-                x={colX(PIN_GND_COL)}
-                y={LOWER_ROWS_Y[0]! + 18}
-                textAnchor="middle"
-                fontSize="9"
-                fontWeight="800"
-                fill="#1d4ed8"
-                fontFamily="ui-monospace,monospace"
-              >
-                GND
-              </text>
-            </g>
+            {[2, 7, 12].map((col) => (
+              <g key={`insert-arrow-${col}`}>
+                <line
+                  x1={colX(col)}
+                  y1={UPPER_ROWS_Y[4]! - 50}
+                  x2={colX(col)}
+                  y2={LOWER_ROWS_Y[0]! - 8}
+                  stroke="#0ea5e9"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray="6 4"
+                >
+                  <animate attributeName="stroke-dashoffset" values="0;-20" dur="0.9s" repeatCount="indefinite" />
+                </line>
+                <polygon
+                  points={`${colX(col) - 6},${LOWER_ROWS_Y[0]! - 8} ${colX(col) + 6},${LOWER_ROWS_Y[0]! - 8} ${colX(col)},${LOWER_ROWS_Y[0]! + 4}`}
+                  fill="#0ea5e9"
+                />
+              </g>
+            ))}
+            {/* Hinweis-Banner unter dem schwebenden ESP */}
+            <rect
+              x={totalWidth / 2 - 90}
+              y={UPPER_ROWS_Y[4]! - 38}
+              width="180"
+              height="20"
+              rx="10"
+              fill="#e0f2fe"
+              stroke="#0ea5e9"
+              strokeWidth="1.2"
+            />
+            <text
+              x={totalWidth / 2}
+              y={UPPER_ROWS_Y[4]! - 24}
+              textAnchor="middle"
+              fontSize="10"
+              fontWeight="800"
+              fill="#075985"
+              fontFamily="ui-monospace,monospace"
+            >
+              Mittig drücken — beide Pin-Reihen rein
+            </text>
           </g>
         )}
 
-        {/* Erklär-Modus: eine kurze 5-Loch-Spalte visuell hervorheben */}
-        {explainerMode && (
+        {/* Pin-Position-Callouts — AUSSERHALB des Bretts. Pin-Labels machen
+            nur Sinn wenn der ESP da ist (sie zeigen auf ESP-Pins); ohne ESP
+            sind sie irreführend. Im Insert-Hint-Modus auch weglassen. */}
+        {explainerMode && !showInsertHint && showEsp && (
+          <g>
+            {/* 3V3 Callout — oben, Spalte 1 */}
+            <line
+              x1={colX(PIN_3V3_COL)}
+              y1={-padTop + 44}
+              x2={colX(PIN_3V3_COL)}
+              y2={50}
+              stroke="#dc2626"
+              strokeWidth="1.4"
+              strokeDasharray="3 3"
+            />
+            <polygon
+              points={`${colX(PIN_3V3_COL) - 4},${50} ${colX(PIN_3V3_COL) + 4},${50} ${colX(PIN_3V3_COL)},${60}`}
+              fill="#dc2626"
+            />
+            <rect
+              x={colX(PIN_3V3_COL) - 22}
+              y={-padTop + 18}
+              width="44"
+              height="26"
+              rx="6"
+              fill="#fef2f2"
+              stroke="#dc2626"
+              strokeWidth="1.2"
+            />
+            <text
+              x={colX(PIN_3V3_COL)}
+              y={-padTop + 35}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="800"
+              fill="#b91c1c"
+              fontFamily="ui-monospace,monospace"
+            >
+              3V3
+            </text>
+
+            {/* GPIO 2 Callout — oben, Spalte 4 */}
+            <line
+              x1={colX(PIN_GPIO2_COL)}
+              y1={-padTop + 44}
+              x2={colX(PIN_GPIO2_COL)}
+              y2={50}
+              stroke="#15803d"
+              strokeWidth="1.4"
+              strokeDasharray="3 3"
+            />
+            <polygon
+              points={`${colX(PIN_GPIO2_COL) - 4},${50} ${colX(PIN_GPIO2_COL) + 4},${50} ${colX(PIN_GPIO2_COL)},${60}`}
+              fill="#15803d"
+            />
+            <rect
+              x={colX(PIN_GPIO2_COL) - 30}
+              y={-padTop + 18}
+              width="60"
+              height="26"
+              rx="6"
+              fill="#f0fdf4"
+              stroke="#15803d"
+              strokeWidth="1.2"
+            />
+            <text
+              x={colX(PIN_GPIO2_COL)}
+              y={-padTop + 35}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="800"
+              fill="#15803d"
+              fontFamily="ui-monospace,monospace"
+            >
+              GPIO 2
+            </text>
+
+            {/* GND Callout — unten, Spalte 14 */}
+            <line
+              x1={colX(PIN_GND_COL)}
+              y1={290}
+              x2={colX(PIN_GND_COL)}
+              y2={290 + padBottom - 46}
+              stroke="#1d4ed8"
+              strokeWidth="1.4"
+              strokeDasharray="3 3"
+            />
+            <polygon
+              points={`${colX(PIN_GND_COL) - 4},${290} ${colX(PIN_GND_COL) + 4},${290} ${colX(PIN_GND_COL)},${280}`}
+              fill="#1d4ed8"
+            />
+            <rect
+              x={colX(PIN_GND_COL) - 22}
+              y={290 + padBottom - 44}
+              width="44"
+              height="26"
+              rx="6"
+              fill="#eff6ff"
+              stroke="#1d4ed8"
+              strokeWidth="1.2"
+            />
+            <text
+              x={colX(PIN_GND_COL)}
+              y={290 + padBottom - 27}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="800"
+              fill="#1d4ed8"
+              fontFamily="ui-monospace,monospace"
+            >
+              GND
+            </text>
+          </g>
+        )}
+
+        {/* Erklär-Modus: eine kurze 5-Loch-Spalte visuell hervorheben.
+            Wir markieren die obere Hälfte (Reihen a–e) in Spalte 3, damit
+            klar wird: alle 5 Löcher dieser kurzen Spalte sind elektrisch
+            verbunden. Erläuterungstext steht im Body unter dem Bild.
+            Im Insert-Hint-Modus weglassen. */}
+        {explainerMode && !showInsertHint && (
           <g>
             <rect
               x={colX(2) - 9}
-              y={UPPER_ROWS_Y[0]! - 6}
+              y={UPPER_ROWS_Y[0]! - 7}
               width="18"
-              height={UPPER_ROWS_Y[3]! - UPPER_ROWS_Y[0]! + 12}
-              rx="3"
+              height={UPPER_ROWS_Y[4]! - UPPER_ROWS_Y[0]! + 14}
+              rx="4"
               fill="#fde68a"
+              fillOpacity="0.55"
               stroke="#f59e0b"
-              strokeWidth="1.2"
-              strokeDasharray="3 3"
+              strokeWidth="1.6"
+              strokeDasharray="4 3"
             >
-              <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" />
+              <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite" />
             </rect>
-            <text x={colX(2)} y={UPPER_ROWS_Y[0]! - 12} textAnchor="middle" fontSize="9" fontWeight="800" fill="#b45309">
-              eine kurze Spalte
-            </text>
-            <text x={colX(2)} y={UPPER_ROWS_Y[3]! + 16} textAnchor="middle" fontSize="8" fontWeight="600" fill="#b45309">
-              4 Löcher sind verbunden
-            </text>
           </g>
         )}
 

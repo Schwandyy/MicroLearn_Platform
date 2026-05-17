@@ -7,43 +7,43 @@ interface Esp32PinVisualProps {
   className?: string;
 }
 
-// Standard 30-Pin-ESP32-WROOM-32 DevKit (gleicher Footprint wie das, was
-// Reichelt/AZ/Mouser verkaufen). Reihenfolge von oben (USB-Seite) nach
-// unten. Quelle: Espressif Hardware Design Guidelines + Standard-Pinout-Diagramme.
-// Linke Seite und rechte Seite — jeweils 15 Pins.
+// 30-Pin-ESP32-DevKit-V1 (das, was AZ-Delivery / DOIT verkaufen) — Pin-Reihe
+// von OBEN (USB-Seite) nach UNTEN. Die Labels entsprechen exakt dem
+// weißen Silkscreen-Aufdruck auf echten Boards (D-Notation statt GPIO).
+// Doku: AZ-Delivery DevKit V1 Pinout-Diagramm.
 const LEFT_PINS: { code: string; gpio?: number }[] = [
   { code: "EN" },
-  { code: "GPIO36", gpio: 36 },
-  { code: "GPIO39", gpio: 39 },
-  { code: "GPIO34", gpio: 34 },
-  { code: "GPIO35", gpio: 35 },
-  { code: "GPIO32", gpio: 32 },
-  { code: "GPIO33", gpio: 33 },
-  { code: "GPIO25", gpio: 25 },
-  { code: "GPIO26", gpio: 26 },
-  { code: "GPIO27", gpio: 27 },
-  { code: "GPIO14", gpio: 14 },
-  { code: "GPIO12", gpio: 12 },
+  { code: "VP", gpio: 36 },
+  { code: "VN", gpio: 39 },
+  { code: "D34", gpio: 34 },
+  { code: "D35", gpio: 35 },
+  { code: "D32", gpio: 32 },
+  { code: "D33", gpio: 33 },
+  { code: "D25", gpio: 25 },
+  { code: "D26", gpio: 26 },
+  { code: "D27", gpio: 27 },
+  { code: "D14", gpio: 14 },
+  { code: "D12", gpio: 12 },
+  { code: "D13", gpio: 13 },
   { code: "GND" },
-  { code: "GPIO13", gpio: 13 },
   { code: "VIN" },
 ];
 const RIGHT_PINS: { code: string; gpio?: number }[] = [
   { code: "3V3" },
   { code: "GND" },
-  { code: "GPIO15", gpio: 15 },
-  { code: "GPIO2", gpio: 2 },
-  { code: "GPIO4", gpio: 4 },
-  { code: "GPIO16", gpio: 16 },
-  { code: "GPIO17", gpio: 17 },
-  { code: "GPIO5", gpio: 5 },
-  { code: "GPIO18", gpio: 18 },
-  { code: "GPIO19", gpio: 19 },
-  { code: "GPIO21", gpio: 21 },
-  { code: "GPIO3", gpio: 3 },
-  { code: "GPIO1", gpio: 1 },
-  { code: "GPIO22", gpio: 22 },
-  { code: "GPIO23", gpio: 23 },
+  { code: "D15", gpio: 15 },
+  { code: "D2", gpio: 2 },
+  { code: "D4", gpio: 4 },
+  { code: "RX2", gpio: 16 },
+  { code: "TX2", gpio: 17 },
+  { code: "D5", gpio: 5 },
+  { code: "D18", gpio: 18 },
+  { code: "D19", gpio: 19 },
+  { code: "D21", gpio: 21 },
+  { code: "RX0", gpio: 3 },
+  { code: "TX0", gpio: 1 },
+  { code: "D22", gpio: 22 },
+  { code: "D23", gpio: 23 },
 ];
 
 const TOP_Y = 70;
@@ -55,9 +55,12 @@ const PCB_HEIGHT = TOP_Y + LEFT_PINS.length * PIN_DY + 30;
  * Vereinfachte, generische Darstellung — kein Markenname auf dem PCB.
  */
 export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps) {
-  const isHighlighted = (code: string): boolean => {
+  const isHighlighted = (pin: { code: string; gpio?: number }): boolean => {
     if (!highlightPin) return false;
-    return code === highlightPin;
+    if (pin.code === highlightPin) return true;
+    // Aliases — payload sagt "GPIO2", aber das Silkscreen-Label heißt "D2".
+    if (highlightPin === "GPIO2" && pin.gpio === 2) return true;
+    return false;
   };
 
   return (
@@ -69,7 +72,8 @@ export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps)
         role="img"
         aria-label="ESP32-WROOM-32 DevKit (30-Pin) — GPIO-Beschriftung"
       >
-        {/* PCB-Korpus */}
+        {/* PCB-Korpus — Höhe exakt für 15 Pins + Padding, ohne Buttons/LEDs
+            unten (die waren dort eh halb abgeschnitten). */}
         <rect
           x="80"
           y="40"
@@ -121,55 +125,36 @@ export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps)
           />
         ))}
 
-        {/* ESP-WROOM-32-Modul (silberner Block + Antennen-Mäander oben) */}
-        <rect x="105" y={TOP_Y + 30} width="150" height="110" rx="4" fill="#d1d5db" stroke="#6b7280" strokeWidth="1.2" />
-        {/* PCB-Antenne (Mäander oben) */}
+        {/* ESP-WROOM-32-Modul — auf echtem DevKit V1 sitzt das Modul auf der
+            Seite WEG vom USB. Mit USB OBEN heißt das: WROOM gehört nach unten. */}
+        <rect x="105" y={TOP_Y + 130} width="150" height="130" rx="4" fill="#d1d5db" stroke="#6b7280" strokeWidth="1.2" />
+        {/* PCB-Antenne (Mäander am Modul-Ende, weg vom Anschluss) */}
         <path
-          d="M 115 110 L 245 110 L 245 116 L 115 116 L 115 122 L 245 122"
+          d={`M 115 ${TOP_Y + 250} L 245 ${TOP_Y + 250} L 245 ${TOP_Y + 244} L 115 ${TOP_Y + 244} L 115 ${TOP_Y + 238} L 245 ${TOP_Y + 238}`}
           fill="none"
           stroke="#374151"
           strokeWidth="1.6"
           strokeLinejoin="miter"
         />
-        <text x="180" y={TOP_Y + 80} textAnchor="middle" fontSize="11" fill="#0b0f19" fontWeight="800" letterSpacing="1" fontFamily="ui-monospace,monospace">
+        <text x="180" y={TOP_Y + 180} textAnchor="middle" fontSize="11" fill="#0b0f19" fontWeight="800" letterSpacing="1" fontFamily="ui-monospace,monospace">
           ESP32-WROOM-32
         </text>
-        <text x="180" y={TOP_Y + 95} textAnchor="middle" fontSize="7" fill="#374151" fontFamily="ui-monospace,monospace">
+        <text x="180" y={TOP_Y + 195} textAnchor="middle" fontSize="7" fill="#374151" fontFamily="ui-monospace,monospace">
           30-pin DevKit
         </text>
-        <text x="248" y={TOP_Y + 110} textAnchor="end" fontSize="6" fill="#4b5563" fontFamily="ui-monospace,monospace">
+        <text x="248" y={TOP_Y + 218} textAnchor="end" fontSize="6" fill="#4b5563" fontFamily="ui-monospace,monospace">
           CE  FCC
         </text>
 
-        {/* USB-Serial-IC */}
-        <rect x="125" y={PCB_HEIGHT - 70} width="22" height="14" rx="1" fill="#1f2937" stroke="#000" strokeWidth="0.4" />
-        <text x="136" y={PCB_HEIGHT - 60} textAnchor="middle" fontSize="6" fill="#9ca3af" fontFamily="ui-monospace,monospace">
-          CP2102
-        </text>
-        {/* Spannungsregler */}
-        <rect x="206" y={PCB_HEIGHT - 70} width="22" height="14" rx="1" fill="#1f2937" />
-        <text x="217" y={PCB_HEIGHT - 60} textAnchor="middle" fontSize="6" fill="#9ca3af" fontFamily="ui-monospace,monospace">
-          AMS1117
-        </text>
-
-        {/* Buttons EN + BOOT unten */}
-        <g>
-          <rect x="125" y={PCB_HEIGHT - 50} width="18" height="18" rx="2" fill="#4b5563" stroke="#1f2937" strokeWidth="0.8" />
-          <text x="134" y={PCB_HEIGHT - 18} textAnchor="middle" fontSize="9" fill="#cbd5e1" fontWeight="600">EN</text>
-          <rect x="210" y={PCB_HEIGHT - 50} width="18" height="18" rx="2" fill="#4b5563" stroke="#1f2937" strokeWidth="0.8" />
-          <text x="219" y={PCB_HEIGHT - 18} textAnchor="middle" fontSize="9" fill="#cbd5e1" fontWeight="600">BOOT</text>
-        </g>
-
-        {/* Status-LEDs */}
-        <circle cx="160" cy={PCB_HEIGHT - 41} r="3" fill="#dc2626" />
-        <text x="160" y={PCB_HEIGHT - 22} textAnchor="middle" fontSize="6" fill="#9ca3af">PWR</text>
-        <circle cx="196" cy={PCB_HEIGHT - 41} r="3" fill="#2563eb" />
-        <text x="196" y={PCB_HEIGHT - 22} textAnchor="middle" fontSize="6" fill="#9ca3af">USR</text>
+        {/* Buttons + LEDs + ICs werden hier weggelassen — die Esp32PinVisual
+            soll AUSSCHLIESSLICH die Pinbelegung kommunizieren. Die realistische
+            Bauteilanordnung sieht der Schüler im Brett-Visual der Folge-Steps. */}
 
         {/* Pin-Labels links */}
-        {LEFT_PINS.map(({ code }, i) => {
+        {LEFT_PINS.map((pin, i) => {
+          const { code } = pin;
           const y = TOP_Y + i * PIN_DY;
-          const hl = isHighlighted(code);
+          const hl = isHighlighted(pin);
           return (
             <g key={`l-${code}`}>
               {hl && (
@@ -206,9 +191,10 @@ export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps)
         })}
 
         {/* Pin-Labels rechts */}
-        {RIGHT_PINS.map(({ code }, i) => {
+        {RIGHT_PINS.map((pin, i) => {
+          const { code } = pin;
           const y = TOP_Y + i * PIN_DY;
-          const hl = isHighlighted(code);
+          const hl = isHighlighted(pin);
           return (
             <g key={`r-${code}`}>
               {hl && (

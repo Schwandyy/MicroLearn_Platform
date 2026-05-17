@@ -450,7 +450,9 @@ function StepBody({
       const showBreadboardExplainer = Boolean(
         (payload as { showBreadboardExplainer?: boolean }).showBreadboardExplainer,
       );
-      const hasSpecificVisual = Boolean(highlightPin || showBreadboardExplainer);
+      const breadboardVariant = (payload as { breadboardVariant?: "boardOnly" | "boardWithHighlight" | "insertHint" | "full" })
+        .breadboardVariant;
+      const hasSpecificVisual = Boolean(highlightPin || showBreadboardExplainer || breadboardVariant);
       // Fallback-Hero: thematisches Emoji + Gradient, damit EXPLAIN-Steps
       // ohne spezifisches Diagramm trotzdem visuell aufgewertet sind.
       const heroEmoji = pickExplainEmoji(step.title, step.body);
@@ -460,7 +462,24 @@ function StepBody({
             <h2 className="text-2xl font-bold">{step.title}</h2>
           </header>
           {highlightPin && <Esp32PinVisual highlightPin={highlightPin} />}
-          {showBreadboardExplainer && <Breadboard explainerMode buildStage="all" />}
+          {/* Konsistenz: ALLE Brett-Visuals nutzen BlinkSchematic — sowohl in
+              den EXPLAIN-Steps als auch in den BUILD-Steps. So sehen Brett +
+              ESP über die ganze Lesson identisch aus. */}
+          {showBreadboardExplainer && (
+            <BlinkSchematic mode="boardWithHighlight" buildStage={0} />
+          )}
+          {breadboardVariant === "boardOnly" && (
+            <BlinkSchematic mode="boardOnly" buildStage={0} />
+          )}
+          {breadboardVariant === "boardWithHighlight" && (
+            <BlinkSchematic mode="boardWithHighlight" buildStage={0} />
+          )}
+          {breadboardVariant === "insertHint" && (
+            <BlinkSchematic mode="insertHint" buildStage={0} />
+          )}
+          {breadboardVariant === "full" && (
+            <BlinkSchematic mode="build" buildStage={0} />
+          )}
           {!hasSpecificVisual && (
             <div className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/10 to-emerald-500/10 py-10">
               <span className="text-7xl" role="img" aria-hidden>

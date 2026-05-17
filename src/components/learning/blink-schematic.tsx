@@ -21,6 +21,14 @@ interface BlinkSchematicProps {
    * "all" = alles voll sichtbar mit LED-Animation
    */
   buildStage?: 0 | 1 | 2 | 3 | "all";
+  /**
+   * Erklär-Modi (für die EXPLAIN-Steps der Lesson):
+   *   "boardOnly"          = nur das Brett, ohne ESP, ohne Schaltung
+   *   "boardWithHighlight" = Brett + kurze-Spalten-Highlight + Reihen/Spalten-Annotationen
+   *   "insertHint"         = ESP schwebt über Brett, Pfeile zeigen Steck-Richtung
+   *   "build" (default)    = aktuelles BUILD/SIMULATE-Verhalten (mit ESP + Bauteile je buildStage)
+   */
+  mode?: "build" | "boardOnly" | "boardWithHighlight" | "insertHint";
   className?: string;
 }
 
@@ -55,10 +63,15 @@ const ESP_BODY_Y = ROW_Y_UPPER[4]! - 6;
 const ESP_BODY_W = colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) + 20;
 const ESP_BODY_H = ROW_Y_LOWER[0]! - ROW_Y_UPPER[4]! + 12;
 
-// Relevante Pins (vereinfachte Positionen für die Lesson):
-const PIN_3V3_COL = 0; // Spalte 1, linke Pinreihe (Reihe e)
-const PIN_GPIO2_COL = 3; // Spalte 4
-const PIN_GND_COL = 13; // Spalte 14, rechte Pinreihe (Reihe f)
+// Pin-Positionen wie auf einem echten ESP32-DevKit-V1 (USB nach links).
+// BOTTOM-Reihe (Brett Reihe e): 3V3(1), GND(2), D15(3), D2(4), D4(5), ...
+// TOP-Reihe (Brett Reihe f): VIN(1), GND(2), D13(3), D12(4), D14(5), ...
+const PIN_3V3_COL = 0; // Spalte 1, BOTTOM-Reihe (Brett Reihe e) — 3V3
+const PIN_GPIO2_COL = 3; // Spalte 4, BOTTOM-Reihe — D2 = GPIO 2
+const PIN_GND_COL = 1; // Spalte 2, TOP-Reihe (Brett Reihe f) — GND, kürzester Weg zur Minus-Schiene
+
+const BOTTOM_PIN_LABELS = ["3V3", "GND", "D15", "D2", "D4", "RX2", "TX2", "D5", "D18", "D19", "D21", "RX0", "TX0", "D22", "D23"];
+const TOP_PIN_LABELS = ["VIN", "GND", "D13", "D12", "D14", "D27", "D26", "D25", "D33", "D32", "D35", "D34", "VN", "VP", "EN"];
 
 // Widerstand + LED — rechts vom ESP32 auf Reihe a/b
 const RES_LEFT_COL = 17; // Spalte 18
@@ -70,18 +83,31 @@ export function BlinkSchematic({
   ledOn = false,
   ledAnimation = "off",
   buildStage = "all",
+  mode = "build",
   className,
 }: BlinkSchematicProps) {
   const stageNum = buildStage === "all" ? 99 : buildStage;
-  const showResistor = stageNum >= 1;
-  const showLed = stageNum >= 2;
-  const showWires = stageNum >= 3;
-  const isOn = (ledOn || buildStage === "all") && ledAnimation !== "off";
+  // In den Erklär-Modi: keine Schaltung rendern, ESP je nach Modus aus oder an.
+  const isBuildMode = mode === "build";
+  const showResistor = isBuildMode && stageNum >= 1;
+  const showLed = isBuildMode && stageNum >= 2;
+  const showWires = isBuildMode && stageNum >= 3;
+  const showEsp = mode !== "boardOnly" && mode !== "boardWithHighlight";
+  const showInsertHint = mode === "insertHint";
+  const showColumnHighlight = mode === "boardWithHighlight";
+  // Im EXPLAIN-Modus möchten wir alle Spalten beschriftet sehen — sonst muss
+  // der Anfänger im 5er-Raster zählen. Im BUILD-Modus reicht das 5er-Raster.
+  const labelEveryColumn = !isBuildMode;
+  // Im Insert-Hint Modus rendern wir den ESP nach OBEN verschoben + Pfeile.
+  const espInsertOffset = showInsertHint ? -130 : 0;
+  // Extra-Padding oben für den schwebenden ESP im Insert-Hint
+  const extraTopPad = showInsertHint ? 160 : 0;
+  const isOn = (ledOn || buildStage === "all") && ledAnimation !== "off" && isBuildMode;
 
   return (
     <div className={cn("relative mx-auto w-full max-w-4xl", className)}>
       <svg
-        viewBox={`0 0 ${VB_W} ${VB_H}`}
+        viewBox={`0 ${-extraTopPad} ${VB_W} ${VB_H + extraTopPad}`}
         xmlns="http://www.w3.org/2000/svg"
         className="block w-full"
         role="img"
@@ -151,22 +177,21 @@ export function BlinkSchematic({
         </defs>
 
         {/* ====================================================================
-            BREADBOARD MB-102 (830 contacts)
+            BREADBOARD MB-102 (830 contacts) — weißes ABS wie echte Boards
             ==================================================================== */}
         <g filter="url(#bb-shadow)">
-          {/* Korpus — leicht gelblich-weiß wie echtes ABS */}
           <rect
             x={BB_X}
             y={BB_Y}
             width={BB_W}
             height={BB_H}
             rx="6"
-            fill="#fefce8"
-            stroke="#a78b4a"
+            fill="#fafafa"
+            stroke="#cbd5e1"
             strokeWidth="1.4"
           />
           {/* Subtile Strukturlinien für Plastik-Optik */}
-          <rect x={BB_X + 2} y={BB_Y + 2} width={BB_W - 4} height={BB_H - 4} rx="5" fill="none" stroke="#fef9c3" strokeWidth="1" opacity="0.6" />
+          <rect x={BB_X + 2} y={BB_Y + 2} width={BB_W - 4} height={BB_H - 4} rx="5" fill="none" stroke="#e5e7eb" strokeWidth="1" opacity="0.7" />
         </g>
 
         {/* Plus-Schiene oben (rot) */}
@@ -196,10 +221,11 @@ export function BlinkSchematic({
         {/* Mittelrille (Trennkanal) */}
         <rect x={BB_X + 4} y={CHANNEL_TOP} width={BB_W - 8} height={CHANNEL_BOTTOM - CHANNEL_TOP} fill="#fef9c3" stroke="#e7d36c" strokeWidth="0.5" />
 
-        {/* Spaltennummern oben (jede 5te) */}
+        {/* Spaltennummern oben — im EXPLAIN-Modus jede Spalte, im BUILD-Modus
+            nur 5er-Schritte (sonst zu eng zwischen Bauteilen). */}
         {Array.from({ length: BB_COLS }).map((_, c) => {
           const label = c + 1;
-          const show = label === 1 || label % 5 === 0;
+          const show = labelEveryColumn || label === 1 || label % 5 === 0;
           if (!show) return null;
           return (
             <text
@@ -207,7 +233,7 @@ export function BlinkSchematic({
               x={colX(c)}
               y={BB_Y + 60}
               textAnchor="middle"
-              fontSize="10"
+              fontSize={labelEveryColumn ? "9" : "10"}
               fontWeight="700"
               fill="#a16207"
               fontFamily="ui-monospace,monospace"
@@ -244,8 +270,13 @@ export function BlinkSchematic({
         ))}
 
         {/* ====================================================================
-            ESP32 DevKit V1 — sitzt IM Breadboard, überspannt die Mittelrille
+            ESP32 DevKit V1 — sitzt IM Breadboard, überspannt die Mittelrille.
+            Im boardOnly/boardWithHighlight-Mode komplett ausgeblendet.
+            Im insertHint-Mode nach oben versetzt + halbtransparent (schwebt).
             ==================================================================== */}
+        {showEsp && (
+        <>
+        <g transform={`translate(0, ${espInsertOffset})`} opacity={showInsertHint ? 0.92 : 1}>
         <g filter="url(#cmp-shadow)">
           {/* PCB-Korpus (dunkelgrünlich-schwarz wie echte Platinen) */}
           <rect
@@ -278,74 +309,73 @@ export function BlinkSchematic({
           <circle cx={ESP_BODY_X + ESP_BODY_W - 8} cy={ESP_BODY_Y + ESP_BODY_H - 8} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
         </g>
 
-        {/* ESP-WROOM-32 Modul (silbernes Metallgehäuse mit Antennen-Mäander) */}
-        <g filter="url(#cmp-shadow)">
-          <rect
-            x={ESP_BODY_X + 12}
-            y={ESP_BODY_Y + 14}
-            width={ESP_BODY_W - 24}
-            height={ESP_BODY_H - 60}
-            rx="2"
-            fill="url(#wroom-shield)"
-            stroke="#475569"
-            strokeWidth="0.8"
-          />
-          {/* Antennen-Mäander oben (PCB-Antenne) */}
-          <path
-            d={`M ${ESP_BODY_X + 24} ${ESP_BODY_Y + 22}
-                L ${ESP_BODY_X + ESP_BODY_W - 24} ${ESP_BODY_Y + 22}
-                L ${ESP_BODY_X + ESP_BODY_W - 24} ${ESP_BODY_Y + 27}
-                L ${ESP_BODY_X + 24} ${ESP_BODY_Y + 27}
-                L ${ESP_BODY_X + 24} ${ESP_BODY_Y + 32}
-                L ${ESP_BODY_X + ESP_BODY_W - 24} ${ESP_BODY_Y + 32}`}
-            fill="none"
-            stroke="#1e293b"
-            strokeWidth="1.5"
-            strokeLinejoin="miter"
-          />
-          {/* Aufdruck (generisch, kein Brand) */}
-          <text
-            x={ESP_BODY_X + ESP_BODY_W / 2}
-            y={ESP_BODY_Y + ESP_BODY_H / 2 - 12}
-            textAnchor="middle"
-            fontSize="11"
-            fontWeight="900"
-            fill="#0f172a"
-            fontFamily="ui-monospace,monospace"
-            letterSpacing="0.8"
-          >
-            ESP32-WROOM-32
-          </text>
-          <text
-            x={ESP_BODY_X + ESP_BODY_W / 2}
-            y={ESP_BODY_Y + ESP_BODY_H / 2 + 2}
-            textAnchor="middle"
-            fontSize="7"
-            fontWeight="600"
-            fill="#475569"
-            fontFamily="ui-monospace,monospace"
-          >
-            DevKit V1 · 30-pin
-          </text>
-          <text
-            x={ESP_BODY_X + ESP_BODY_W - 16}
-            y={ESP_BODY_Y + ESP_BODY_H / 2 + 14}
-            textAnchor="end"
-            fontSize="6"
-            fontWeight="600"
-            fill="#475569"
-            fontFamily="ui-monospace,monospace"
-          >
-            CE FCC
-          </text>
-        </g>
+        {/* ESP-WROOM-32 Modul — RECHTS auf dem PCB (so wie auf echten DevKit V1).
+            Linke Hälfte der Platine ist Platz für USB, EN, BOOT, AMS1117, CP2102. */}
+        {(() => {
+          const wroomX = colX(6) - 4;
+          // 12px Padding oben/unten lässt 4px Luft zu Pin-Header (vorher 8px → 2px Überlapp).
+          const wroomY = ESP_BODY_Y + 12;
+          const wroomW = colX(14) - colX(6) + 12;
+          const wroomH = ESP_BODY_H - 28;
+          return (
+            <g filter="url(#cmp-shadow)">
+              <rect
+                x={wroomX}
+                y={wroomY}
+                width={wroomW}
+                height={wroomH}
+                rx="2"
+                fill="url(#wroom-shield)"
+                stroke="#475569"
+                strokeWidth="0.8"
+              />
+              {/* Antennen-Mäander rechts oben (PCB-Antenne wie auf echtem WROOM) */}
+              <path
+                d={`M ${wroomX + wroomW - 26} ${wroomY + 5}
+                    L ${wroomX + wroomW - 6} ${wroomY + 5}
+                    L ${wroomX + wroomW - 6} ${wroomY + 10}
+                    L ${wroomX + wroomW - 26} ${wroomY + 10}
+                    L ${wroomX + wroomW - 26} ${wroomY + 15}
+                    L ${wroomX + wroomW - 6} ${wroomY + 15}`}
+                fill="none"
+                stroke="#1e293b"
+                strokeWidth="1.2"
+                strokeLinejoin="miter"
+              />
+              {/* Aufdruck */}
+              <text
+                x={wroomX + (wroomW - 30) / 2}
+                y={wroomY + wroomH / 2 - 2}
+                textAnchor="middle"
+                fontSize="11"
+                fontWeight="900"
+                fill="#0f172a"
+                fontFamily="ui-monospace,monospace"
+                letterSpacing="0.6"
+              >
+                ESP-WROOM-32
+              </text>
+              <text
+                x={wroomX + (wroomW - 30) / 2}
+                y={wroomY + wroomH / 2 + 12}
+                textAnchor="middle"
+                fontSize="6"
+                fontWeight="600"
+                fill="#475569"
+                fontFamily="ui-monospace,monospace"
+              >
+                CE · FCC · DevKit V1
+              </text>
+            </g>
+          );
+        })()}
 
-        {/* USB-Mikro-Port (am linken Schmalende des ESP32) */}
+        {/* USB-Mikro-Port (am linken Schmalende des ESP32 — außerhalb des PCB) */}
         <g filter="url(#cmp-shadow)">
           <rect
-            x={ESP_BODY_X - 16}
+            x={ESP_BODY_X - 18}
             y={(CHANNEL_TOP + CHANNEL_BOTTOM) / 2 - 14}
-            width="20"
+            width="22"
             height="28"
             rx="3"
             fill="#94a3b8"
@@ -353,77 +383,243 @@ export function BlinkSchematic({
             strokeWidth="1"
           />
           <rect
-            x={ESP_BODY_X - 12}
+            x={ESP_BODY_X - 14}
             y={(CHANNEL_TOP + CHANNEL_BOTTOM) / 2 - 10}
-            width="12"
+            width="14"
             height="20"
             rx="1.5"
             fill="#1e293b"
           />
-          <text
-            x={ESP_BODY_X - 6}
-            y={(CHANNEL_TOP + CHANNEL_BOTTOM) / 2 + 28}
-            textAnchor="middle"
-            fontSize="8"
-            fontWeight="700"
-            fill="#64748b"
-            fontFamily="ui-monospace,monospace"
-          >
-            USB
-          </text>
         </g>
 
-        {/* CP2102 USB-Serial-IC + AMS1117 Spannungsregler (auf der Platine) */}
+        {/* EN-Button (oben links) und BOOT-Button (unten links) — wie auf echtem DevKit */}
         <g>
-          <rect x={ESP_BODY_X + 16} y={ESP_BODY_Y + ESP_BODY_H - 36} width="28" height="18" rx="1" fill="#0f172a" stroke="#475569" strokeWidth="0.5" />
-          <text x={ESP_BODY_X + 30} y={ESP_BODY_Y + ESP_BODY_H - 24} textAnchor="middle" fontSize="6" fontWeight="700" fill="#94a3b8" fontFamily="ui-monospace,monospace">CP2102</text>
-          <rect x={ESP_BODY_X + ESP_BODY_W - 44} y={ESP_BODY_Y + ESP_BODY_H - 36} width="28" height="18" rx="1" fill="#0f172a" stroke="#475569" strokeWidth="0.5" />
-          <text x={ESP_BODY_X + ESP_BODY_W - 30} y={ESP_BODY_Y + ESP_BODY_H - 24} textAnchor="middle" fontSize="6" fontWeight="700" fill="#94a3b8" fontFamily="ui-monospace,monospace">AMS1117</text>
+          <rect x={ESP_BODY_X + 6} y={ESP_BODY_Y + 6} width="14" height="14" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
+          <circle cx={ESP_BODY_X + 13} cy={ESP_BODY_Y + 13} r="3.5" fill="#0f172a" />
+          <text x={ESP_BODY_X + 13} y={ESP_BODY_Y + 30} textAnchor="middle" fontSize="6" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">EN</text>
+
+          <rect x={ESP_BODY_X + 6} y={ESP_BODY_Y + ESP_BODY_H - 20} width="14" height="14" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
+          <circle cx={ESP_BODY_X + 13} cy={ESP_BODY_Y + ESP_BODY_H - 13} r="3.5" fill="#0f172a" />
+          <text x={ESP_BODY_X + 13} y={ESP_BODY_Y + ESP_BODY_H - 24} textAnchor="middle" fontSize="6" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">BOOT</text>
         </g>
 
-        {/* EN + BOOT Tact-Switches */}
+        {/* AMS1117 Spannungsregler (oben Mitte-links) — kleines Rechteck mit oranger Tab */}
         <g>
-          <rect x={ESP_BODY_X + 56} y={ESP_BODY_Y + ESP_BODY_H - 38} width="14" height="14" rx="2" fill="#64748b" stroke="#334155" strokeWidth="0.5" filter="url(#cmp-shadow)" />
-          <text x={ESP_BODY_X + 63} y={ESP_BODY_Y + ESP_BODY_H - 8} textAnchor="middle" fontSize="6" fontWeight="700" fill="#94a3b8">EN</text>
-          <rect x={ESP_BODY_X + ESP_BODY_W - 70} y={ESP_BODY_Y + ESP_BODY_H - 38} width="14" height="14" rx="2" fill="#64748b" stroke="#334155" strokeWidth="0.5" filter="url(#cmp-shadow)" />
-          <text x={ESP_BODY_X + ESP_BODY_W - 63} y={ESP_BODY_Y + ESP_BODY_H - 8} textAnchor="middle" fontSize="6" fontWeight="700" fill="#94a3b8">BOOT</text>
+          <rect x={ESP_BODY_X + 26} y={ESP_BODY_Y + 8} width="22" height="11" rx="0.8" fill="#0f172a" stroke="#475569" strokeWidth="0.4" />
+          <rect x={ESP_BODY_X + 26} y={ESP_BODY_Y + 8} width="22" height="3" fill="#ea580c" opacity="0.9" />
+          <text x={ESP_BODY_X + 37} y={ESP_BODY_Y + 16} textAnchor="middle" fontSize="4.5" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">AMS1117</text>
         </g>
 
-        {/* PWR + USR LEDs */}
+        {/* CP2102 USB-Serial-IC (unten Mitte-links) — kleines schwarzes Quadrat */}
         <g>
-          <circle cx={ESP_BODY_X + ESP_BODY_W / 2 - 16} cy={ESP_BODY_Y + ESP_BODY_H - 30} r="2.5" fill="#dc2626" />
-          <text x={ESP_BODY_X + ESP_BODY_W / 2 - 16} y={ESP_BODY_Y + ESP_BODY_H - 8} textAnchor="middle" fontSize="6" fill="#94a3b8">PWR</text>
-          <circle cx={ESP_BODY_X + ESP_BODY_W / 2 + 16} cy={ESP_BODY_Y + ESP_BODY_H - 30} r="2.5" fill="#2563eb" />
-          <text x={ESP_BODY_X + ESP_BODY_W / 2 + 16} y={ESP_BODY_Y + ESP_BODY_H - 8} textAnchor="middle" fontSize="6" fill="#94a3b8">USR</text>
+          <rect x={ESP_BODY_X + 26} y={ESP_BODY_Y + ESP_BODY_H - 19} width="16" height="11" rx="0.8" fill="#0a0f19" stroke="#475569" strokeWidth="0.4" />
+          <text x={ESP_BODY_X + 34} y={ESP_BODY_Y + ESP_BODY_H - 12} textAnchor="middle" fontSize="4.5" fontWeight="700" fill="#cbd5e1" fontFamily="ui-monospace,monospace">CP2102</text>
         </g>
 
-        {/* Goldene Pin-Header — links (Reihe e) und rechts (Reihe f), 15 Pins je Seite */}
-        {Array.from({ length: 15 }).map((_, i) => (
-          <g key={`pin-${i}`}>
-            {/* Oberer Pin sitzt in Loch row e column i */}
-            <rect x={colX(i) - 3.5} y={ROW_Y_UPPER[4]! - 4} width="7" height="8" rx="0.8" fill="url(#pin-gold)" stroke="#92400e" strokeWidth="0.4" />
-            {/* Unterer Pin sitzt in Loch row f column i */}
-            <rect x={colX(i) - 3.5} y={ROW_Y_LOWER[0]! - 4} width="7" height="8" rx="0.8" fill="url(#pin-gold)" stroke="#92400e" strokeWidth="0.4" />
+        {/* Goldene Pin-Header — links (Reihe e) und rechts (Reihe f), 15 Pins je Seite.
+            Aktive Pins (GPIO 2 + GND) sind farbig umrandet, damit der Schüler sie
+            sofort findet ohne Beschriftungssalat. */}
+        {Array.from({ length: 15 }).map((_, i) => {
+          const isGpio2 = i === PIN_GPIO2_COL;
+          const isGnd = i === PIN_GND_COL;
+          const isV3 = i === PIN_3V3_COL;
+          const pinW = 9;
+          const pinH = 11;
+          return (
+            <g key={`pin-${i}`}>
+              {/* Oberer Pin (Reihe e) */}
+              <rect
+                x={colX(i) - pinW / 2}
+                y={ROW_Y_UPPER[4]! - 5}
+                width={pinW}
+                height={pinH}
+                rx="1.2"
+                fill="url(#pin-gold)"
+                stroke={isGpio2 ? "#15803d" : isV3 ? "#b91c1c" : "#92400e"}
+                strokeWidth={isGpio2 || isV3 ? "1.6" : "0.6"}
+              />
+              {/* Unterer Pin (Reihe f) */}
+              <rect
+                x={colX(i) - pinW / 2}
+                y={ROW_Y_LOWER[0]! - 6}
+                width={pinW}
+                height={pinH}
+                rx="1.2"
+                fill="url(#pin-gold)"
+                stroke={isGnd ? "#1d4ed8" : "#92400e"}
+                strokeWidth={isGnd ? "1.6" : "0.6"}
+              />
+            </g>
+          );
+        })}
+
+        {/* Silkscreen-Pin-Labels — exakt wie auf echten DevKit-V1-Boards aufgedruckt.
+            BOTTOM-Reihe steht auf Brett-Reihe e (oben), TOP-Reihe auf Reihe f (unten).
+            Nur Pins links vom ESP-WROOM-Modul werden beschriftet (Spalten 1-6); die
+            anderen sind durch das Modul verdeckt. Wichtige Lesson-Pins farbig. */}
+        <g fontFamily="ui-monospace,monospace" fontWeight="700">
+          {BOTTOM_PIN_LABELS.slice(0, 6).map((label, i) => {
+            const isActive = i === PIN_3V3_COL || i === PIN_GPIO2_COL;
+            const color = i === PIN_3V3_COL ? "#fca5a5" : i === PIN_GPIO2_COL ? "#86efac" : "#cbd5e1";
+            return (
+              <text
+                key={`bp-label-${i}`}
+                x={colX(i)}
+                y={ROW_Y_UPPER[4]! - 6}
+                textAnchor="middle"
+                fontSize={isActive ? "6.5" : "5.5"}
+                fill={color}
+              >
+                {label}
+              </text>
+            );
+          })}
+          {TOP_PIN_LABELS.slice(0, 6).map((label, i) => {
+            const isActive = i === PIN_GND_COL;
+            const color = isActive ? "#93c5fd" : "#cbd5e1";
+            return (
+              <text
+                key={`tp-label-${i}`}
+                x={colX(i)}
+                y={ROW_Y_LOWER[0]! + 11}
+                textAnchor="middle"
+                fontSize={isActive ? "6.5" : "5.5"}
+                fill={color}
+              >
+                {label}
+              </text>
+            );
+          })}
+        </g>
+        </g>
+
+        {/* Floating Callouts für die genutzten Pins — außerhalb des Bretts, mit
+            gestrichelter Hilfslinie zum tatsächlichen Pin. So liegen die Labels
+            NIE in den Brett-Reihen und der Schüler kann den Pin sofort finden.
+            NICHT mit dem ESP-Transform mitbewegen (im Insert-Hint zeigen sie
+            sonst nicht mehr auf das Brett) — und im Insert-Hint ganz weglassen,
+            weil dort der Steck-Vorgang im Fokus ist, nicht die Pin-Namen. */}
+        {!showInsertHint && (
+        <g>
+          {/* GPIO 2 Callout — oberhalb des Bretts, Pfeil tippt nur den Brett-Rand an */}
+          <line
+            x1={colX(PIN_GPIO2_COL)}
+            y1={BB_Y - 4}
+            x2={colX(PIN_GPIO2_COL)}
+            y2={BB_Y - 14}
+            stroke="#15803d"
+            strokeWidth="1.4"
+            strokeDasharray="3 3"
+          />
+          <polygon
+            points={`${colX(PIN_GPIO2_COL) - 4},${BB_Y - 14} ${colX(PIN_GPIO2_COL) + 4},${BB_Y - 14} ${colX(PIN_GPIO2_COL)},${BB_Y - 4}`}
+            fill="#15803d"
+          />
+          <g filter="url(#cmp-shadow)">
+            <rect
+              x={colX(PIN_GPIO2_COL) - 38}
+              y={BB_Y - 58}
+              width="76"
+              height="42"
+              rx="8"
+              fill="#f0fdf4"
+              stroke="#15803d"
+              strokeWidth="1.4"
+            />
           </g>
-        ))}
+          <text x={colX(PIN_GPIO2_COL)} y={BB_Y - 40} textAnchor="middle" fontSize="13" fontWeight="900" fill="#15803d" fontFamily="ui-monospace,monospace">GPIO 2</text>
+          <text x={colX(PIN_GPIO2_COL)} y={BB_Y - 26} textAnchor="middle" fontSize="8" fontWeight="600" fill="#16a34a">Signal-Pin</text>
 
-        {/* Wichtige Pin-Labels (3V3, GPIO 2 links — GND rechts) als kleine Anmerkungen */}
-        <g>
-          {/* 3V3 — Spalte 1, oben */}
-          <line x1={colX(PIN_3V3_COL)} y1={ESP_BODY_Y - 8} x2={colX(PIN_3V3_COL)} y2={ESP_BODY_Y - 2} stroke="#fca5a5" strokeWidth="1.4" />
-          <rect x={colX(PIN_3V3_COL) - 16} y={ESP_BODY_Y - 28} width="32" height="18" rx="3" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.8" />
-          <text x={colX(PIN_3V3_COL)} y={ESP_BODY_Y - 15} textAnchor="middle" fontSize="9" fontWeight="800" fill="#b91c1c" fontFamily="ui-monospace,monospace">3V3</text>
-
-          {/* GPIO 2 — Spalte 4, oben */}
-          <line x1={colX(PIN_GPIO2_COL)} y1={ESP_BODY_Y - 8} x2={colX(PIN_GPIO2_COL)} y2={ESP_BODY_Y - 2} stroke="#86efac" strokeWidth="1.4" />
-          <rect x={colX(PIN_GPIO2_COL) - 22} y={ESP_BODY_Y - 28} width="44" height="18" rx="3" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.8" />
-          <text x={colX(PIN_GPIO2_COL)} y={ESP_BODY_Y - 15} textAnchor="middle" fontSize="9" fontWeight="800" fill="#15803d" fontFamily="ui-monospace,monospace">GPIO 2</text>
-
-          {/* GND — Spalte 14, unten (rechts vom Body) */}
-          <line x1={colX(PIN_GND_COL)} y1={ESP_BODY_Y + ESP_BODY_H + 2} x2={colX(PIN_GND_COL)} y2={ESP_BODY_Y + ESP_BODY_H + 8} stroke="#93c5fd" strokeWidth="1.4" />
-          <rect x={colX(PIN_GND_COL) - 16} y={ESP_BODY_Y + ESP_BODY_H + 10} width="32" height="18" rx="3" fill="#eff6ff" stroke="#93c5fd" strokeWidth="0.8" />
-          <text x={colX(PIN_GND_COL)} y={ESP_BODY_Y + ESP_BODY_H + 23} textAnchor="middle" fontSize="9" fontWeight="800" fill="#1d4ed8" fontFamily="ui-monospace,monospace">GND</text>
+          {/* GND Callout — unterhalb des Bretts, Pfeil tippt den unteren Rand an */}
+          <line
+            x1={colX(PIN_GND_COL)}
+            y1={BB_Y + BB_H + 4}
+            x2={colX(PIN_GND_COL)}
+            y2={BB_Y + BB_H + 14}
+            stroke="#1d4ed8"
+            strokeWidth="1.4"
+            strokeDasharray="3 3"
+          />
+          <polygon
+            points={`${colX(PIN_GND_COL) - 4},${BB_Y + BB_H + 14} ${colX(PIN_GND_COL) + 4},${BB_Y + BB_H + 14} ${colX(PIN_GND_COL)},${BB_Y + BB_H + 4}`}
+            fill="#1d4ed8"
+          />
+          <g filter="url(#cmp-shadow)">
+            <rect
+              x={colX(PIN_GND_COL) - 38}
+              y={BB_Y + BB_H + 16}
+              width="76"
+              height="42"
+              rx="8"
+              fill="#eff6ff"
+              stroke="#1d4ed8"
+              strokeWidth="1.4"
+            />
+          </g>
+          <text x={colX(PIN_GND_COL)} y={BB_Y + BB_H + 36} textAnchor="middle" fontSize="13" fontWeight="900" fill="#1d4ed8" fontFamily="ui-monospace,monospace">GND</text>
+          <text x={colX(PIN_GND_COL)} y={BB_Y + BB_H + 50} textAnchor="middle" fontSize="8" fontWeight="600" fill="#2563eb">Masse / Minus</text>
         </g>
+        )}
+        </>
+        )}
+
+        {/* Insert-Hint-Pfeile — drei dicke Pfeile zwischen ESP (schwebend) und
+            Brett, plus Banner. Nur wenn mode=insertHint. */}
+        {showInsertHint && (
+          <g>
+            {[3, 7, 11].map((col) => (
+              <g key={`insert-arrow-${col}`}>
+                <line
+                  x1={colX(col)}
+                  y1={BB_Y - 30}
+                  x2={colX(col)}
+                  y2={ROW_Y_LOWER[0]! - 6}
+                  stroke="#0ea5e9"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeDasharray="8 5"
+                >
+                  <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
+                </line>
+                <polygon
+                  points={`${colX(col) - 8},${ROW_Y_LOWER[0]! - 6} ${colX(col) + 8},${ROW_Y_LOWER[0]! - 6} ${colX(col)},${ROW_Y_LOWER[0]! + 8}`}
+                  fill="#0ea5e9"
+                />
+              </g>
+            ))}
+            <rect x={BB_X + BB_W / 2 - 160} y={BB_Y - 56} width="320" height="24" rx="12" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
+            <text x={BB_X + BB_W / 2} y={BB_Y - 40} textAnchor="middle" fontSize="12" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
+              Mittig drücken — beide Pin-Reihen rein
+            </text>
+          </g>
+        )}
+
+        {/* Kurze-Spalten-Highlight — markiert eine Spalte (a–e) damit der
+            Schüler sieht: alle 5 Löcher dieser Spalte sind elektrisch eins. */}
+        {showColumnHighlight && (
+          <g>
+            <rect
+              x={colX(8) - 12}
+              y={ROW_Y_UPPER[0]! - 10}
+              width="24"
+              height={ROW_Y_UPPER[4]! - ROW_Y_UPPER[0]! + 20}
+              rx="6"
+              fill="#fde68a"
+              fillOpacity="0.55"
+              stroke="#f59e0b"
+              strokeWidth="1.8"
+              strokeDasharray="5 3"
+            >
+              <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite" />
+            </rect>
+            {/* Hinweis-Pille zur Erklärung */}
+            <rect x={colX(8) - 80} y={ROW_Y_UPPER[0]! - 40} width="160" height="22" rx="11" fill="#fef3c7" stroke="#d97706" strokeWidth="1.4" />
+            <text x={colX(8)} y={ROW_Y_UPPER[0]! - 25} textAnchor="middle" fontSize="10" fontWeight="800" fill="#92400e" fontFamily="ui-monospace,monospace">
+              5 Löcher = elektrisch EINS
+            </text>
+            <line x1={colX(8)} y1={ROW_Y_UPPER[0]! - 18} x2={colX(8)} y2={ROW_Y_UPPER[0]! - 12} stroke="#d97706" strokeWidth="1.4" />
+          </g>
+        )}
 
         {/* ====================================================================
             220Ω WIDERSTAND — Reihe a, Spalte 18 → Spalte 21
@@ -439,12 +635,12 @@ export function BlinkSchematic({
             {/* Widerstandskörper — oval, beige mit Farbringen */}
             {(() => {
               const cx = (colX(RES_LEFT_COL) + colX(RES_RIGHT_COL)) / 2;
-              const cy = ROW_Y_UPPER[0]! - 14;
-              const bodyW = (colX(RES_RIGHT_COL) - colX(RES_LEFT_COL)) * 0.7;
-              const bodyH = 18;
+              const cy = ROW_Y_UPPER[0]! - 18;
+              const bodyW = (colX(RES_RIGHT_COL) - colX(RES_LEFT_COL)) * 0.75;
+              const bodyH = 24;
               const bodyX = cx - bodyW / 2;
               const bodyY = cy - bodyH / 2;
-              const ringW = 4;
+              const ringW = 5;
               return (
                 <>
                   {/* Drahtstummel innen */}
@@ -476,40 +672,41 @@ export function BlinkSchematic({
             {isOn && (
               <circle
                 cx={(colX(LED_ANODE_COL) + colX(LED_CATHODE_COL)) / 2}
-                cy={ROW_Y_UPPER[0]! - 28}
-                r="36"
+                cy={ROW_Y_UPPER[0]! - 36}
+                r="48"
                 fill="url(#led-glow)"
                 className={ledAnimation === "blink" ? "glow-on" : undefined}
               />
             )}
             {/* Beinchen (Anode lang, Kathode kurz) */}
-            <line x1={colX(LED_ANODE_COL)} y1={ROW_Y_UPPER[0]!} x2={colX(LED_ANODE_COL)} y2={ROW_Y_UPPER[0]! - 22} stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
-            <line x1={colX(LED_CATHODE_COL)} y1={ROW_Y_UPPER[0]!} x2={colX(LED_CATHODE_COL)} y2={ROW_Y_UPPER[0]! - 16} stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" />
-            <circle cx={colX(LED_ANODE_COL)} cy={ROW_Y_UPPER[0]!} r="3" fill="#94a3b8" stroke="#475569" strokeWidth="0.6" />
-            <circle cx={colX(LED_CATHODE_COL)} cy={ROW_Y_UPPER[0]!} r="3" fill="#94a3b8" stroke="#475569" strokeWidth="0.6" />
+            <line x1={colX(LED_ANODE_COL)} y1={ROW_Y_UPPER[0]!} x2={colX(LED_ANODE_COL)} y2={ROW_Y_UPPER[0]! - 28} stroke="#cbd5e1" strokeWidth="2.4" strokeLinecap="round" />
+            <line x1={colX(LED_CATHODE_COL)} y1={ROW_Y_UPPER[0]!} x2={colX(LED_CATHODE_COL)} y2={ROW_Y_UPPER[0]! - 22} stroke="#cbd5e1" strokeWidth="2.4" strokeLinecap="round" />
+            <circle cx={colX(LED_ANODE_COL)} cy={ROW_Y_UPPER[0]!} r="3.4" fill="#94a3b8" stroke="#475569" strokeWidth="0.6" />
+            <circle cx={colX(LED_CATHODE_COL)} cy={ROW_Y_UPPER[0]!} r="3.4" fill="#94a3b8" stroke="#475569" strokeWidth="0.6" />
             {/* LED-Dom */}
             {(() => {
               const cx = (colX(LED_ANODE_COL) + colX(LED_CATHODE_COL)) / 2;
-              const cy = ROW_Y_UPPER[0]! - 28;
+              const cy = ROW_Y_UPPER[0]! - 36;
               return (
                 <>
                   {/* Basis-Flansch (schwarzes Plastik unten an der LED) */}
-                  <ellipse cx={cx} cy={cy + 8} rx="14" ry="3.5" fill="#1f2937" />
+                  <ellipse cx={cx} cy={cy + 12} rx="20" ry="5" fill="#1f2937" />
                   {/* Halbkugel */}
                   <circle
                     cx={cx}
                     cy={cy}
-                    r="13"
+                    r="18"
                     fill={isOn ? "url(#led-dome)" : "#fecaca"}
                     stroke="#7f1d1d"
-                    strokeWidth="1"
+                    strokeWidth="1.4"
                     className={isOn && ledAnimation === "blink" ? "led-on" : undefined}
                   />
                   {/* Reflexion (Highlight) */}
-                  <ellipse cx={cx - 4} cy={cy - 5} rx="3" ry="5" fill="#fee2e2" opacity={isOn ? 0.85 : 0.6} />
+                  <ellipse cx={cx - 6} cy={cy - 7} rx="4" ry="6.5" fill="#fee2e2" opacity={isOn ? 0.85 : 0.55} />
                   {/* Kathode-Marker (kleines „−") */}
-                  <text x={colX(LED_CATHODE_COL) + 8} y={ROW_Y_UPPER[0]! - 30} textAnchor="start" fontSize="9" fontWeight="800" fill="#7f1d1d">−</text>
-                  <text x={colX(LED_ANODE_COL) - 8} y={ROW_Y_UPPER[0]! - 30} textAnchor="end" fontSize="9" fontWeight="800" fill="#15803d">+</text>
+                  <text x={colX(LED_CATHODE_COL) + 10} y={ROW_Y_UPPER[0]! - 40} textAnchor="start" fontSize="11" fontWeight="900" fill="#7f1d1d">−</text>
+                  <text x={colX(LED_ANODE_COL) - 10} y={ROW_Y_UPPER[0]! - 40} textAnchor="end" fontSize="11" fontWeight="900" fill="#15803d">+</text>
+                  <text x={cx} y={cy + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#7f1d1d" fontFamily="ui-monospace,monospace">LED</text>
                 </>
               );
             })()}
@@ -532,14 +729,13 @@ export function BlinkSchematic({
                      L ${colX(RES_LEFT_COL)} ${ROW_Y_UPPER[0]!}`}
               animated={buildStage === "all" && isOn}
             />
-            {/* Blaues Kabel A: LED-Kathode (Spalte 22, Reihe a) → Minus-Schiene unten */}
+            {/* Blaues Kabel A: LED-Kathode (Spalte 22, Reihe a) → senkrecht
+                runter zur Minus-Schiene Spalte 22. So sieht der Schüler die
+                Verbindung direkt — keine verwirrenden Bögen. */}
             <Wire
               color="#3b82f6"
               darkColor="#1d4ed8"
-              path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]!}
-                     L ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]! - 56}
-                     L ${colX(LED_CATHODE_COL) + 70} ${ROW_Y_UPPER[0]! - 56}
-                     L ${colX(LED_CATHODE_COL) + 70} ${MINUS_RAIL_Y + 7}`}
+              path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]!} L ${colX(LED_CATHODE_COL)} ${MINUS_RAIL_Y + 7}`}
               animated={buildStage === "all" && isOn}
             />
             {/* Blaues Kabel B: GND-Pin Spalte 14 (untere Hälfte Reihe j) → Minus-Schiene */}
@@ -553,29 +749,90 @@ export function BlinkSchematic({
           </g>
         )}
 
-        {/* Optional: Build-Stage-Pulsierende Highlights */}
+        {/* BUILD-Stage-Highlights: pulsierender Kreis + Spalten-Label, damit
+            der Schüler die Zielposition sofort findet (statt im 5er-Raster
+            zu zählen). */}
         {buildStage === 1 && (
           <g>
-            <circle cx={colX(RES_LEFT_COL)} cy={ROW_Y_UPPER[0]!} r="9" fill="#fbbf24" fillOpacity="0.5">
-              <animate attributeName="r" values="7;13;7" dur="1.4s" repeatCount="indefinite" />
-            </circle>
-            <circle cx={colX(RES_RIGHT_COL)} cy={ROW_Y_UPPER[0]!} r="9" fill="#fbbf24" fillOpacity="0.5">
-              <animate attributeName="r" values="7;13;7" dur="1.4s" repeatCount="indefinite" />
-            </circle>
+            <BuildSpotlight col={RES_LEFT_COL} colLabel="18" />
+            <BuildSpotlight col={RES_RIGHT_COL} colLabel="21" />
           </g>
         )}
         {buildStage === 2 && (
           <g>
-            <circle cx={colX(LED_ANODE_COL)} cy={ROW_Y_UPPER[0]!} r="9" fill="#fbbf24" fillOpacity="0.5">
-              <animate attributeName="r" values="7;13;7" dur="1.4s" repeatCount="indefinite" />
-            </circle>
-            <circle cx={colX(LED_CATHODE_COL)} cy={ROW_Y_UPPER[0]!} r="9" fill="#fbbf24" fillOpacity="0.5">
-              <animate attributeName="r" values="7;13;7" dur="1.4s" repeatCount="indefinite" />
-            </circle>
+            <BuildSpotlight col={LED_ANODE_COL} colLabel="21" subLabel="+ langes Bein" />
+            <BuildSpotlight col={LED_CATHODE_COL} colLabel="22" subLabel="− kurzes Bein" />
+          </g>
+        )}
+        {buildStage === 3 && (
+          <g>
+            {/* Kabel A — LED-Kathode (Spalte 22) zur Minus-Schiene */}
+            <BuildSpotlight col={LED_CATHODE_COL} colLabel="22" subLabel="Kabel A — LED zur Minus-Schiene" />
+            {/* Kabel B — GND-Pin (Spalte 2, untere Pin-Reihe) zur Minus-Schiene */}
+            <g>
+              <line x1={colX(PIN_GND_COL)} y1={BB_Y - 4} x2={colX(PIN_GND_COL)} y2={ROW_Y_LOWER[4]! + 14} stroke="#d97706" strokeWidth="1.4" strokeDasharray="3 3" />
+              <circle cx={colX(PIN_GND_COL)} cy={ROW_Y_LOWER[4]!} r="11" fill="#fbbf24" fillOpacity="0.55">
+                <animate attributeName="r" values="9;15;9" dur="1.3s" repeatCount="indefinite" />
+              </circle>
+              <circle cx={colX(PIN_GND_COL)} cy={ROW_Y_LOWER[4]!} r="5" fill="#f59e0b" stroke="#92400e" strokeWidth="0.8" />
+              <rect x={colX(PIN_GND_COL) - 36} y={BB_Y - 26} width="72" height="22" rx="6" fill="#fef3c7" stroke="#d97706" strokeWidth="1.4" />
+              <text x={colX(PIN_GND_COL)} y={BB_Y - 11} textAnchor="middle" fontSize="11" fontWeight="900" fill="#92400e" fontFamily="ui-monospace,monospace">
+                Spalte 2
+              </text>
+              <rect x={colX(PIN_GND_COL) - 54} y={ROW_Y_LOWER[4]! + 18} width="108" height="16" rx="5" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
+              <text x={colX(PIN_GND_COL)} y={ROW_Y_LOWER[4]! + 29} textAnchor="middle" fontSize="9" fontWeight="800" fill="#92400e" fontFamily="ui-monospace,monospace">
+                Kabel B — GND zur Minus-Schiene
+              </text>
+            </g>
           </g>
         )}
       </svg>
     </div>
+  );
+}
+
+/**
+ * BUILD-Step-Spotlight: pulsierender Highlight-Kreis am Ziel-Loch + eine
+ * gut sichtbare „Spalte X"-Pille im Padding über dem Brett. Damit findet
+ * der Schüler die Zielposition sofort und muss nicht im 5er-Raster zählen.
+ */
+function BuildSpotlight({
+  col,
+  colLabel,
+  subLabel,
+}: {
+  col: number;
+  colLabel: string;
+  subLabel?: string;
+}) {
+  // Wir brauchen colX + ROW_Y_UPPER + BB_Y aus dem Modul-Scope.
+  // (Die Funktion wird innerhalb von BlinkSchematic gerendert.)
+  const cx = BB_COL_X0 + col * BB_COL_DX;
+  const cy = ROW_Y_UPPER[0]!;
+  return (
+    <g>
+      {/* Verbindungslinie von der Pille zum Highlight */}
+      <line x1={cx} y1={BB_Y - 4} x2={cx} y2={cy - 14} stroke="#d97706" strokeWidth="1.4" strokeDasharray="3 3" />
+      {/* Pulsierender gelber Highlight-Kreis am Loch */}
+      <circle cx={cx} cy={cy} r="11" fill="#fbbf24" fillOpacity="0.55">
+        <animate attributeName="r" values="9;15;9" dur="1.3s" repeatCount="indefinite" />
+      </circle>
+      <circle cx={cx} cy={cy} r="5" fill="#f59e0b" stroke="#92400e" strokeWidth="0.8" />
+      {/* Spalten-Label-Pille im Padding oberhalb des Bretts */}
+      <rect x={cx - 36} y={BB_Y - 26} width="72" height="22" rx="6" fill="#fef3c7" stroke="#d97706" strokeWidth="1.4" />
+      <text x={cx} y={BB_Y - 11} textAnchor="middle" fontSize="11" fontWeight="900" fill="#92400e" fontFamily="ui-monospace,monospace">
+        Spalte {colLabel}
+      </text>
+      {/* Optionaler Sub-Text (z.B. „+ langes Bein") */}
+      {subLabel && (
+        <g>
+          <rect x={cx - 44} y={cy + 14} width="88" height="16" rx="5" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
+          <text x={cx} y={cy + 25} textAnchor="middle" fontSize="9" fontWeight="800" fill="#92400e" fontFamily="ui-monospace,monospace">
+            {subLabel}
+          </text>
+        </g>
+      )}
+    </g>
   );
 }
 
