@@ -495,11 +495,31 @@ model Lesson {
   // Stempel dürfen im Frontend einen „In Überarbeitung"-Hinweis tragen.
   verifiedOnHardwareAt DateTime?
   verifiedOnHardwareBy String?   // User-ID der Lehrkraft/Admin
+  // Strukturierte 6-Punkt-Checkliste { bom, schematic, codeCompiles, flashOk, expectedResult, quizAnswers, notes? }
+  verificationChecklist Json?
+  verifications LessonVerification[]
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Audit-Trail einer Hardware-Verifikation. Jeder Re-Audit erzeugt einen
+// neuen Eintrag — die aktuelle Verifikation lebt direkt auf Lesson, hier
+// liegt die Historie + Rohdaten der Checkliste.
+model LessonVerification {
+  id        String   @id @default(cuid())
+  lessonId  String
+  verifiedBy String  // User-ID
+  verifiedAt DateTime @default(now())
+  // { bom: bool, schematic: bool, codeCompiles: bool, flashOk: bool, expectedResult: bool, quizAnswers: bool, notes?: string }
+  checklist Json
+  passed    Boolean  @default(true)
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId, verifiedAt])
 }
 
 // One step within a lesson. Drives the Step-Player UI.

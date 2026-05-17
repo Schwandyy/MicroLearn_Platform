@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Users,
   ArrowRight,
+  Cpu,
 } from "lucide-react";
 
 export default async function AdminHomePage({
@@ -26,21 +27,40 @@ export default async function AdminHomePage({
   setRequestLocale(locale);
   await requireAdmin();
 
-  const [pendingReviews, totalProjects, recentComments, totalUsers] =
-    await Promise.all([
-      prisma.contentReview.count({
-        where: { status: { in: ["PENDING", "AI_FLAGGED", "IN_REVIEW"] } },
-      }),
-      prisma.project.count(),
-      prisma.comment.count({
-        where: {
-          createdAt: { gte: new Date(Date.now() - 7 * 86400_000) },
-        },
-      }),
-      prisma.user.count(),
-    ]);
+  const [
+    pendingReviews,
+    totalProjects,
+    recentComments,
+    totalUsers,
+    lessonsTotal,
+    lessonsVerified,
+  ] = await Promise.all([
+    prisma.contentReview.count({
+      where: { status: { in: ["PENDING", "AI_FLAGGED", "IN_REVIEW"] } },
+    }),
+    prisma.project.count(),
+    prisma.comment.count({
+      where: {
+        createdAt: { gte: new Date(Date.now() - 7 * 86400_000) },
+      },
+    }),
+    prisma.user.count(),
+    prisma.lesson.count({ where: { isPublished: true } }),
+    prisma.lesson.count({
+      where: { isPublished: true, verifiedOnHardwareAt: { not: null } },
+    }),
+  ]);
+  const lessonsUnverified = lessonsTotal - lessonsVerified;
 
   const tiles = [
+    {
+      title: "Hardware-Verifikation",
+      desc: "QA-Cockpit: jede Lesson einmal physisch nachbauen. Banner verschwindet bei 6/6 ✅.",
+      href: "/admin/hardware-verification",
+      icon: Cpu,
+      value: lessonsUnverified,
+      label: `von ${lessonsTotal} offen`,
+    },
     {
       title: "Content-Reviews",
       desc: "Geprüfte Lessons aus dem Scrape-Pipeline-Workflow.",
@@ -83,7 +103,7 @@ export default async function AdminHomePage({
           Moderation, Inhalte, Nutzerverwaltung.
         </p>
       </header>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {tiles.map((t) => {
           const Icon = t.icon;
           return (
