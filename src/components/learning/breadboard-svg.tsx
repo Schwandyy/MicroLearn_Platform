@@ -16,11 +16,17 @@ interface BreadboardProps {
    */
   buildStage?: 1 | 2 | 3 | "all";
   /**
-   * Erklär-Modus: zeigt zusätzliche Beschriftungen für die Strom-Schienen
-   * (rote Schiene = +, blaue Schiene = −) sowie eine markierte „verbundene
-   * Reihe", damit Anfänger die Brett-Logik visuell verstehen.
+   * Erklär-Modus: markiert eine kurze Spalte als „verbunden", zeigt
+   * Pin-Position-Labels (3V3, GPIO 2, GND) und blendet die Schaltung
+   * (Widerstand/LED/Kabel) AUS — der Schüler soll erst die Brett-Logik
+   * verstehen, bevor Bauteile dazukommen.
    */
   explainerMode?: boolean;
+  /**
+   * `false` = Schaltbestandteile (Widerstand, LED, Kabel) werden NICHT
+   * gerendert. Default `true`. EXPLAIN-Steps setzen das auf false.
+   */
+  showCircuit?: boolean;
   className?: string;
 }
 
@@ -69,8 +75,12 @@ export function Breadboard({
   highlightWires = [],
   buildStage = "all",
   explainerMode = false,
+  showCircuit,
   className,
 }: BreadboardProps) {
+  // EXPLAIN-Modus blendet die Schaltung defaultmäßig aus — User soll erst
+  // die Breadboard-Logik verstehen, nicht durch Bauteile abgelenkt werden.
+  const renderCircuit = showCircuit ?? !explainerMode;
   const led = COLOR_MAP[ledColor]!;
   const isOn = ledOn && ledAnimation !== "off";
 
@@ -139,23 +149,38 @@ export function Breadboard({
         {/* Steckbrett-Korpus */}
         <rect x="14" y="60" width={totalWidth - 28} height="220" rx="10" fill="#fef9e7" stroke="#facc15" strokeWidth="1.5" />
 
-        {/* Plus-Schiene (rot) */}
+        {/* Plus-Schiene (rot) — Beschriftung nur an den Rändern, damit
+            sie nicht mit den Bauteilen in der Mitte kollidiert. */}
         <rect x="22" y="68" width={totalWidth - 44} height="14" rx="3" fill="#fee2e2" />
         <line x1="22" y1="75" x2={totalWidth - 22} y2="75" stroke="#dc2626" strokeWidth="1.5" />
         <text x="16" y="79" textAnchor="end" fontSize="14" fontWeight="800" fill="#dc2626">+</text>
         <text x={totalWidth - 16} y="79" textAnchor="start" fontSize="14" fontWeight="800" fill="#dc2626">+</text>
-        <text x={totalWidth / 2} y="78" textAnchor="middle" fontSize="9" fontWeight="700" fill="#dc2626" letterSpacing="1">
-          PLUS-SCHIENE (+)
-        </text>
+        {explainerMode && (
+          <>
+            <text x="48" y="79" textAnchor="start" fontSize="8" fontWeight="700" fill="#dc2626" letterSpacing="0.5">
+              Plus
+            </text>
+            <text x={totalWidth - 48} y="79" textAnchor="end" fontSize="8" fontWeight="700" fill="#dc2626" letterSpacing="0.5">
+              Plus
+            </text>
+          </>
+        )}
 
         {/* Minus-Schiene (blau) */}
         <rect x="22" y="258" width={totalWidth - 44} height="14" rx="3" fill="#dbeafe" />
         <line x1="22" y1="265" x2={totalWidth - 22} y2="265" stroke="#2563eb" strokeWidth="1.5" />
         <text x="16" y="269" textAnchor="end" fontSize="14" fontWeight="800" fill="#2563eb">−</text>
         <text x={totalWidth - 16} y="269" textAnchor="start" fontSize="14" fontWeight="800" fill="#2563eb">−</text>
-        <text x={totalWidth / 2} y="268" textAnchor="middle" fontSize="9" fontWeight="700" fill="#2563eb" letterSpacing="1">
-          MINUS-SCHIENE (−)
-        </text>
+        {explainerMode && (
+          <>
+            <text x="48" y="269" textAnchor="start" fontSize="8" fontWeight="700" fill="#2563eb" letterSpacing="0.5">
+              Minus
+            </text>
+            <text x={totalWidth - 48} y="269" textAnchor="end" fontSize="8" fontWeight="700" fill="#2563eb" letterSpacing="0.5">
+              Minus
+            </text>
+          </>
+        )}
 
         {/* Punkte der Plus-/Minus-Schienen */}
         {Array.from({ length: NUM_COLS }).map((_, col) => (
@@ -296,75 +321,80 @@ export function Breadboard({
           </text>
         </g>
 
-        {/* Wichtige Pin-Labels — über/unter dem ESP32-Body, damit man sieht,
-            an welcher Spalte welcher Pin sitzt. Die ganze Spalte ist mit
-            dem Pin elektrisch verbunden (typische Breadboard-Logik). */}
-        {/* 3V3 (links, Reihe e — wir labeln oben) */}
-        <g>
-          <text
-            x={colX(PIN_3V3_COL)}
-            y={UPPER_ROWS_Y[4]! - 10}
-            textAnchor="middle"
-            fontSize="9"
-            fontWeight="800"
-            fill="#fca5a5"
-            fontFamily="ui-monospace,monospace"
-          >
-            3V3
-          </text>
-          <line
-            x1={colX(PIN_3V3_COL)}
-            y1={UPPER_ROWS_Y[4]! - 7}
-            x2={colX(PIN_3V3_COL)}
-            y2={UPPER_ROWS_Y[4]! - 1}
-            stroke="#fca5a5"
-            strokeWidth="1"
-          />
-        </g>
-        {/* GPIO 2 (oberer Pin auf Reihe e, Spalte 4 — Highlight wenn das Signal aktiv) */}
-        <g>
-          <text
-            x={colX(PIN_GPIO2_COL)}
-            y={UPPER_ROWS_Y[4]! - 10}
-            textAnchor="middle"
-            fontSize="9"
-            fontWeight="800"
-            fill={isActive(vis.wireSignal) || highlightWires.includes("signal") ? "#86efac" : "#86efac"}
-            fontFamily="ui-monospace,monospace"
-          >
-            GPIO 2
-          </text>
-          <line
-            x1={colX(PIN_GPIO2_COL)}
-            y1={UPPER_ROWS_Y[4]! - 7}
-            x2={colX(PIN_GPIO2_COL)}
-            y2={UPPER_ROWS_Y[4]! - 1}
-            stroke="#86efac"
-            strokeWidth="1"
-          />
-        </g>
-        {/* GND (rechter Bereich, Reihe f — Label unter dem ESP32-Body) */}
-        <g>
-          <text
-            x={colX(PIN_GND_COL)}
-            y={LOWER_ROWS_Y[0]! + 16}
-            textAnchor="middle"
-            fontSize="9"
-            fontWeight="800"
-            fill="#93c5fd"
-            fontFamily="ui-monospace,monospace"
-          >
-            GND
-          </text>
-          <line
-            x1={colX(PIN_GND_COL)}
-            y1={LOWER_ROWS_Y[0]! + 1}
-            x2={colX(PIN_GND_COL)}
-            y2={LOWER_ROWS_Y[0]! + 7}
-            stroke="#93c5fd"
-            strokeWidth="1"
-          />
-        </g>
+        {/* Pin-Position-Hinweise — nur im EXPLAIN-Modus, damit BUILD-Steps
+            nicht durch sich überlagernde Beschriftungen unleserlich werden.
+            In BUILD/SIMULATE führt der Body-Text + Highlight zu den richtigen
+            Spalten; mehr Labels verwirren mehr als sie helfen. */}
+        {explainerMode && (
+          <g>
+            {/* 3V3 — kleines Label unten am ESP32-Body bei Spalte 1 */}
+            <g>
+              <line
+                x1={colX(PIN_3V3_COL)}
+                y1={CHANNEL_Y - 6}
+                x2={colX(PIN_3V3_COL)}
+                y2={CHANNEL_Y + 6}
+                stroke="#fca5a5"
+                strokeWidth="1.4"
+              />
+              <text
+                x={colX(PIN_3V3_COL)}
+                y={LOWER_ROWS_Y[0]! + 18}
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight="800"
+                fill="#dc2626"
+                fontFamily="ui-monospace,monospace"
+              >
+                3V3
+              </text>
+            </g>
+            {/* GPIO 2 — kleines Label unten am ESP32-Body bei Spalte 4 */}
+            <g>
+              <line
+                x1={colX(PIN_GPIO2_COL)}
+                y1={CHANNEL_Y - 6}
+                x2={colX(PIN_GPIO2_COL)}
+                y2={CHANNEL_Y + 6}
+                stroke="#86efac"
+                strokeWidth="1.4"
+              />
+              <text
+                x={colX(PIN_GPIO2_COL)}
+                y={LOWER_ROWS_Y[0]! + 18}
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight="800"
+                fill="#15803d"
+                fontFamily="ui-monospace,monospace"
+              >
+                GPIO 2
+              </text>
+            </g>
+            {/* GND — kleines Label unten am ESP32-Body bei Spalte 14 */}
+            <g>
+              <line
+                x1={colX(PIN_GND_COL)}
+                y1={CHANNEL_Y - 6}
+                x2={colX(PIN_GND_COL)}
+                y2={CHANNEL_Y + 6}
+                stroke="#93c5fd"
+                strokeWidth="1.4"
+              />
+              <text
+                x={colX(PIN_GND_COL)}
+                y={LOWER_ROWS_Y[0]! + 18}
+                textAnchor="middle"
+                fontSize="9"
+                fontWeight="800"
+                fill="#1d4ed8"
+                fontFamily="ui-monospace,monospace"
+              >
+                GND
+              </text>
+            </g>
+          </g>
+        )}
 
         {/* Erklär-Modus: eine kurze 5-Loch-Spalte visuell hervorheben */}
         {explainerMode && (
@@ -391,7 +421,9 @@ export function Breadboard({
           </g>
         )}
 
-        {/* ====== Verkabelung ====== */}
+        {/* ====== Verkabelung + Bauteile — nur wenn renderCircuit=true ====== */}
+        {renderCircuit && (
+          <>
 
         {/* Grünes Signal-Kabel: Spalte 4 Reihe a (= GPIO 2) → Spalte 5 Reihe a (linkes Widerstandsbein) */}
         <path
@@ -572,6 +604,8 @@ export function Breadboard({
             <circle cx={colX(PIN_GND_COL)} cy={265} r="8" fill="#fbbf24" fillOpacity="0.45">
               <animate attributeName="r" values="6;11;6" dur="1.4s" repeatCount="indefinite" />
             </circle>
+          </>
+        )}
           </>
         )}
       </svg>
