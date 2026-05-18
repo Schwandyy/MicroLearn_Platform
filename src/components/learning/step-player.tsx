@@ -26,8 +26,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Breadboard } from "./breadboard-svg";
 import { BlinkSchematic } from "./blink-schematic";
-import { BoardVariantProvider } from "./board-variant-context";
+import { BoardVariantProvider, useBoardVariant } from "./board-variant-context";
 import { BoardPicker } from "./board-picker";
+import { applyLessonTemplate, applyLessonTemplateDeep, makeLessonContext } from "@/lib/lesson-template";
 import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
@@ -253,7 +254,7 @@ export function StepPlayer({
 }
 
 function StepBody({
-  step,
+  step: rawStep,
   lessonTitle,
   lessonSummary,
   bom,
@@ -276,6 +277,18 @@ function StepBody({
   onQuizPass: () => void;
 }) {
   const t = useTranslations("lesson");
+  const { signalPinLabel } = useBoardVariant();
+  // Step-Texte + Payload werden mit den Platzhaltern {{SIGNAL_LABEL}} und
+  // {{SIGNAL_GPIO}} versehen, die beim Render gegen den aktuell gewählten
+  // Signal-Pin (default D2) ersetzt werden. So zeigen Step-Body, Code-Walk
+  // und Quiz live die richtige GPIO-Nummer/Label.
+  const tpl = makeLessonContext(signalPinLabel);
+  const step: StepView = {
+    ...rawStep,
+    title: applyLessonTemplate(rawStep.title, tpl),
+    body: applyLessonTemplate(rawStep.body, tpl),
+    payload: rawStep.payload ? applyLessonTemplateDeep(rawStep.payload, tpl) : null,
+  };
   const payload = step.payload ?? {};
 
   switch (step.kind) {

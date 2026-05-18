@@ -56,7 +56,7 @@ export function BlinkSchematic({
   mode = "build",
   className,
 }: BlinkSchematicProps) {
-  const { variant } = useBoardVariant();
+  const { variant, signalPinLabel } = useBoardVariant();
   const stageNum = buildStage === "all" ? 99 : buildStage;
   const isBuildMode = mode === "build";
   const showResistor = isBuildMode && stageNum >= 1;
@@ -64,19 +64,35 @@ export function BlinkSchematic({
   const showWires = isBuildMode && stageNum >= 3;
   const isOn = (ledOn || buildStage === "all") && ledAnimation !== "off" && isBuildMode;
 
-  // Pin-Positionen aus der gewählten Variante. Bei 38-Pin: D2 north Spalte 13,
-  // GND south Spalte 14. Bei 30-Pin: D2 north Spalte 4, GND south Spalte 14
-  // (= "GND" auf SOUTH-Index 13 in 30-Pin Layout).
-  const pinD2Col = findPinCol(variant, "north", "D2");
+  // Pin-Positionen aus der gewählten Variante. Signal-Pin (default D2)
+  // ist vom User pro Lesson wählbar — siehe Esp32PinVisual.
+  // Signal-Pin liegt auf der NORTH-Seite, GND auf SOUTH (kürzester Weg).
+  // Falls Pin nicht auf der NORTH-Seite ist (z.B. exotischer Pin), nehmen
+  // wir D2 als Fallback.
+  let signalPinCol = findPinCol(variant, "north", signalPinLabel);
+  let signalSide: "north" | "south" = "north";
+  if (signalPinCol < 0) {
+    signalPinCol = findPinCol(variant, "south", signalPinLabel);
+    signalSide = "south";
+  }
+  if (signalPinCol < 0) {
+    signalPinCol = findPinCol(variant, "north", "D2");
+    signalSide = "north";
+  }
+  const signalPinY = signalSide === "north" ? getPinY(variant, "north") : getPinY(variant, "south");
+
   const pinGndCol = findPinCol(variant, "south", "GND");
-  const pin3v3Col = findPinCol(variant, "south", "3V3"); // nur Pin-Rand farbig
-  const pinD2Y = getPinY(variant, "north");
+  const pin3v3Col = findPinCol(variant, "south", "3V3");
   const pinGndY = getPinY(variant, "south");
+
+  // GPIO-Nummer aus Label (z.B. "D4" → 4); für den Callout-Titel
+  const signalGpioMatch = signalPinLabel.match(/D(\d+)/);
+  const signalGpioNum = signalGpioMatch ? signalGpioMatch[1] : "?";
 
   const activePins: ActivePin[] = [
     ...(pin3v3Col >= 0 ? [{ col: pin3v3Col, side: "south" as const, tone: "power3v3" as const }] : []),
-    ...(pinD2Col >= 0
-      ? [{ col: pinD2Col, side: "north" as const, tone: "signal" as const, callout: { title: "GPIO 2", subtitle: "Signal-Pin" } }]
+    ...(signalPinCol >= 0
+      ? [{ col: signalPinCol, side: signalSide, tone: "signal" as const, callout: { title: `GPIO ${signalGpioNum}`, subtitle: "Signal-Pin" } }]
       : []),
     ...(pinGndCol >= 0
       ? [{ col: pinGndCol, side: "south" as const, tone: "ground" as const, callout: { title: "GND", subtitle: "Masse / Minus" } }]
@@ -109,19 +125,18 @@ export function BlinkSchematic({
       )}
 
       {/* Drähte */}
-      {showWires && pinD2Col >= 0 && pinGndCol >= 0 && (
+      {showWires && signalPinCol >= 0 && pinGndCol >= 0 && (
         <g>
-          {/* Grün-Signal: GPIO 2 (north-Pin) — F2M-Bridge OBEN ÜBER das Brett
-              zur Widerstand-links-Spalte (Reihe a). */}
+          {/* Grün-Signal: aktuell gewählter Pin (z.B. D2, D4 …) → Widerstand */}
           <Wire
             {...WIRE_COLORS.signalGreen}
-            path={`M ${colX(pinD2Col)} ${pinD2Y}
-                   L ${colX(pinD2Col)} ${WIRE_BRIDGE_Y_TOP}
+            path={`M ${colX(signalPinCol)} ${signalPinY}
+                   L ${colX(signalPinCol)} ${WIRE_BRIDGE_Y_TOP}
                    L ${colX(RES_LEFT_COL)} ${WIRE_BRIDGE_Y_TOP}
                    L ${colX(RES_LEFT_COL)} ${ROW_Y_UPPER[0]}`}
             animated={buildStage === "all" && isOn}
           />
-          {/* Blau A: LED-Kathode (Reihe a) — Bridge nach UNTEN zur Minus-Schiene */}
+          {/* Blau A: LED-Kathode (Reihe a) → Minus-Schiene (Bridge unten) */}
           <Wire
             {...WIRE_COLORS.ground}
             path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]}
@@ -129,7 +144,7 @@ export function BlinkSchematic({
                    L ${colX(LED_CATHODE_COL)} ${MINUS_RAIL_Y + 7}`}
             animated={buildStage === "all" && isOn}
           />
-          {/* Blau B: GND-Pin (south-Pin) — senkrecht zur Minus-Schiene */}
+          {/* Blau B: GND-Pin → Minus-Schiene */}
           <Wire
             {...WIRE_COLORS.ground}
             path={`M ${colX(pinGndCol)} ${pinGndY}

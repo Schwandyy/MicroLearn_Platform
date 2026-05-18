@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useBoardVariant } from "./board-variant-context";
+import { isSelectablePin, useBoardVariant } from "./board-variant-context";
 import { getGpioForLabel } from "./wiring";
 
 interface Esp32PinVisualProps {
@@ -13,30 +13,23 @@ const TOP_Y = 70;
 const PIN_DY = 22;
 
 /**
- * Vertikales ESP32-Pinout-Diagramm (USB oben). Pin-Belegung kommt aus dem
- * BoardVariant-Context — der Renderer wechselt automatisch zwischen 30-Pin
- * und 38-Pin Layout, sobald der User im BoardPicker umstellt.
- *
- * Pin-Mapping in USB-OBEN-Sicht (vertikales Diagramm):
- *   • LEFT-Spalte (oben→unten) = variant.southLabels
- *     (südliche Brett-Seite = ESP-Seite weg vom USB-Anschluss)
- *   • RIGHT-Spalte (oben→unten) = variant.northLabels
- *
- * Beide Reihenfolgen kommen aus der USB-LINKS-Renderer-Sicht — bei 90°-
- * Rotation in USB-OBEN-Sicht entspricht:
- *   USB-LINKS-NORTH  →  USB-OBEN-RIGHT (links→rechts in NORTH = oben→unten in RIGHT)
- *   USB-LINKS-SOUTH  →  USB-OBEN-LEFT
+ * Vertikales ESP32-Pinout-Diagramm (USB oben). Pins sind KLICKBAR — User
+ * wählt den Signal-Pin für die Lesson (default D2). Selected Pin wird in
+ * Context + LocalStorage gespeichert; BlinkSchematic + Step-Texte
+ * adaptieren sich live.
  */
 export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps) {
-  const { variant } = useBoardVariant();
+  const { variant, signalPinLabel, setSignalPinLabel } = useBoardVariant();
   const leftPins = variant.southLabels;
   const rightPins = variant.northLabels;
   const pcbHeight = TOP_Y + variant.pinCount * PIN_DY + 30;
 
+  // Wenn der highlightPin-Prop "GPIO2" ist, wird der AKTUELL GEWÄHLTE
+  // Signal-Pin highlighted (initial D2, aber bei Klick z.B. D4).
   const isHighlighted = (label: string): boolean => {
     if (!highlightPin) return false;
+    if (highlightPin === "GPIO2") return label === signalPinLabel;
     if (label === highlightPin) return true;
-    if (highlightPin === "GPIO2" && getGpioForLabel(label) === 2) return true;
     return false;
   };
 
@@ -128,71 +121,120 @@ export function Esp32PinVisual({ highlightPin, className }: Esp32PinVisualProps)
           );
         })()}
 
-        {/* Pin-Labels links — Index aus variant.southLabels */}
-        {leftPins.map((label, i) => {
-          const y = TOP_Y + i * PIN_DY;
-          const hl = isHighlighted(label);
-          return (
-            <g key={`l-${i}-${label}`}>
-              {hl && (
-                <rect x="68" y={y - 5} width="14" height="10" rx="1" fill="#fbbf24" stroke="#b45309" strokeWidth="1.4" />
-              )}
-              <text
-                x="62"
-                y={y + 3}
-                textAnchor="end"
-                fontSize="9"
-                fontWeight={hl ? "800" : "600"}
-                fill={hl ? "#b45309" : "#cbd5e1"}
-                fontFamily="ui-monospace,monospace"
-              >
-                {label}
-              </text>
-              {hl && (
-                <circle cx="75" cy={y} r="14" fill="#fbbf24" fillOpacity="0.25">
-                  <animate attributeName="r" values="10;18;10" dur="1.6s" repeatCount="indefinite" />
-                  <animate attributeName="fill-opacity" values="0.4;0.05;0.4" dur="1.6s" repeatCount="indefinite" />
-                </circle>
-              )}
-            </g>
-          );
-        })}
-
-        {/* Pin-Labels rechts — Index aus variant.northLabels */}
-        {rightPins.map((label, i) => {
-          const y = TOP_Y + i * PIN_DY;
-          const hl = isHighlighted(label);
-          return (
-            <g key={`r-${i}-${label}`}>
-              {hl && (
-                <rect x="278" y={y - 5} width="14" height="10" rx="1" fill="#fbbf24" stroke="#b45309" strokeWidth="1.4" />
-              )}
-              <text
-                x="298"
-                y={y + 3}
-                textAnchor="start"
-                fontSize="9"
-                fontWeight={hl ? "800" : "600"}
-                fill={hl ? "#b45309" : "#cbd5e1"}
-                fontFamily="ui-monospace,monospace"
-              >
-                {label}
-              </text>
-              {hl && (
-                <>
-                  <circle cx="285" cy={y} r="14" fill="#fbbf24" fillOpacity="0.25">
-                    <animate attributeName="r" values="10;18;10" dur="1.6s" repeatCount="indefinite" />
-                  </circle>
-                  <g transform={`translate(330, ${y})`}>
-                    <text x="0" y="4" fontSize="13" fill="#b45309" fontWeight="800">←</text>
-                    <text x="0" y="-10" fontSize="10" fill="#b45309" fontWeight="800">hier!</text>
-                  </g>
-                </>
-              )}
-            </g>
-          );
-        })}
+        {/* Pin-Labels links + rechts — KLICKBAR für Output-fähige GPIOs (z.B.
+            D4, D5, D12 …). Klick wechselt den aktuellen signalPin, BlinkSchematic
+            adaptiert sich live. */}
+        {leftPins.map((label, i) => (
+          <PinRow
+            key={`l-${i}-${label}`}
+            label={label}
+            y={TOP_Y + i * PIN_DY}
+            side="left"
+            highlighted={isHighlighted(label)}
+            isSelectable={isSelectablePin(label)}
+            onSelect={() => setSignalPinLabel(label)}
+          />
+        ))}
+        {rightPins.map((label, i) => (
+          <PinRow
+            key={`r-${i}-${label}`}
+            label={label}
+            y={TOP_Y + i * PIN_DY}
+            side="right"
+            highlighted={isHighlighted(label)}
+            isSelectable={isSelectablePin(label)}
+            onSelect={() => setSignalPinLabel(label)}
+          />
+        ))}
       </svg>
+      {highlightPin === "GPIO2" && (
+        <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-200">
+          <span className="font-bold">Tipp:</span>{" "}
+          <span className="font-mono font-bold">{signalPinLabel}</span> ist aktuell
+          gewählt. Du kannst auf jeden anderen <span className="font-mono">D…</span>-Pin
+          klicken (z.B. D4, D5, D12), dann nutzt die Lesson diesen statt D2.
+        </p>
+      )}
     </div>
+  );
+}
+
+interface PinRowProps {
+  label: string;
+  y: number;
+  side: "left" | "right";
+  highlighted: boolean;
+  isSelectable: boolean;
+  onSelect: () => void;
+}
+
+/**
+ * Ein klickbarer Pin (Header + Label + Highlight). Bei Output-fähigen GPIOs
+ * gibt es Hover- und Klick-Feedback; bei Power/Flash-Pins ist der Pin nur
+ * Anzeige (kein Cursor-Pointer).
+ */
+function PinRow({ label, y, side, highlighted, isSelectable, onSelect }: PinRowProps) {
+  const labelX = side === "left" ? 62 : 298;
+  const headerX = side === "left" ? 68 : 278;
+  // Click-Hit-Box: deckt Header + Label ab
+  const hitX = side === "left" ? 0 : 280;
+  const hitW = 80;
+  return (
+    <g
+      onClick={isSelectable ? onSelect : undefined}
+      className={cn(
+        "transition-opacity",
+        isSelectable && "cursor-pointer hover:opacity-100",
+      )}
+      style={{ pointerEvents: isSelectable ? "auto" : "none" }}
+    >
+      {/* Klick-Hit-Box (unsichtbar, breiter als Header+Label) */}
+      {isSelectable && (
+        <rect x={hitX} y={y - 10} width={hitW} height="20" fill="transparent" />
+      )}
+      {/* Hover-Outline um den Pin (CSS hover auf parent group) */}
+      {isSelectable && (
+        <rect
+          x={headerX - 1}
+          y={y - 6}
+          width="16"
+          height="12"
+          rx="1.2"
+          fill="none"
+          stroke="#0ea5e9"
+          strokeWidth="0"
+          className="hover:[stroke-width:1.5] group-hover:[stroke-width:1.5]"
+        />
+      )}
+      {/* Highlight-Background hinter dem Header bei selected */}
+      {highlighted && (
+        <rect x={headerX} y={y - 5} width="14" height="10" rx="1" fill="#fbbf24" stroke="#b45309" strokeWidth="1.4" />
+      )}
+      <text
+        x={labelX}
+        y={y + 3}
+        textAnchor={side === "left" ? "end" : "start"}
+        fontSize="9"
+        fontWeight={highlighted ? "800" : "600"}
+        fill={highlighted ? "#b45309" : isSelectable ? "#e2e8f0" : "#94a3b8"}
+        fontFamily="ui-monospace,monospace"
+      >
+        {label}
+      </text>
+      {/* Pulsing-Ring nur bei selected */}
+      {highlighted && (
+        <circle cx={side === "left" ? 75 : 285} cy={y} r="14" fill="#fbbf24" fillOpacity="0.25">
+          <animate attributeName="r" values="10;18;10" dur="1.6s" repeatCount="indefinite" />
+          <animate attributeName="fill-opacity" values="0.4;0.05;0.4" dur="1.6s" repeatCount="indefinite" />
+        </circle>
+      )}
+      {/* "hier!"-Pfeil nur für selected RIGHT-Pin */}
+      {highlighted && side === "right" && (
+        <g transform={`translate(330, ${y})`}>
+          <text x="0" y="4" fontSize="13" fill="#b45309" fontWeight="800">←</text>
+          <text x="0" y="-10" fontSize="10" fill="#b45309" fontWeight="800">hier!</text>
+        </g>
+      )}
+    </g>
   );
 }
