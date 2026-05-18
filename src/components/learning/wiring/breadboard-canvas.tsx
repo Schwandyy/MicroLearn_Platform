@@ -77,8 +77,12 @@ export function BreadboardCanvas({
   const showEsp = mode !== "boardOnly" && mode !== "boardWithHighlight";
   const showInsertHint = mode === "insertHint";
   const showColumnHighlight = mode === "boardWithHighlight";
-  const espInsertOffset = showInsertHint ? -160 : 0;
-  const extraTopPad = showInsertHint ? 200 : 0;
+  // Im insertHint-Mode schwebt der ESP komplett OBERHALB des Bretts (Offset
+  // so groß, dass ESP-Body-Bottom etwa 20 SVG-Units über Brett-Top liegt).
+  // ESP-Body geht von ESP_BODY_Y=192 bis ESP_BODY_Y+ESP_BODY_H=426; mit
+  // offset -310 liegt das visible Body von y=-118 bis y=116 — über Brett.
+  const espInsertOffset = showInsertHint ? -310 : 0;
+  const extraTopPad = showInsertHint ? 260 : 0;
 
   // Pin-Coloring je Seite
   const northActive = new Map<number, ActivePin>();
@@ -133,25 +137,32 @@ export function BreadboardCanvas({
           <rect x={BB_X + 2} y={BB_Y + 2} width={BB_W - 4} height={BB_H - 4} rx="5" fill="none" stroke="#e5e7eb" strokeWidth="1" opacity="0.7" />
         </g>
 
-        {/* Plus-Schiene */}
+        {/* Plus-Schiene — zwei Loch-Reihen + rote Linie zwischen ihnen
+            (wie auf echtem MB-102: pro Schiene 2 parallele Loch-Reihen) */}
         <g>
-          <rect x={BB_X + 10} y={PLUS_RAIL_Y - 4} width={BB_W - 20} height="22" rx="2" fill="#fffaf0" />
-          <line x1={BB_X + 10} y1={PLUS_RAIL_Y + 7} x2={BB_X + BB_W - 10} y2={PLUS_RAIL_Y + 7} stroke="#dc2626" strokeWidth="2" />
-          <text x={BB_X + 18} y={PLUS_RAIL_Y + 12} textAnchor="start" fontSize="14" fontWeight="900" fill="#dc2626">+</text>
-          <text x={BB_X + BB_W - 18} y={PLUS_RAIL_Y + 12} textAnchor="end" fontSize="14" fontWeight="900" fill="#dc2626">+</text>
+          <rect x={BB_X + 10} y={PLUS_RAIL_Y - 12} width={BB_W - 20} height="28" rx="2" fill="#fffaf0" />
+          <line x1={BB_X + 10} y1={PLUS_RAIL_Y} x2={BB_X + BB_W - 10} y2={PLUS_RAIL_Y} stroke="#dc2626" strokeWidth="2" />
+          <text x={BB_X + 18} y={PLUS_RAIL_Y + 4} textAnchor="start" fontSize="14" fontWeight="900" fill="#dc2626">+</text>
+          <text x={BB_X + BB_W - 18} y={PLUS_RAIL_Y + 4} textAnchor="end" fontSize="14" fontWeight="900" fill="#dc2626">+</text>
           {Array.from({ length: BB_COLS }).map((_, c) => (
-            <circle key={`pls-${c}`} cx={colX(c)} cy={PLUS_RAIL_Y + 7} r="2.8" fill="#1f2937" opacity="0.45" />
+            <g key={`pls-${c}`}>
+              <circle cx={colX(c)} cy={PLUS_RAIL_Y - 7} r="2.8" fill="#1f2937" opacity="0.45" />
+              <circle cx={colX(c)} cy={PLUS_RAIL_Y + 7} r="2.8" fill="#1f2937" opacity="0.45" />
+            </g>
           ))}
         </g>
 
-        {/* Minus-Schiene */}
+        {/* Minus-Schiene — zwei Loch-Reihen + blaue Linie zwischen ihnen */}
         <g>
-          <rect x={BB_X + 10} y={MINUS_RAIL_Y - 4} width={BB_W - 20} height="22" rx="2" fill="#f0f9ff" />
-          <line x1={BB_X + 10} y1={MINUS_RAIL_Y + 7} x2={BB_X + BB_W - 10} y2={MINUS_RAIL_Y + 7} stroke="#2563eb" strokeWidth="2" />
-          <text x={BB_X + 18} y={MINUS_RAIL_Y + 12} textAnchor="start" fontSize="14" fontWeight="900" fill="#2563eb">−</text>
-          <text x={BB_X + BB_W - 18} y={MINUS_RAIL_Y + 12} textAnchor="end" fontSize="14" fontWeight="900" fill="#2563eb">−</text>
+          <rect x={BB_X + 10} y={MINUS_RAIL_Y - 12} width={BB_W - 20} height="28" rx="2" fill="#f0f9ff" />
+          <line x1={BB_X + 10} y1={MINUS_RAIL_Y} x2={BB_X + BB_W - 10} y2={MINUS_RAIL_Y} stroke="#2563eb" strokeWidth="2" />
+          <text x={BB_X + 18} y={MINUS_RAIL_Y + 4} textAnchor="start" fontSize="14" fontWeight="900" fill="#2563eb">−</text>
+          <text x={BB_X + BB_W - 18} y={MINUS_RAIL_Y + 4} textAnchor="end" fontSize="14" fontWeight="900" fill="#2563eb">−</text>
           {Array.from({ length: BB_COLS }).map((_, c) => (
-            <circle key={`mns-${c}`} cx={colX(c)} cy={MINUS_RAIL_Y + 7} r="2.8" fill="#1f2937" opacity="0.45" />
+            <g key={`mns-${c}`}>
+              <circle cx={colX(c)} cy={MINUS_RAIL_Y - 7} r="2.8" fill="#1f2937" opacity="0.45" />
+              <circle cx={colX(c)} cy={MINUS_RAIL_Y + 7} r="2.8" fill="#1f2937" opacity="0.45" />
+            </g>
           ))}
         </g>
 
@@ -346,20 +357,74 @@ export function BreadboardCanvas({
         {/* === Insert-Hint-Pfeile === */}
         {showInsertHint && (
           <g>
-            {insertHintCols.map((col) => (
-              <g key={`insert-arrow-${col}`}>
-                <line x1={colX(col)} y1={BB_Y - 30} x2={colX(col)} y2={ROW_Y_UPPER[0] - 6} stroke="#0ea5e9" strokeWidth="4" strokeLinecap="round" strokeDasharray="8 5">
-                  <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
-                </line>
-                <polygon
-                  points={`${colX(col) - 8},${ROW_Y_UPPER[0] - 6} ${colX(col) + 8},${ROW_Y_UPPER[0] - 6} ${colX(col)},${ROW_Y_UPPER[0] + 8}`}
-                  fill="#0ea5e9"
-                />
-              </g>
-            ))}
-            <rect x={BB_X + BB_W / 2 - 180} y={BB_Y - 56} width="360" height="24" rx="12" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
-            <text x={BB_X + BB_W / 2} y={BB_Y - 40} textAnchor="middle" fontSize="12" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
-              Mittig drücken — beide Pin-Reihen rein (Reihe a + Reihe i)
+            {/* Pro ausgewählter Spalte ZWEI Pfeile: einer vom oberen ESP-Pin
+                nach unten zu Brett-Reihe a, einer vom unteren ESP-Pin nach
+                unten zu Brett-Reihe i. So ist klar: 38-Pin-ESP belegt zwei
+                Brett-Reihen gleichzeitig. */}
+            {insertHintCols.map((col) => {
+              // ESP-North-Pin Y im versetzten Modus
+              const northPinVisible = ROW_Y_UPPER[0] + espInsertOffset; // = -110
+              // ESP-South-Pin Y im versetzten Modus
+              const southPinVisible = ROW_Y_LOWER[3] + espInsertOffset; // = 108
+              return (
+                <g key={`insert-arrow-${col}`}>
+                  {/* Pfeil vom North-Pin (oben) → Brett-Reihe a */}
+                  <line
+                    x1={colX(col)}
+                    y1={northPinVisible + 8}
+                    x2={colX(col)}
+                    y2={ROW_Y_UPPER[0] - 8}
+                    stroke="#0ea5e9"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="8 5"
+                  >
+                    <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
+                  </line>
+                  <polygon
+                    points={`${colX(col) - 8},${ROW_Y_UPPER[0] - 8} ${colX(col) + 8},${ROW_Y_UPPER[0] - 8} ${colX(col)},${ROW_Y_UPPER[0] + 6}`}
+                    fill="#0ea5e9"
+                  />
+                  {/* Pfeil vom South-Pin (am ESP unten) → Brett-Reihe i */}
+                  <line
+                    x1={colX(col)}
+                    y1={southPinVisible + 8}
+                    x2={colX(col)}
+                    y2={ROW_Y_LOWER[3] - 8}
+                    stroke="#0ea5e9"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="8 5"
+                  >
+                    <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
+                  </line>
+                  <polygon
+                    points={`${colX(col) - 8},${ROW_Y_LOWER[3] - 8} ${colX(col) + 8},${ROW_Y_LOWER[3] - 8} ${colX(col)},${ROW_Y_LOWER[3] + 6}`}
+                    fill="#0ea5e9"
+                  />
+                  {/* Ziel-Marker am Brett: Reihe a + Reihe i pulsierend */}
+                  <circle cx={colX(col)} cy={ROW_Y_UPPER[0]} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
+                    <animate attributeName="r" values="5;9;5" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx={colX(col)} cy={ROW_Y_LOWER[3]} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
+                    <animate attributeName="r" values="5;9;5" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+              );
+            })}
+            {/* Zwei separate Banner: Top (north→a) und Bottom (south→i) */}
+            <rect x={BB_X + 20} y={BB_Y - 32} width="280" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
+            <text x={BB_X + 160} y={BB_Y - 17} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
+              ↓ Obere Pin-Reihe → Brett-Reihe a
+            </text>
+            <rect x={BB_X + 20} y={BB_Y + BB_H + 10} width="280" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
+            <text x={BB_X + 160} y={BB_Y + BB_H + 25} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
+              ↑ Untere Pin-Reihe → Brett-Reihe i
+            </text>
+            {/* Gesamthinweis ganz oben */}
+            <rect x={BB_X + BB_W / 2 - 220} y={-extraTopPad + 20} width="440" height="28" rx="14" fill="#fef3c7" stroke="#d97706" strokeWidth="1.6" />
+            <text x={BB_X + BB_W / 2} y={-extraTopPad + 38} textAnchor="middle" fontSize="13" fontWeight="900" fill="#92400e" fontFamily="ui-monospace,monospace">
+              ESP32 mittig drücken — alle 38 Pins gleichzeitig rein
             </text>
           </g>
         )}
