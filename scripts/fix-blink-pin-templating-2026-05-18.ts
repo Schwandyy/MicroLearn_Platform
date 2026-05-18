@@ -62,13 +62,13 @@ async function main() {
     ) {
       console.log("  ⊘ Step 7: bereits aktuell");
       skipped++;
-    } else if (step7.body_de !== bodyDeFrom && step7.body_de !== bodyDeTo) {
+    } else if ((step7.body_de ?? "") !== bodyDeFrom && (step7.body_de ?? "") !== bodyDeTo) {
       console.log(`  ⚠ Step 7 body_de: Quelle weicht ab — manueller Check`);
-      console.log(`    Aktuell: ${step7.body_de.slice(0, 90)}…`);
+      console.log(`    Aktuell: ${(step7.body_de ?? "").slice(0, 90)}…`);
     } else {
       await prisma.lessonStep.update({
         where: { id: step7.id },
-        data: { body_de: bodyDeTo, body_en: bodyEnTo, payload: newPayload },
+        data: { body_de: bodyDeTo, body_en: bodyEnTo, payload: newPayload as never },
       });
       console.log("  ✓ Step 7: body + keyPoint mit Platzhaltern");
       touched++;
@@ -78,9 +78,9 @@ async function main() {
   // === Step 10: Stromkreis-Erklärung ===
   const step10 = lesson.steps.find((s) => s.sortOrder === 10);
   if (step10) {
-    const bodyDeUpdated = step10.body_de.replace(/GPIO 2 → Widerstand/g, "GPIO {{SIGNAL_GPIO}} → Widerstand");
+    const bodyDeUpdated = (step10.body_de ?? "").replace(/GPIO 2 → Widerstand/g, "GPIO {{SIGNAL_GPIO}} → Widerstand");
     const bodyEnUpdated = (step10.body_en ?? "").replace(/GPIO 2 → resistor/g, "GPIO {{SIGNAL_GPIO}} → resistor");
-    if (bodyDeUpdated === step10.body_de && bodyEnUpdated === step10.body_en) {
+    if (bodyDeUpdated === (step10.body_de ?? "") && bodyEnUpdated === (step10.body_en ?? "")) {
       console.log("  ⊘ Step 10: keine Änderung nötig (bereits templated oder kein Match)");
       skipped++;
     } else {
@@ -130,7 +130,7 @@ async function main() {
     } else {
       await prisma.lessonStep.update({
         where: { id: step13.id },
-        data: { payload: newPayload },
+        data: { payload: newPayload as never },
       });
       console.log("  ✓ Step 13: CODE_WALK mit Platzhaltern");
       touched++;
