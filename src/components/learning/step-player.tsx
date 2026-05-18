@@ -33,6 +33,19 @@ import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
 import { Esp32PinVisual } from "./esp32-pin-visual";
+
+/**
+ * Prüft ob ein EXPLAIN-Step ein Brett-Visual zeigt (showBreadboardExplainer
+ * oder breadboardVariant gesetzt). Wenn ja braucht der Step-Container die
+ * breite max-w-5xl-Variante, sonst quetscht das 60-Spalten-Brett auf ~200px.
+ */
+function hasBreadboardVisual(payload: Record<string, unknown> | null | undefined): boolean {
+  if (!payload) return false;
+  const p = payload as Record<string, unknown>;
+  if (p.showBreadboardExplainer === true) return true;
+  if (typeof p.breadboardVariant === "string") return true;
+  return false;
+}
 import { MentorChat } from "./mentor-chat";
 import { EspFlashButton } from "./esp-flash-button";
 import {
@@ -173,8 +186,17 @@ export function StepPlayer({
 
       <main className="flex-1 overflow-y-auto">
         {/* pb-32 schafft Platz oberhalb des sticky Footers — sonst werden
-            Quiz-Optionen / Simulator-Choices vom „Weiter"-Button überdeckt. */}
-        <div className="container max-w-2xl py-6 pb-32 md:py-8 md:pb-32">
+            Quiz-Optionen / Simulator-Choices vom „Weiter"-Button überdeckt.
+            BUILD/SIMULATE-Steps brauchen Platz fürs 60-Spalten-Brett-Schaltbild
+            (Aspect ~3:1) — daher max-w-5xl. Andere Steps bleiben in max-w-2xl
+            für gute Text-Lesbarkeit. */}
+        <div className={cn(
+          "container py-6 pb-32 md:py-8 md:pb-32",
+          current?.kind === "BUILD" || current?.kind === "SIMULATE"
+            || (current?.kind === "EXPLAIN" && hasBreadboardVisual(current?.payload))
+            ? "max-w-5xl"
+            : "max-w-2xl"
+        )}>
           {!current ? (
             <p>—</p>
           ) : (
@@ -341,7 +363,9 @@ function StepBody({
         .buildStage;
       return (
         <div className="space-y-6">
-          <header>
+          {/* Text bleibt in max-w-2xl mx-auto für gute Lesbarkeit, das
+              Schaltbild nutzt die volle 5xl-Container-Breite. */}
+          <header className="mx-auto max-w-2xl">
             <h2 className="text-2xl font-bold">{step.title || t("buildIt")}</h2>
             {step.body && (
               <p className="mt-2 text-muted-foreground">{step.body}</p>
@@ -373,7 +397,7 @@ function StepBody({
             />
           )}
           {instruction && (
-            <Card>
+            <Card className="mx-auto max-w-2xl">
               <CardContent className="p-4">
                 <p className="text-base leading-relaxed">👉 {instruction}</p>
               </CardContent>
@@ -415,7 +439,7 @@ function StepBody({
     case "SIMULATE":
       return (
         <div className="space-y-5">
-          <header>
+          <header className="mx-auto max-w-2xl">
             <h2 className="text-2xl font-bold">{step.title || t("whatHappens")}</h2>
             {step.body && (
               <p className="mt-2 text-muted-foreground">{step.body}</p>
@@ -475,14 +499,14 @@ function StepBody({
       const heroEmoji = pickExplainEmoji(step.title, step.body);
       return (
         <div className="space-y-5">
-          <header>
+          <header className="mx-auto max-w-2xl">
             <h2 className="text-2xl font-bold">{step.title}</h2>
           </header>
           {/* Board-Picker erscheint im „Das ist dein ESP32"-Step (= Step mit
               highlightPin oder dem Pin-Visual). So wählt der Schüler GENAU
               EINMAL pro Lesson, welches Board er physisch vor sich hat. */}
           {highlightPin && (
-            <Card className="border-primary/30 bg-primary/5">
+            <Card className="mx-auto max-w-2xl border-primary/30 bg-primary/5">
               <CardContent className="p-4">
                 <BoardPicker />
               </CardContent>
@@ -508,13 +532,13 @@ function StepBody({
             <BlinkSchematic mode="build" buildStage={0} />
           )}
           {!hasSpecificVisual && (
-            <div className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/10 to-emerald-500/10 py-10">
+            <div className="mx-auto flex max-w-2xl items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 via-amber-500/10 to-emerald-500/10 py-10">
               <span className="text-7xl" role="img" aria-hidden>
                 {heroEmoji}
               </span>
             </div>
           )}
-          <Card>
+          <Card className="mx-auto max-w-2xl">
             <CardContent className="p-6">
               <p className="text-base leading-relaxed">{step.body}</p>
               {(payload as { keyPoint_de?: string; keyPoint_en?: string })[
