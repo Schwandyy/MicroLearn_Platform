@@ -26,6 +26,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Breadboard } from "./breadboard-svg";
 import { BlinkSchematic } from "./blink-schematic";
+import { BoardVariantProvider } from "./board-variant-context";
+import { BoardPicker } from "./board-picker";
 import { MiniSimulator } from "./mini-simulator";
 import { CodeWalkthrough } from "./code-walkthrough";
 import { BomCards, type BomItemView } from "./bom-cards";
@@ -148,6 +150,7 @@ export function StepPlayer({
   const progressPct = Math.round(((stepIndex + 1) / total) * 100);
 
   return (
+    <BoardVariantProvider>
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {!verifiedOnHardware && <UnverifiedLessonBanner />}
       <header className="border-b px-4 py-3">
@@ -245,6 +248,7 @@ export function StepPlayer({
         <HelpRequestPrompt lessonId={lessonId} />
       )}
     </div>
+    </BoardVariantProvider>
   );
 }
 
@@ -461,6 +465,16 @@ function StepBody({
           <header>
             <h2 className="text-2xl font-bold">{step.title}</h2>
           </header>
+          {/* Board-Picker erscheint im „Das ist dein ESP32"-Step (= Step mit
+              highlightPin oder dem Pin-Visual). So wählt der Schüler GENAU
+              EINMAL pro Lesson, welches Board er physisch vor sich hat. */}
+          {highlightPin && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="p-4">
+                <BoardPicker />
+              </CardContent>
+            </Card>
+          )}
           {highlightPin && <Esp32PinVisual highlightPin={highlightPin} />}
           {/* Konsistenz: ALLE Brett-Visuals nutzen BlinkSchematic — sowohl in
               den EXPLAIN-Steps als auch in den BUILD-Steps. So sehen Brett +

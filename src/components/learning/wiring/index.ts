@@ -18,5 +18,11 @@ export {
   CHANNEL_TOP,
   CHANNEL_BOTTOM,
   espPinY,
+  getPinY,
+  getEspBodyForVariant,
+  findPinCol,
+  getGpioForLabel,
+  BOARD_VARIANTS,
+  DEFAULT_BOARD_VARIANT,
 } from "./geometry";
-export type { ActivePin, EspPinRef, EspPinSide } from "./geometry";
+export type { ActivePin, EspPinRef, EspPinSide, BoardVariant, BoardVariantSlug } from "./geometry";

@@ -1,5 +1,6 @@
 "use client";
 
+import { useBoardVariant } from "./board-variant-context";
 import {
   BreadboardCanvas,
   BuildSpotlight,
@@ -11,26 +12,21 @@ import {
   WIRE_COLORS,
   colX,
   ROW_Y_UPPER,
-  ROW_Y_LOWER,
   MINUS_RAIL_Y,
+  findPinCol,
+  getPinY,
 } from "./wiring";
 import type { ActivePin } from "./wiring";
 
 /**
- * Premium-Schaltbild für `esp32-blink-led` — echtes 830-Pin Breadboard +
- * 38-Pin AZ-Delivery ESP32 DevKit V1 (USB nach links, Pin-Header auf
- * Reihe a + Reihe i, 19 Pins pro Seite).
+ * Premium-Schaltbild für `esp32-blink-led` — variant-aware (30-Pin / 38-Pin).
+ * Pin-Positionen + ESP-Body-Geometrie kommen aus dem BoardVariant-Context.
  *
- * Pin-Mapping (basierend auf offiziellem AZ-Delivery-Pinout):
- *   • GPIO 2 (D2)  = NORTH-Reihe (Brett-Reihe a) Index 12 → Spalte 13
- *   • GND          = SOUTH-Reihe (Brett-Reihe i) Index 13 → Spalte 14
- *                    (kürzester Weg zur Minus-Schiene unten)
- *   • 3V3          = SOUTH-Reihe Index 0 → Spalte 1 (Pin-Rand nur, kein Kabel)
- *
- * Bauteile sitzen RECHTS vom ESP-Modul (Spalten 20+ sind frei, weil das
- * 38-Pin ESP von Spalte 1-19 reicht):
+ * Bauteile sitzen RECHTS vom ESP, auf Brett-Reihe a (das ist sowohl bei 30-Pin
+ * als auch bei 38-Pin eine freie Reihe — bei 38-Pin gilt das ab Spalte 20+,
+ * bei 30-Pin ab Spalte 16+).
  *   • Widerstand 220 Ω: Reihe a, Spalte 25 → Spalte 28
- *   • LED rot:         Reihe a, Spalte 28 (Anode/+) → Spalte 29 (Kathode/−)
+ *   • LED rot:          Reihe a, Spalte 28 (Anode/+) → Spalte 29 (Kathode/−)
  */
 
 interface BlinkSchematicProps {
@@ -42,21 +38,16 @@ interface BlinkSchematicProps {
   className?: string;
 }
 
-// Pin-Positionen — Indizes in PIN_NORTH_LABELS / PIN_SOUTH_LABELS (s. geometry.ts)
-const PIN_D2_INDEX = 12;       // NORTH: D2  → Brett-Spalte 13
-const PIN_GND_INDEX = 13;      // SOUTH: GND → Brett-Spalte 14
-const PIN_3V3_INDEX = 0;       // SOUTH: 3V3 → Brett-Spalte 1
+// Bauteil-Positionen — gleich für beide Varianten (rechts vom ESP, Spalten 20+)
+const RES_LEFT_COL = 24;    // Spalte 25
+const RES_RIGHT_COL = 27;   // Spalte 28
+const LED_ANODE_COL = 27;   // Spalte 28
+const LED_CATHODE_COL = 28; // Spalte 29
 
-// Bauteil-Positionen — RECHTS vom ESP (freier Brett-Bereich Spalten 20+)
-const RES_LEFT_COL = 24;       // Spalte 25
-const RES_RIGHT_COL = 27;      // Spalte 28
-const LED_ANODE_COL = 27;      // Spalte 28 — gleich wie Resistor-rechts
-const LED_CATHODE_COL = 28;    // Spalte 29
-
-// Wire-Bridge-Höhe — Y-Position, auf der Drähte über das Brett "fliegen"
-// (oberhalb der Plus-Schiene, im freien Raum zwischen Brett und Callouts)
-const WIRE_BRIDGE_Y_TOP = 110;     // für Drähte, die ÜBER das Brett gehen
-const WIRE_BRIDGE_Y_BOTTOM = 540;  // für Drähte, die UNTER das Brett gehen
+// Wire-Bridge-Y: Drähte fliegen oberhalb der Plus-Schiene (Y=110), bzw. wenn
+// die GND-Verbindung zur Minus-Schiene unterhalb verlaufen soll (Y=540).
+const WIRE_BRIDGE_Y_TOP = 110;
+const WIRE_BRIDGE_Y_BOTTOM = 540;
 
 export function BlinkSchematic({
   ledOn = false,
@@ -65,6 +56,7 @@ export function BlinkSchematic({
   mode = "build",
   className,
 }: BlinkSchematicProps) {
+  const { variant } = useBoardVariant();
   const stageNum = buildStage === "all" ? 99 : buildStage;
   const isBuildMode = mode === "build";
   const showResistor = isBuildMode && stageNum >= 1;
@@ -72,34 +64,40 @@ export function BlinkSchematic({
   const showWires = isBuildMode && stageNum >= 3;
   const isOn = (ledOn || buildStage === "all") && ledAnimation !== "off" && isBuildMode;
 
+  // Pin-Positionen aus der gewählten Variante. Bei 38-Pin: D2 north Spalte 13,
+  // GND south Spalte 14. Bei 30-Pin: D2 north Spalte 4, GND south Spalte 14
+  // (= "GND" auf SOUTH-Index 13 in 30-Pin Layout).
+  const pinD2Col = findPinCol(variant, "north", "D2");
+  const pinGndCol = findPinCol(variant, "south", "GND");
+  const pin3v3Col = findPinCol(variant, "south", "3V3"); // nur Pin-Rand farbig
+  const pinD2Y = getPinY(variant, "north");
+  const pinGndY = getPinY(variant, "south");
+
   const activePins: ActivePin[] = [
-    { col: PIN_3V3_INDEX, side: "south", tone: "power3v3" }, // Pin-Rand farbig, kein Callout
-    {
-      col: PIN_D2_INDEX,
-      side: "north",
-      tone: "signal",
-      callout: { title: "GPIO 2", subtitle: "Signal-Pin" },
-    },
-    {
-      col: PIN_GND_INDEX,
-      side: "south",
-      tone: "ground",
-      callout: { title: "GND", subtitle: "Masse / Minus" },
-    },
+    ...(pin3v3Col >= 0 ? [{ col: pin3v3Col, side: "south" as const, tone: "power3v3" as const }] : []),
+    ...(pinD2Col >= 0
+      ? [{ col: pinD2Col, side: "north" as const, tone: "signal" as const, callout: { title: "GPIO 2", subtitle: "Signal-Pin" } }]
+      : []),
+    ...(pinGndCol >= 0
+      ? [{ col: pinGndCol, side: "south" as const, tone: "ground" as const, callout: { title: "GND", subtitle: "Masse / Minus" } }]
+      : []),
   ];
 
+  // GND-Pin liegt bei 38-Pin in Reihe i (nah Minus-Schiene), bei 30-Pin in
+  // Reihe f (etwas weiter weg). In beiden Fällen geht das Kabel senkrecht
+  // runter zur Minus-Schiene.
   return (
     <BreadboardCanvas
       mode={mode}
       activePins={activePins}
-      ariaLabel="Blink-Schaltung — 38-Pin ESP32 mit LED + 220Ω Widerstand auf Breadboard"
+      ariaLabel={`Blink-Schaltung — ${variant.shortLabel} ESP32 mit LED + 220Ω Widerstand auf Breadboard`}
       extraDefs={ledAnimation === "blink" ? <style>{LED_BLINK_CSS}</style> : null}
       className={className}
     >
-      {/* 220Ω Widerstand — Reihe a, Spalte 25 → Spalte 28 (RECHTS vom ESP) */}
+      {/* 220Ω Widerstand */}
       {showResistor && <Resistor leftCol={RES_LEFT_COL} rightCol={RES_RIGHT_COL} ohms="220" />}
 
-      {/* LED rot — Reihe a, Spalte 28 (Anode/+) → Spalte 29 (Kathode/−) */}
+      {/* LED rot */}
       {showLed && (
         <Led
           anodeCol={LED_ANODE_COL}
@@ -111,22 +109,19 @@ export function BlinkSchematic({
       )}
 
       {/* Drähte */}
-      {showWires && (
+      {showWires && pinD2Col >= 0 && pinGndCol >= 0 && (
         <g>
-          {/* Grün-Signal: GPIO 2 (Reihe a Spalte 13) — F2M-Bridge OBEN ÜBER das Brett
-              zur Widerstands-Spalte (Spalte 25, Reihe a). Real wird ein F2M-Jumper
-              auf den ESP-Pin oben drauf gesteckt; im Diagramm fliegt das Kabel
-              über die Plus-Schiene. */}
+          {/* Grün-Signal: GPIO 2 (north-Pin) — F2M-Bridge OBEN ÜBER das Brett
+              zur Widerstand-links-Spalte (Reihe a). */}
           <Wire
             {...WIRE_COLORS.signalGreen}
-            path={`M ${colX(PIN_D2_INDEX)} ${ROW_Y_UPPER[0]}
-                   L ${colX(PIN_D2_INDEX)} ${WIRE_BRIDGE_Y_TOP}
+            path={`M ${colX(pinD2Col)} ${pinD2Y}
+                   L ${colX(pinD2Col)} ${WIRE_BRIDGE_Y_TOP}
                    L ${colX(RES_LEFT_COL)} ${WIRE_BRIDGE_Y_TOP}
                    L ${colX(RES_LEFT_COL)} ${ROW_Y_UPPER[0]}`}
             animated={buildStage === "all" && isOn}
           />
-          {/* Blau A: LED-Kathode (Spalte 29, Reihe a) — F2M-Bridge OBEN zur
-              Minus-Schiene Spalte 29. Wire fliegt über das Brett. */}
+          {/* Blau A: LED-Kathode (Reihe a) — Bridge nach UNTEN zur Minus-Schiene */}
           <Wire
             {...WIRE_COLORS.ground}
             path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]}
@@ -134,20 +129,17 @@ export function BlinkSchematic({
                    L ${colX(LED_CATHODE_COL)} ${MINUS_RAIL_Y + 7}`}
             animated={buildStage === "all" && isOn}
           />
-          {/* Blau B: GND-Pin (Reihe i Spalte 14, south) — F2M-Bridge UNTEN
-              zur Minus-Schiene Spalte 14. Reihe i ist direkt nahe an
-              Minus-Schiene (nur Reihe j dazwischen), daher kurzer Weg. */}
+          {/* Blau B: GND-Pin (south-Pin) — senkrecht zur Minus-Schiene */}
           <Wire
             {...WIRE_COLORS.ground}
-            path={`M ${colX(PIN_GND_INDEX)} ${ROW_Y_LOWER[3]}
-                   L ${colX(PIN_GND_INDEX)} ${ROW_Y_LOWER[4]}
-                   L ${colX(PIN_GND_INDEX)} ${MINUS_RAIL_Y + 7}`}
+            path={`M ${colX(pinGndCol)} ${pinGndY}
+                   L ${colX(pinGndCol)} ${MINUS_RAIL_Y + 7}`}
             animated={buildStage === "all" && isOn}
           />
         </g>
       )}
 
-      {/* BUILD-Stage-Spotlights — markieren Ziel-Spalten */}
+      {/* BUILD-Stage-Spotlights */}
       {buildStage === 1 && (
         <g>
           <BuildSpotlight col={RES_LEFT_COL} colLabel="25" />
@@ -160,10 +152,10 @@ export function BlinkSchematic({
           <BuildSpotlight col={LED_CATHODE_COL} colLabel="29" subLabel="− kurzes Bein" />
         </g>
       )}
-      {buildStage === 3 && (
+      {buildStage === 3 && pinGndCol >= 0 && (
         <g>
           <BuildSpotlight col={LED_CATHODE_COL} colLabel="29" subLabel="Kabel A — LED zur Minus-Schiene" />
-          <PinSpotlight col={PIN_GND_INDEX} colLabel="14" subLabel="Kabel B — GND zur Minus-Schiene" row={ROW_Y_LOWER[3]} />
+          <PinSpotlight col={pinGndCol} colLabel={String(pinGndCol + 1)} subLabel="Kabel B — GND zur Minus-Schiene" row={pinGndY} />
         </g>
       )}
     </BreadboardCanvas>

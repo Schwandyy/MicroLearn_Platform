@@ -1,26 +1,26 @@
 // Geteilte Geometrie für alle Wiring-Diagramme — Standard AZ-Delivery-
 // Hardware: 830-Pin Breadboard (MB-102, 60 Spalten + 10 Reihen + 2 Rails)
-// und 38-Pin ESP32 NodeMCU DevKit V1 (19 Pins pro Seite, sitzt MIT
-// Pin-Headern auf Brett-Reihe a + Brett-Reihe i, 28×56 mm).
+// und ESP32 NodeMCU DevKit V1 in zwei Varianten:
+//   • 38-Pin (AZ-Delivery, 0.9-inch DIP, überspannt Brett-Reihen a + i)
+//   • 30-Pin (DOIT-Klone, 0.7-inch DIP, sitzt auf Brett-Reihen e + f
+//     wie ein klassischer DIP-Chip über der Mittelrille)
 //
-// Alle Werte in SVG-Units. 1 SVG-Unit ≈ 0.115 mm (geschickt gerundet auf
-// menschenlesbare Werte).
+// Alle Werte in SVG-Units.
 
 export const VB_W = 2000;
 export const VB_H = 620;
 
-// Breadboard — 60 sichtbare Spalten (echtes 830-Pin-Board hat 60-63 Spalten)
+// === Breadboard MB-102 ===
 export const BB_X = 60;
 export const BB_Y = 140;
 export const BB_W = 1880;
 export const BB_H = 360;
 export const BB_COLS = 60;
-export const BB_COL_DX = (BB_W - 80) / BB_COLS; // = 30 SVG-Units pro Spalte
+export const BB_COL_DX = (BB_W - 80) / BB_COLS; // 30 SVG/Spalte
 export const BB_COL_X0 = BB_X + 50;
-
 export const colX = (c: number) => BB_COL_X0 + c * BB_COL_DX;
 
-// Y-Positionen — Reihen-Anordnung: Plus-Rail / a-e / Channel / f-j / Minus-Rail
+// === Y-Positionen ===
 export const PLUS_RAIL_Y = BB_Y + 16;
 export const ROW_Y_UPPER = [200, 222, 244, 266, 288] as const; // a, b, c, d, e
 export const CHANNEL_TOP = 300;
@@ -28,67 +28,18 @@ export const CHANNEL_BOTTOM = 340;
 export const ROW_Y_LOWER = [352, 374, 396, 418, 440] as const; // f, g, h, i, j
 export const MINUS_RAIL_Y = BB_Y + BB_H - 16;
 
-// ESP32 DevKit V1 38-Pin — sitzt MIT Pin-Headern auf Reihe a (north) und
-// Reihe i (south). PCB-Körper überspannt Reihen a-i (= 9 Reihen vertikal,
-// inkl. Mittelrille). Pin-Header-Spannweite a→i ≈ 22.86 mm, passt zum
-// echten Board-Maß 28 mm × 56 mm.
-export const ESP_FIRST_COL = 0;        // Pin 1 sitzt in Brett-Spalte 1 (= colX(0))
-export const ESP_LAST_COL = 18;        // 19 Pins → letzter in Spalte 19
-export const ESP_PIN_COUNT = 19;
-
-// ESP-PCB ist real 56mm × 28mm — 56mm Länge ragt 3.9mm über die Pin-Spannweite
-// hinaus. Daher ESP_BODY_X = colX(0)-50 (Padding links für USB-seitigen Über-
-// hang) und ESP_BODY_W = Pin-Spannweite + 80 (50 links + 30 rechts Padding).
-export const ESP_BODY_X = colX(ESP_FIRST_COL) - 50;
-export const ESP_BODY_Y = ROW_Y_UPPER[0] - 8;
-export const ESP_BODY_W = colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) + 80;
-export const ESP_BODY_H = ROW_Y_LOWER[3] - ROW_Y_UPPER[0] + 16;
-
-// Pin-Layout AZ-Delivery 38-Pin ESP32 NodeMCU DevKit V1
-// Quelle: offizielles Pinout-PDF (ESP-32_NodeMCU_Developmentboard_Pinout.pdf)
-// USB-Anschluss ist auf der LINKEN Schmalseite des Renderers (Spalte 0-Ende).
-//
-// NORTH = Brett-Reihe a (oberer Pin-Header beim Renderer).
-//   Original-Layout USB-unten = "rechte Pin-Reihe oben→unten".
-//   Bei 90°-Rotation gegen Uhrzeigersinn (USB nach links) → Renderer-OBERE
-//   Pin-Reihe von LINKS (USB-Ende) nach RECHTS (weit weg vom USB):
-export const PIN_NORTH_LABELS = [
-  "GND", "D23", "D22", "TX0", "RX0", "D21", "D19", "D18", "D5", "TX2",
-  "RX2", "D4", "D2", "D15", "GND", "CLK", "SD0", "SD1", "3V3",
-] as const;
-// SOUTH = Brett-Reihe i (unterer Pin-Header). Entspricht Original-Layout
-//   USB-unten "linke Pin-Reihe oben→unten", rotiert → Renderer-UNTERE Pin-
-//   Reihe von LINKS nach RECHTS:
-export const PIN_SOUTH_LABELS = [
-  "3V3", "EN", "VP", "VN", "D34", "D35", "D32", "D33", "D25", "D26",
-  "D27", "D14", "D12", "GND", "D13", "SD2", "SD3", "CMD", "5V",
-] as const;
-
-// Hilfs-Lookups für Lesson-Code: über Pin-Name die Spalte finden.
-export function findNorthCol(label: string): number {
-  return PIN_NORTH_LABELS.indexOf(label as never);
-}
-export function findSouthCol(label: string): number {
-  return PIN_SOUTH_LABELS.indexOf(label as never);
-}
-
-// Pin-Side-Konvention: "north" sitzt in Reihe a, "south" in Reihe i.
+// === Pin-Side-Konvention ===
+// NORTH sitzt auf Brett-Reihe a (38-Pin) bzw. e (30-Pin) — also oben.
+// SOUTH sitzt auf Brett-Reihe i (38-Pin) bzw. f (30-Pin) — also unten.
 export type EspPinSide = "north" | "south";
 
 export interface EspPinRef {
-  col: number; // 0..18
+  col: number;
   side: EspPinSide;
 }
 
-/** Y-Koordinate des Pin-Loches (NICHT des Pin-Bodys). */
-export function espPinY(side: EspPinSide): number {
-  return side === "north" ? ROW_Y_UPPER[0] : ROW_Y_LOWER[3];
-}
-
 export interface ActivePin extends EspPinRef {
-  /** Farb-Token für Pin-Rand + Silkscreen-Label */
   tone: "signal" | "ground" | "power3v3" | "power5v" | "neutral";
-  /** Optional: floating Callout mit großer Pille außerhalb des Bretts */
   callout?: {
     title: string;
     subtitle: string;
@@ -102,3 +53,130 @@ export const TONE_COLORS: Record<ActivePin["tone"], { stroke: string; text: stri
   power5v:  { stroke: "#92400e", text: "#92400e", light: "#fcd34d", dark: "#92400e" },
   neutral:  { stroke: "#92400e", text: "#cbd5e1", light: "#cbd5e1", dark: "#92400e" },
 };
+
+// === Board-Varianten ===
+export type BoardVariantSlug = "esp32-38pin" | "esp32-30pin";
+
+export interface BoardVariant {
+  slug: BoardVariantSlug;
+  /** Anzeige-Label im Picker (lang). */
+  label: string;
+  /** Kurz-Label für kompakte UI. */
+  shortLabel: string;
+  pinCount: number;
+  /** NORTH-Reihe (oberer Pin-Header), LINKS→RECHTS (USB-Ende zuerst). */
+  northLabels: readonly string[];
+  /** SOUTH-Reihe (unterer Pin-Header). */
+  southLabels: readonly string[];
+  /** ROW_Y_UPPER-Index für NORTH (0=a, 4=e) */
+  northRowYIndex: 0 | 1 | 2 | 3 | 4;
+  /** ROW_Y_LOWER-Index für SOUTH (0=f, 3=i, 4=j) */
+  southRowYIndex: 0 | 1 | 2 | 3 | 4;
+}
+
+export const BOARD_VARIANTS: Record<BoardVariantSlug, BoardVariant> = {
+  "esp32-38pin": {
+    slug: "esp32-38pin",
+    label: "ESP32 NodeMCU DevKit V1 — 38-Pin (AZ-Delivery)",
+    shortLabel: "38-Pin",
+    pinCount: 19,
+    // Quelle: AZ-Delivery offizielles Pinout-PDF (ESP-32_NodeMCU_Developmentboard_Pinout.pdf)
+    // USB-OBEN-Layout um 90° gegen den Uhrzeigersinn gedreht (= USB links im Renderer)
+    northLabels: [
+      "GND", "D23", "D22", "TX0", "RX0", "D21", "D19", "D18", "D5", "TX2",
+      "RX2", "D4", "D2", "D15", "GND", "CLK", "SD0", "SD1", "3V3",
+    ],
+    southLabels: [
+      "3V3", "EN", "VP", "VN", "D34", "D35", "D32", "D33", "D25", "D26",
+      "D27", "D14", "D12", "GND", "D13", "SD2", "SD3", "CMD", "5V",
+    ],
+    northRowYIndex: 0, // Reihe a
+    southRowYIndex: 3, // Reihe i
+  },
+  "esp32-30pin": {
+    slug: "esp32-30pin",
+    label: "ESP32 NodeMCU DevKit — 30-Pin (DOIT / schmal)",
+    shortLabel: "30-Pin",
+    pinCount: 15,
+    northLabels: [
+      "3V3", "GND", "D15", "D2", "D4", "RX2", "TX2", "D5", "D18", "D19",
+      "D21", "RX0", "TX0", "D22", "D23",
+    ],
+    southLabels: [
+      "EN", "VP", "VN", "D34", "D35", "D32", "D33", "D25", "D26", "D27",
+      "D14", "D12", "D13", "GND", "VIN",
+    ],
+    northRowYIndex: 4, // Reihe e
+    southRowYIndex: 0, // Reihe f
+  },
+};
+
+export const DEFAULT_BOARD_VARIANT: BoardVariantSlug = "esp32-38pin";
+
+// === Helper-Funktionen ===
+
+/** Y-Loch-Koordinate für die NORTH-/SOUTH-Pin-Header einer Variante. */
+export function getPinY(variant: BoardVariant, side: EspPinSide): number {
+  if (side === "north") return ROW_Y_UPPER[variant.northRowYIndex];
+  return ROW_Y_LOWER[variant.southRowYIndex];
+}
+
+/** ESP-Body-Maße einer Variante. */
+export function getEspBodyForVariant(variant: BoardVariant) {
+  const firstCol = 0;
+  const lastCol = variant.pinCount - 1;
+  const northY = ROW_Y_UPPER[variant.northRowYIndex];
+  const southY = ROW_Y_LOWER[variant.southRowYIndex];
+  return {
+    x: colX(firstCol) - 50,
+    y: northY - 8,
+    w: colX(lastCol) - colX(firstCol) + 80,
+    h: southY - northY + 16,
+    firstCol,
+    lastCol,
+  };
+}
+
+/** Brett-Spalten-Index eines Pin-Labels innerhalb einer Variante. */
+export function findPinCol(variant: BoardVariant, side: EspPinSide, label: string): number {
+  const list = side === "north" ? variant.northLabels : variant.southLabels;
+  return list.indexOf(label);
+}
+
+// === Backwards-compat: alte Konstanten für nicht-variant-aware Code ===
+export const PIN_NORTH_LABELS = BOARD_VARIANTS["esp32-38pin"].northLabels;
+export const PIN_SOUTH_LABELS = BOARD_VARIANTS["esp32-38pin"].southLabels;
+export const ESP_PIN_COUNT = BOARD_VARIANTS["esp32-38pin"].pinCount;
+export const ESP_FIRST_COL = 0;
+export const ESP_LAST_COL = BOARD_VARIANTS["esp32-38pin"].pinCount - 1;
+export const ESP_BODY_X = colX(ESP_FIRST_COL) - 50;
+export const ESP_BODY_Y = ROW_Y_UPPER[0] - 8;
+export const ESP_BODY_W = colX(ESP_LAST_COL) - colX(ESP_FIRST_COL) + 80;
+export const ESP_BODY_H = ROW_Y_LOWER[3] - ROW_Y_UPPER[0] + 16;
+
+/** 38-Pin-only espPinY (Backwards-compat). */
+export function espPinY(side: EspPinSide): number {
+  return side === "north" ? ROW_Y_UPPER[0] : ROW_Y_LOWER[3];
+}
+
+/** Pin-Index nur für 38-Pin-Variante (Backwards-compat). */
+export function findNorthCol(label: string): number {
+  return PIN_NORTH_LABELS.indexOf(label);
+}
+export function findSouthCol(label: string): number {
+  return PIN_SOUTH_LABELS.indexOf(label);
+}
+
+/** Pin-Label → GPIO-Nummer (für CODE_WALK, Highlight-Lookup etc.). */
+export const LABEL_TO_GPIO: Record<string, number> = {
+  D2: 2, D4: 4, D5: 5, D12: 12, D13: 13, D14: 14, D15: 15,
+  D18: 18, D19: 19, D21: 21, D22: 22, D23: 23,
+  D25: 25, D26: 26, D27: 27, D32: 32, D33: 33, D34: 34, D35: 35,
+  VP: 36, VN: 39,
+  TX0: 1, RX0: 3, TX2: 17, RX2: 16,
+  SD0: 7, SD1: 8, SD2: 9, SD3: 10, CLK: 6, CMD: 11,
+};
+
+export function getGpioForLabel(label: string): number | undefined {
+  return LABEL_TO_GPIO[label];
+}

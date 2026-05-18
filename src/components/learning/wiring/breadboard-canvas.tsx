@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useBoardVariant } from "../board-variant-context";
 import {
   ActivePin,
   BB_COLS,
@@ -10,16 +11,7 @@ import {
   BB_Y,
   CHANNEL_BOTTOM,
   CHANNEL_TOP,
-  ESP_BODY_H,
-  ESP_BODY_W,
-  ESP_BODY_X,
-  ESP_BODY_Y,
-  ESP_FIRST_COL,
-  ESP_LAST_COL,
-  ESP_PIN_COUNT,
   MINUS_RAIL_Y,
-  PIN_NORTH_LABELS,
-  PIN_SOUTH_LABELS,
   PLUS_RAIL_Y,
   ROW_Y_LOWER,
   ROW_Y_UPPER,
@@ -27,6 +19,8 @@ import {
   VB_H,
   VB_W,
   colX,
+  getEspBodyForVariant,
+  getPinY,
 } from "./geometry";
 
 /**
@@ -67,22 +61,35 @@ export function BreadboardCanvas({
   mode = "build",
   activePins = [],
   highlightCol = 8,
-  insertHintCols = [3, 9, 15],
+  insertHintCols,
   children,
   extraDefs,
   ariaLabel = "ESP32-Brett-Schaltbild",
   className,
 }: BreadboardCanvasProps) {
+  const { variant } = useBoardVariant();
+  const espBody = getEspBodyForVariant(variant);
+  const northPinY = getPinY(variant, "north");
+  const southPinY = getPinY(variant, "south");
+
+  // Default-insertHint-Spalten: 3 Pfeile gleichmäßig verteilt über die
+  // Pin-Spannweite. Bei 38-Pin: [3, 9, 15], bei 30-Pin: [2, 7, 12].
+  const effectiveInsertCols = insertHintCols ?? [
+    Math.floor(variant.pinCount * 0.15),
+    Math.floor(variant.pinCount * 0.5),
+    Math.floor(variant.pinCount * 0.8),
+  ];
+
   const isBuildMode = mode === "build";
   const showEsp = mode !== "boardOnly" && mode !== "boardWithHighlight";
   const showInsertHint = mode === "insertHint";
   const showColumnHighlight = mode === "boardWithHighlight";
-  // Im insertHint-Mode schwebt der ESP komplett OBERHALB des Bretts (Offset
-  // so groß, dass ESP-Body-Bottom etwa 20 SVG-Units über Brett-Top liegt).
-  // ESP-Body geht von ESP_BODY_Y=192 bis ESP_BODY_Y+ESP_BODY_H=426; mit
-  // offset -310 liegt das visible Body von y=-118 bis y=116 — über Brett.
-  const espInsertOffset = showInsertHint ? -310 : 0;
-  const extraTopPad = showInsertHint ? 260 : 0;
+  // Im insertHint schwebt der ESP komplett oberhalb des Bretts.
+  // Offset = (gewünschte Bottom-Y im Display) - (Body-Bottom in Bauraum).
+  // Bei 38-Pin Body geht bis y≈426; bei 30-Pin nur bis ~366. Offset stabilisieren.
+  const espBodyBottom = espBody.y + espBody.h;
+  const espInsertOffset = showInsertHint ? 120 - espBodyBottom : 0;
+  const extraTopPad = showInsertHint ? -espInsertOffset + 60 : 0;
 
   // Pin-Coloring je Seite
   const northActive = new Map<number, ActivePin>();
@@ -221,17 +228,17 @@ export function BreadboardCanvas({
           </g>
         ))}
 
-        {/* === ESP32 38-Pin DevKit V1 === */}
+        {/* === ESP32 DevKit V1 — variant-aware === */}
         {showEsp && (
           <g transform={`translate(0, ${espInsertOffset})`} opacity={showInsertHint ? 0.92 : 1}>
-            <Esp32PcbBody />
-            <Esp32Wroom />
-            <Esp32Usb />
-            <Esp32EnBoot />
-            <Esp32Ams1117 />
-            <Esp32Cp2102 />
-            {/* Pin-Header: north (Reihe a) + south (Reihe i), 19 Pins pro Seite */}
-            {Array.from({ length: ESP_PIN_COUNT }).map((_, i) => {
+            <Esp32PcbBody espBody={espBody} />
+            <Esp32Wroom espBody={espBody} variantLabel={variant.shortLabel} />
+            <Esp32Usb espBody={espBody} />
+            <Esp32EnBoot espBody={espBody} />
+            <Esp32Ams1117 espBody={espBody} />
+            <Esp32Cp2102 espBody={espBody} />
+            {/* Pin-Header — variant.pinCount Pins, auf variant-spezifischen Reihen */}
+            {Array.from({ length: variant.pinCount }).map((_, i) => {
               const n = northActive.get(i);
               const s = southActive.get(i);
               const pinW = 9;
@@ -240,10 +247,9 @@ export function BreadboardCanvas({
               const sStroke = s ? TONE_COLORS[s.tone].stroke : "#92400e";
               return (
                 <g key={`pin-${i}`}>
-                  {/* North-Pin auf Reihe a */}
                   <rect
                     x={colX(i) - pinW / 2}
-                    y={ROW_Y_UPPER[0] - 5}
+                    y={northPinY - 5}
                     width={pinW}
                     height={pinH}
                     rx="1.2"
@@ -251,10 +257,9 @@ export function BreadboardCanvas({
                     stroke={nStroke}
                     strokeWidth={n ? "1.6" : "0.6"}
                   />
-                  {/* South-Pin auf Reihe i */}
                   <rect
                     x={colX(i) - pinW / 2}
-                    y={ROW_Y_LOWER[3] - 6}
+                    y={southPinY - 6}
                     width={pinW}
                     height={pinH}
                     rx="1.2"
@@ -265,19 +270,17 @@ export function BreadboardCanvas({
                 </g>
               );
             })}
-            {/* Silkscreen-Labels für ALLE 19 Pins beider Seiten */}
+            {/* Silkscreen-Labels für alle Pins — variant.northLabels/southLabels */}
             <g fontFamily="ui-monospace,monospace" fontWeight="700">
-              {PIN_NORTH_LABELS.map((label, i) => {
+              {variant.northLabels.map((label, i) => {
                 const a = northActive.get(i);
                 const color = a ? TONE_COLORS[a.tone].light : "#cbd5e1";
                 const isActive = Boolean(a);
-                // North-Labels: TEXT zeigt auf der ESP-PCB-Seite Richtung INNEN (also nach unten, INNER pcb)
-                // Y-Position: knapp unter dem Pin-Loch (Pin-Body ist 11 hoch ab y=ROW_Y_UPPER[0]-5)
                 return (
                   <text
                     key={`np-label-${i}`}
                     x={colX(i)}
-                    y={ROW_Y_UPPER[0] + 14}
+                    y={northPinY + 14}
                     textAnchor="middle"
                     fontSize={isActive ? "7" : "6"}
                     fill={color}
@@ -286,16 +289,15 @@ export function BreadboardCanvas({
                   </text>
                 );
               })}
-              {PIN_SOUTH_LABELS.map((label, i) => {
+              {variant.southLabels.map((label, i) => {
                 const a = southActive.get(i);
                 const color = a ? TONE_COLORS[a.tone].light : "#cbd5e1";
                 const isActive = Boolean(a);
-                // South-Labels: knapp ÜBER dem Pin-Loch (Richtung Innen-PCB nach oben)
                 return (
                   <text
                     key={`sp-label-${i}`}
                     x={colX(i)}
-                    y={ROW_Y_LOWER[3] - 9}
+                    y={southPinY - 9}
                     textAnchor="middle"
                     fontSize={isActive ? "7" : "6"}
                     fill={color}
@@ -354,26 +356,20 @@ export function BreadboardCanvas({
           );
         })}
 
-        {/* === Insert-Hint-Pfeile === */}
+        {/* === Insert-Hint-Pfeile — variant-aware === */}
         {showInsertHint && (
           <g>
-            {/* Pro ausgewählter Spalte ZWEI Pfeile: einer vom oberen ESP-Pin
-                nach unten zu Brett-Reihe a, einer vom unteren ESP-Pin nach
-                unten zu Brett-Reihe i. So ist klar: 38-Pin-ESP belegt zwei
-                Brett-Reihen gleichzeitig. */}
-            {insertHintCols.map((col) => {
-              // ESP-North-Pin Y im versetzten Modus
-              const northPinVisible = ROW_Y_UPPER[0] + espInsertOffset; // = -110
-              // ESP-South-Pin Y im versetzten Modus
-              const southPinVisible = ROW_Y_LOWER[3] + espInsertOffset; // = 108
+            {effectiveInsertCols.map((col) => {
+              const northPinVisible = northPinY + espInsertOffset;
+              const southPinVisible = southPinY + espInsertOffset;
               return (
                 <g key={`insert-arrow-${col}`}>
-                  {/* Pfeil vom North-Pin (oben) → Brett-Reihe a */}
+                  {/* Pfeil vom North-Pin → Brett-NORTH-Reihe (a für 38-Pin, e für 30-Pin) */}
                   <line
                     x1={colX(col)}
                     y1={northPinVisible + 8}
                     x2={colX(col)}
-                    y2={ROW_Y_UPPER[0] - 8}
+                    y2={northPinY - 8}
                     stroke="#0ea5e9"
                     strokeWidth="4"
                     strokeLinecap="round"
@@ -382,15 +378,15 @@ export function BreadboardCanvas({
                     <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
                   </line>
                   <polygon
-                    points={`${colX(col) - 8},${ROW_Y_UPPER[0] - 8} ${colX(col) + 8},${ROW_Y_UPPER[0] - 8} ${colX(col)},${ROW_Y_UPPER[0] + 6}`}
+                    points={`${colX(col) - 8},${northPinY - 8} ${colX(col) + 8},${northPinY - 8} ${colX(col)},${northPinY + 6}`}
                     fill="#0ea5e9"
                   />
-                  {/* Pfeil vom South-Pin (am ESP unten) → Brett-Reihe i */}
+                  {/* Pfeil vom South-Pin → Brett-SOUTH-Reihe (i für 38-Pin, f für 30-Pin) */}
                   <line
                     x1={colX(col)}
                     y1={southPinVisible + 8}
                     x2={colX(col)}
-                    y2={ROW_Y_LOWER[3] - 8}
+                    y2={southPinY - 8}
                     stroke="#0ea5e9"
                     strokeWidth="4"
                     strokeLinecap="round"
@@ -399,33 +395,39 @@ export function BreadboardCanvas({
                     <animate attributeName="stroke-dashoffset" values="0;-26" dur="0.9s" repeatCount="indefinite" />
                   </line>
                   <polygon
-                    points={`${colX(col) - 8},${ROW_Y_LOWER[3] - 8} ${colX(col) + 8},${ROW_Y_LOWER[3] - 8} ${colX(col)},${ROW_Y_LOWER[3] + 6}`}
+                    points={`${colX(col) - 8},${southPinY - 8} ${colX(col) + 8},${southPinY - 8} ${colX(col)},${southPinY + 6}`}
                     fill="#0ea5e9"
                   />
-                  {/* Ziel-Marker am Brett: Reihe a + Reihe i pulsierend */}
-                  <circle cx={colX(col)} cy={ROW_Y_UPPER[0]} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
+                  {/* Ziel-Marker am Brett, pulsierend */}
+                  <circle cx={colX(col)} cy={northPinY} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
                     <animate attributeName="r" values="5;9;5" dur="1.2s" repeatCount="indefinite" />
                   </circle>
-                  <circle cx={colX(col)} cy={ROW_Y_LOWER[3]} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
+                  <circle cx={colX(col)} cy={southPinY} r="6" fill="none" stroke="#0284c7" strokeWidth="2">
                     <animate attributeName="r" values="5;9;5" dur="1.2s" repeatCount="indefinite" />
                   </circle>
                 </g>
               );
             })}
-            {/* Zwei separate Banner: Top (north→a) und Bottom (south→i) */}
-            <rect x={BB_X + 20} y={BB_Y - 32} width="280" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
-            <text x={BB_X + 160} y={BB_Y - 17} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
-              ↓ Obere Pin-Reihe → Brett-Reihe a
-            </text>
-            <rect x={BB_X + 20} y={BB_Y + BB_H + 10} width="280" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
-            <text x={BB_X + 160} y={BB_Y + BB_H + 25} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
-              ↑ Untere Pin-Reihe → Brett-Reihe i
-            </text>
-            {/* Gesamthinweis ganz oben */}
-            <rect x={BB_X + BB_W / 2 - 220} y={-extraTopPad + 20} width="440" height="28" rx="14" fill="#fef3c7" stroke="#d97706" strokeWidth="1.6" />
-            <text x={BB_X + BB_W / 2} y={-extraTopPad + 38} textAnchor="middle" fontSize="13" fontWeight="900" fill="#92400e" fontFamily="ui-monospace,monospace">
-              ESP32 mittig drücken — alle 38 Pins gleichzeitig rein
-            </text>
+            {(() => {
+              const northRowLabel = (["a", "b", "c", "d", "e"] as const)[variant.northRowYIndex]!;
+              const southRowLabel = (["f", "g", "h", "i", "j"] as const)[variant.southRowYIndex]!;
+              return (
+                <g>
+                  <rect x={BB_X + 20} y={BB_Y - 32} width="320" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
+                  <text x={BB_X + 180} y={BB_Y - 17} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
+                    ↓ Obere Pin-Reihe → Brett-Reihe {northRowLabel}
+                  </text>
+                  <rect x={BB_X + 20} y={BB_Y + BB_H + 10} width="320" height="22" rx="11" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.4" />
+                  <text x={BB_X + 180} y={BB_Y + BB_H + 25} textAnchor="middle" fontSize="11" fontWeight="800" fill="#075985" fontFamily="ui-monospace,monospace">
+                    ↑ Untere Pin-Reihe → Brett-Reihe {southRowLabel}
+                  </text>
+                  <rect x={BB_X + BB_W / 2 - 240} y={-extraTopPad + 20} width="480" height="28" rx="14" fill="#fef3c7" stroke="#d97706" strokeWidth="1.6" />
+                  <text x={BB_X + BB_W / 2} y={-extraTopPad + 38} textAnchor="middle" fontSize="13" fontWeight="900" fill="#92400e" fontFamily="ui-monospace,monospace">
+                    ESP32 mittig drücken — alle {variant.pinCount * 2} Pins gleichzeitig rein
+                  </text>
+                </g>
+              );
+            })()}
           </g>
         )}
 
@@ -475,32 +477,31 @@ const CALLOUT_BG: Record<ActivePin["tone"], string> = {
 // WROOM-Modul sitzt RECHTS (USB-fern) auf dem PCB.
 // ============================================================
 
-function Esp32PcbBody() {
+type EspBody = { x: number; y: number; w: number; h: number };
+
+function Esp32PcbBody({ espBody }: { espBody: EspBody }) {
   return (
     <g filter="url(#cmp-shadow)">
-      <rect x={ESP_BODY_X} y={ESP_BODY_Y} width={ESP_BODY_W} height={ESP_BODY_H} rx="6" fill="#0a1422" stroke="#1f2937" strokeWidth="1.2" />
-      <rect x={ESP_BODY_X + 4} y={ESP_BODY_Y + 4} width={ESP_BODY_W - 8} height={ESP_BODY_H - 8} rx="4" fill="none" stroke="#475569" strokeWidth="0.4" opacity="0.6" />
-      {/* 4 Befestigungslöcher */}
-      <circle cx={ESP_BODY_X + 10} cy={ESP_BODY_Y + 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
-      <circle cx={ESP_BODY_X + ESP_BODY_W - 10} cy={ESP_BODY_Y + 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
-      <circle cx={ESP_BODY_X + 10} cy={ESP_BODY_Y + ESP_BODY_H - 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
-      <circle cx={ESP_BODY_X + ESP_BODY_W - 10} cy={ESP_BODY_Y + ESP_BODY_H - 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
+      <rect x={espBody.x} y={espBody.y} width={espBody.w} height={espBody.h} rx="6" fill="#0a1422" stroke="#1f2937" strokeWidth="1.2" />
+      <rect x={espBody.x + 4} y={espBody.y + 4} width={espBody.w - 8} height={espBody.h - 8} rx="4" fill="none" stroke="#475569" strokeWidth="0.4" opacity="0.6" />
+      <circle cx={espBody.x + 10} cy={espBody.y + 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
+      <circle cx={espBody.x + espBody.w - 10} cy={espBody.y + 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
+      <circle cx={espBody.x + 10} cy={espBody.y + espBody.h - 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
+      <circle cx={espBody.x + espBody.w - 10} cy={espBody.y + espBody.h - 10} r="2.5" fill="#0f172a" stroke="#475569" strokeWidth="0.6" />
     </g>
   );
 }
 
-function Esp32Wroom() {
-  // WROOM-32 echte Maße 18×25.5 mm. In SVG (1 mm ≈ 11.8 Units): 213 × 301
-  // — zu groß für unseren 540×210 ESP-Body. Wir skalieren auf 220 × 160
-  // (= visuell-passend, echt-aussehend, nimmt die rechte Hälfte des PCB ein).
-  const wroomW = 220;
-  const wroomH = 160;
-  const wroomX = ESP_BODY_X + ESP_BODY_W - wroomW - 30;
-  const wroomY = ESP_BODY_Y + (ESP_BODY_H - wroomH) / 2;
+function Esp32Wroom({ espBody, variantLabel }: { espBody: EspBody; variantLabel: string }) {
+  // WROOM-Größe skaliert mit Body — bei 30-Pin schmalerer Body braucht
+  // kleineren WROOM. Wir nehmen ~40% Body-Breite und ~60% Body-Höhe.
+  const wroomW = Math.min(220, espBody.w * 0.45);
+  const wroomH = Math.min(160, espBody.h * 0.7);
+  const wroomX = espBody.x + espBody.w - wroomW - 30;
+  const wroomY = espBody.y + (espBody.h - wroomH) / 2;
   return (
     <g filter="url(#cmp-shadow)">
       <rect x={wroomX} y={wroomY} width={wroomW} height={wroomH} rx="3" fill="url(#wroom-shield)" stroke="#475569" strokeWidth="0.8" />
-      {/* Antennen-Mäander rechts oben */}
       <path
         d={`M ${wroomX + wroomW - 50} ${wroomY + 8}
             L ${wroomX + wroomW - 10} ${wroomY + 8}
@@ -520,17 +521,15 @@ function Esp32Wroom() {
         CE · FCC · DevKit V1
       </text>
       <text x={wroomX + wroomW / 2 - 15} y={wroomY + wroomH / 2 + 28} textAnchor="middle" fontSize="6.5" fontWeight="500" fill="#64748b" fontFamily="ui-monospace,monospace">
-        38-Pin · AZ-Delivery
+        {variantLabel}
       </text>
     </g>
   );
 }
 
-function Esp32Usb() {
-  // USB-Anschluss ragt links AUSSERHALB des PCBs (echtes Board hat
-  // USB-Stecker, der über den PCB-Rand hinausragt).
-  const usbX = ESP_BODY_X - 18;
-  const usbY = ESP_BODY_Y + ESP_BODY_H / 2 - 14;
+function Esp32Usb({ espBody }: { espBody: EspBody }) {
+  const usbX = espBody.x - 18;
+  const usbY = espBody.y + espBody.h / 2 - 14;
   return (
     <g filter="url(#cmp-shadow)">
       <rect x={usbX} y={usbY} width="22" height="28" rx="3" fill="#94a3b8" stroke="#475569" strokeWidth="1" />
@@ -539,30 +538,24 @@ function Esp32Usb() {
   );
 }
 
-function Esp32EnBoot() {
-  // EN- und BOOT-Buttons sitzen am USB-Ende des PCB (linke Schmalseite).
-  // Real: EN oben, BOOT unten — quer zur USB-Achse.
-  const btnX = ESP_BODY_X + 18;
+function Esp32EnBoot({ espBody }: { espBody: EspBody }) {
+  const btnX = espBody.x + 18;
   return (
     <g>
-      {/* EN-Button (oben am USB-Ende) */}
-      <rect x={btnX} y={ESP_BODY_Y + 14} width="16" height="16" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
-      <circle cx={btnX + 8} cy={ESP_BODY_Y + 22} r="4" fill="#0f172a" />
-      <text x={btnX + 8} y={ESP_BODY_Y + 42} textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">EN</text>
+      <rect x={btnX} y={espBody.y + 14} width="16" height="16" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
+      <circle cx={btnX + 8} cy={espBody.y + 22} r="4" fill="#0f172a" />
+      <text x={btnX + 8} y={espBody.y + 42} textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">EN</text>
 
-      {/* BOOT-Button (unten am USB-Ende) */}
-      <rect x={btnX} y={ESP_BODY_Y + ESP_BODY_H - 30} width="16" height="16" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
-      <circle cx={btnX + 8} cy={ESP_BODY_Y + ESP_BODY_H - 22} r="4" fill="#0f172a" />
-      <text x={btnX + 8} y={ESP_BODY_Y + ESP_BODY_H - 36} textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">BOOT</text>
+      <rect x={btnX} y={espBody.y + espBody.h - 30} width="16" height="16" rx="2" fill="#1f2937" stroke="#475569" strokeWidth="0.6" filter="url(#cmp-shadow)" />
+      <circle cx={btnX + 8} cy={espBody.y + espBody.h - 22} r="4" fill="#0f172a" />
+      <text x={btnX + 8} y={espBody.y + espBody.h - 36} textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#cbd5e1" fontFamily="ui-monospace,monospace">BOOT</text>
     </g>
   );
 }
 
-function Esp32Ams1117() {
-  // AMS1117 Spannungsregler — sitzt zwischen USB-Ende und WROOM-Modul,
-  // typisch nahe der EN-Button-Reihe (oberhalb auf dem PCB).
-  const x = ESP_BODY_X + 50;
-  const y = ESP_BODY_Y + 30;
+function Esp32Ams1117({ espBody }: { espBody: EspBody }) {
+  const x = espBody.x + 50;
+  const y = espBody.y + 30;
   return (
     <g>
       <rect x={x} y={y} width="32" height="14" rx="1" fill="#0f172a" stroke="#475569" strokeWidth="0.4" />
@@ -572,11 +565,9 @@ function Esp32Ams1117() {
   );
 }
 
-function Esp32Cp2102() {
-  // CP2102 USB-Serial-IC — sitzt zwischen USB-Ende und WROOM, typisch in
-  // der unteren Hälfte des PCBs nahe der BOOT-Button-Reihe.
-  const x = ESP_BODY_X + 50;
-  const y = ESP_BODY_Y + ESP_BODY_H - 44;
+function Esp32Cp2102({ espBody }: { espBody: EspBody }) {
+  const x = espBody.x + 50;
+  const y = espBody.y + espBody.h - 44;
   return (
     <g>
       <rect x={x} y={y} width="24" height="14" rx="1" fill="#0a0f19" stroke="#475569" strokeWidth="0.4" />
