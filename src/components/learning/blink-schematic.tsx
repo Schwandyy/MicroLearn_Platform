@@ -12,6 +12,7 @@ import {
   WIRE_COLORS,
   colX,
   ROW_Y_UPPER,
+  ROW_Y_LOWER,
   MINUS_RAIL_Y,
   findPinCol,
   getPinY,
@@ -124,35 +125,79 @@ export function BlinkSchematic({
         />
       )}
 
-      {/* Drähte */}
-      {showWires && signalPinCol >= 0 && pinGndCol >= 0 && (
-        <g>
-          {/* Grün-Signal: aktuell gewählter Pin (z.B. D2, D4 …) → Widerstand */}
-          <Wire
-            {...WIRE_COLORS.signalGreen}
-            path={`M ${colX(signalPinCol)} ${signalPinY}
-                   L ${colX(signalPinCol)} ${WIRE_BRIDGE_Y_TOP}
-                   L ${colX(RES_LEFT_COL)} ${WIRE_BRIDGE_Y_TOP}
-                   L ${colX(RES_LEFT_COL)} ${ROW_Y_UPPER[0]}`}
-            animated={buildStage === "all" && isOn}
-          />
-          {/* Blau A: LED-Kathode (Reihe a) → Minus-Schiene (Bridge unten) */}
-          <Wire
-            {...WIRE_COLORS.ground}
-            path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]}
-                   L ${colX(LED_CATHODE_COL)} ${WIRE_BRIDGE_Y_BOTTOM}
-                   L ${colX(LED_CATHODE_COL)} ${MINUS_RAIL_Y + 7}`}
-            animated={buildStage === "all" && isOn}
-          />
-          {/* Blau B: GND-Pin → Minus-Schiene */}
-          <Wire
-            {...WIRE_COLORS.ground}
-            path={`M ${colX(pinGndCol)} ${pinGndY}
-                   L ${colX(pinGndCol)} ${MINUS_RAIL_Y + 7}`}
-            animated={buildStage === "all" && isOn}
-          />
-        </g>
-      )}
+      {/* Drähte — physisch korrekt:
+          • Bei 38-Pin (Pin-Header auf Reihe a + i) gibt es KEINE freien Brett-
+            Löcher in der Pin-Spalte. Signal-Kabel braucht F2M (weibliches Ende
+            auf den Pin oben drauf). Wire-Anfang liegt visuell ÜBER dem Pin.
+          • Bei 30-Pin (Pin-Header auf e + f) sind Reihen a-d Spalte X freie
+            Löcher der gleichen Brett-Spalten-Reihe — M-M-Kabel passt direkt
+            in z.B. Reihe a Spalte X.
+          • GND-Kabel: Reihe j Spalte X ist für BEIDE Varianten ein freies
+            Loch in der gleichen Brett-Spalten-Reihe wie der GND-Pin
+            (Brett verbindet Reihen f-j intern). M-M passt rein. */}
+      {showWires && signalPinCol >= 0 && pinGndCol >= 0 && (() => {
+        const isCompactBoard = variant.northRowYIndex === 0; // 38-Pin
+        const signalWireStartY = isCompactBoard ? signalPinY - 18 : ROW_Y_UPPER[0];
+        return (
+          <g>
+            {/* F2M-Stecker-Indicator OBEN auf dem Signal-Pin (nur 38-Pin) */}
+            {isCompactBoard && (
+              <g pointerEvents="none">
+                <rect
+                  x={colX(signalPinCol) - 6}
+                  y={signalPinY - 24}
+                  width="12"
+                  height="10"
+                  rx="1.5"
+                  fill="#1f2937"
+                  stroke="#0f172a"
+                  strokeWidth="0.6"
+                />
+                <circle cx={colX(signalPinCol)} cy={signalPinY - 19} r="2" fill="#facc15" />
+              </g>
+            )}
+            {/* Grün-Signal: aktuell gewählter Pin → Widerstand */}
+            <Wire
+              {...WIRE_COLORS.signalGreen}
+              path={`M ${colX(signalPinCol)} ${signalWireStartY}
+                     L ${colX(signalPinCol)} ${WIRE_BRIDGE_Y_TOP}
+                     L ${colX(RES_LEFT_COL)} ${WIRE_BRIDGE_Y_TOP}
+                     L ${colX(RES_LEFT_COL)} ${ROW_Y_UPPER[0]}`}
+              animated={buildStage === "all" && isOn}
+            />
+            {/* Blau A: LED-Kathode (Reihe a) → Minus-Schiene */}
+            <Wire
+              {...WIRE_COLORS.ground}
+              path={`M ${colX(LED_CATHODE_COL)} ${ROW_Y_UPPER[0]}
+                     L ${colX(LED_CATHODE_COL)} ${WIRE_BRIDGE_Y_BOTTOM}
+                     L ${colX(LED_CATHODE_COL)} ${MINUS_RAIL_Y + 7}`}
+              animated={buildStage === "all" && isOn}
+            />
+            {/* Blau B: Reihe j Spalte X (freies Loch unter dem GND-Pin) → Minus-Schiene.
+                Kabel-Start ist NICHT im Pin-Loch (das ist vom Pin belegt) sondern in
+                Reihe j — elektrisch identisch via Brett-Spalten-Schiene. */}
+            <Wire
+              {...WIRE_COLORS.ground}
+              path={`M ${colX(pinGndCol)} ${ROW_Y_LOWER[4]}
+                     L ${colX(pinGndCol)} ${MINUS_RAIL_Y + 7}`}
+              animated={buildStage === "all" && isOn}
+            />
+            {/* Verbindungsstrich (gestrichelt) vom Pin zum Wire-Anfang in Reihe j,
+                damit der Schüler die elektrische Verbindung sieht. */}
+            <line
+              x1={colX(pinGndCol)}
+              y1={pinGndY + 6}
+              x2={colX(pinGndCol)}
+              y2={ROW_Y_LOWER[4] - 4}
+              stroke="#1d4ed8"
+              strokeWidth="1.2"
+              strokeDasharray="3 3"
+              opacity="0.5"
+              pointerEvents="none"
+            />
+          </g>
+        );
+      })()}
 
       {/* BUILD-Stage-Spotlights */}
       {buildStage === 1 && (
@@ -170,7 +215,15 @@ export function BlinkSchematic({
       {buildStage === 3 && pinGndCol >= 0 && (
         <g>
           <BuildSpotlight col={LED_CATHODE_COL} colLabel="29" subLabel="Kabel A — LED zur Minus-Schiene" />
-          <PinSpotlight col={pinGndCol} colLabel={String(pinGndCol + 1)} subLabel="Kabel B — GND zur Minus-Schiene" row={pinGndY} />
+          {/* Spotlight auf Reihe j (= freies Loch unter dem GND-Pin, NICHT
+              das Pin-Loch selbst). Damit klar wird: Kabel in Reihe j stecken,
+              nicht in den GND-Pin. */}
+          <PinSpotlight
+            col={pinGndCol}
+            colLabel={String(pinGndCol + 1)}
+            subLabel="Kabel B — Reihe j (unter GND-Pin) zur Minus-Schiene"
+            row={ROW_Y_LOWER[4]}
+          />
         </g>
       )}
     </BreadboardCanvas>
