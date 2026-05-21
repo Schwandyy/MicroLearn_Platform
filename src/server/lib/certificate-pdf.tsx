@@ -40,7 +40,7 @@ const COPY: Record<Locale, {
     issued: "Ausgestellt am",
     verify: "Verifizierung",
     verifyHint: "Echtheit prüfbar unter dem nebenstehenden Link.",
-    footer: "Ausgestellt von MicroLearn · AZ-Delivery",
+    footer: "Ausgestellt von MicroLearn",
   },
   en: {
     brand: "MicroLearn · Certificate",
@@ -50,7 +50,7 @@ const COPY: Record<Locale, {
     issued: "Issued on",
     verify: "Verification",
     verifyHint: "Authenticity can be confirmed at the adjacent link.",
-    footer: "Issued by MicroLearn · AZ-Delivery",
+    footer: "Issued by MicroLearn",
   },
 };
 

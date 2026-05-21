@@ -72,7 +72,7 @@ function htmlResponse(
         reactivate:
           "Ihr Kind kann diese Mails jederzeit über die App-Einstellungen wieder aktivieren.",
       },
-      footer: "MicroLearn · AZ-Delivery",
+      footer: "MicroLearn",
     },
     en: {
       weekly: {
@@ -91,7 +91,7 @@ function htmlResponse(
         reactivate:
           "Your child can re-enable these mails any time from their app settings.",
       },
-      footer: "MicroLearn · AZ-Delivery",
+      footer: "MicroLearn",
     },
   } as const;
   const c = COPY[locale][kind];

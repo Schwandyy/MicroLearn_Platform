@@ -285,4 +285,4 @@ laufen.
 
 ## Lizenz
 
-Proprietary — © AZ-Delivery / Andreas Habedank.
+Proprietary — © MicroLearn.

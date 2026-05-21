@@ -39,7 +39,7 @@ export function legalConfig(): LegalConfig {
     zip: process.env.LEGAL_ZIP ?? "PLZ",
     city: process.env.LEGAL_CITY ?? "Stadt",
     country: process.env.LEGAL_COUNTRY ?? "Deutschland",
-    email: process.env.LEGAL_EMAIL ?? "hi@example.com",
+    email: process.env.LEGAL_EMAIL ?? "habedank@odisey.de",
     phone: process.env.LEGAL_PHONE ?? null,
     vat: process.env.LEGAL_VAT ?? null,
     register: process.env.LEGAL_REGISTER ?? null,

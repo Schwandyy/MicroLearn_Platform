@@ -5,7 +5,7 @@ import { useBoardVariant } from "./board-variant-context";
 import { BOARD_VARIANTS, type BoardVariantSlug } from "./wiring";
 
 /**
- * Board-Variante-Picker — zwei Karten (30-Pin DOIT, 38-Pin AZ-Delivery).
+ * Board-Variante-Picker — zwei Karten (30-Pin DOIT, 38-Pin).
  * Klick speichert in Context + LocalStorage; alle Schaltbild- und Pin-Visual-
  * Komponenten reagieren live.
  *

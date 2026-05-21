@@ -1,8 +1,8 @@
-// Geteilte Geometrie für alle Wiring-Diagramme — Standard AZ-Delivery-
-// Hardware: 830-Pin Breadboard (MB-102, 60 Spalten + 10 Reihen + 2 Rails)
+// Geteilte Geometrie für alle Wiring-Diagramme — Generische Hardware:
+// 830-Pin Breadboard (MB-102, 60 Spalten + 10 Reihen + 2 Rails)
 // und ESP32 NodeMCU DevKit V1 in zwei Varianten:
-//   • 38-Pin (AZ-Delivery, 0.9-inch DIP, überspannt Brett-Reihen a + i)
-//   • 30-Pin (DOIT-Klone, 0.7-inch DIP, sitzt auf Brett-Reihen e + f
+//   • 38-Pin (0.9-inch DIP, überspannt Brett-Reihen a + i)
+//   • 30-Pin (DOIT, 0.7-inch DIP, sitzt auf Brett-Reihen e + f
 //     wie ein klassischer DIP-Chip über der Mittelrille)
 //
 // Alle Werte in SVG-Units.
@@ -77,10 +77,9 @@ export interface BoardVariant {
 export const BOARD_VARIANTS: Record<BoardVariantSlug, BoardVariant> = {
   "esp32-38pin": {
     slug: "esp32-38pin",
-    label: "ESP32 NodeMCU DevKit V1 — 38-Pin (AZ-Delivery)",
+    label: "ESP32 NodeMCU DevKit V1 — 38-Pin",
     shortLabel: "38-Pin",
     pinCount: 19,
-    // Quelle: AZ-Delivery offizielles Pinout-PDF (ESP-32_NodeMCU_Developmentboard_Pinout.pdf)
     // USB-OBEN-Layout um 90° gegen den Uhrzeigersinn gedreht (= USB links im Renderer)
     northLabels: [
       "GND", "D23", "D22", "TX0", "RX0", "D21", "D19", "D18", "D5", "TX2",
