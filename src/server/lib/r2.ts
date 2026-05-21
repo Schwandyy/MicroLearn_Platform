@@ -7,9 +7,11 @@ const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET = process.env.R2_BUCKET;
-// Öffentlicher Lese-Hostname (z. B. https://cdn.example.com oder
+// Öffentlicher Lese-URL (z. B. https://cdn.example.com oder
 // https://<bucket>.<account>.r2.cloudflarestorage.com)
-const R2_PUBLIC_HOST = process.env.R2_PUBLIC_HOST;
+// Akzeptiert sowohl R2_PUBLIC_URL (bevorzugt) als auch R2_PUBLIC_HOST (legacy)
+const R2_PUBLIC_URL =
+  process.env.R2_PUBLIC_URL ?? process.env.R2_PUBLIC_HOST;
 
 export function r2Configured(): boolean {
   return Boolean(
@@ -17,7 +19,7 @@ export function r2Configured(): boolean {
       R2_ACCESS_KEY_ID &&
       R2_SECRET_ACCESS_KEY &&
       R2_BUCKET &&
-      R2_PUBLIC_HOST,
+      R2_PUBLIC_URL,
   );
 }
 
@@ -85,7 +87,7 @@ export async function createPresignedUpload(opts: {
     ContentLength: opts.contentLength,
   });
   const uploadUrl = await getSignedUrl(getClient(), cmd, { expiresIn: 300 });
-  const publicHost = R2_PUBLIC_HOST!.replace(/\/$/, "");
+  const publicHost = R2_PUBLIC_URL!.replace(/\/$/, "");
   const publicUrl = `${publicHost}/${key}`;
 
   return { uploadUrl, publicUrl, key, expiresIn: 300 };
