@@ -17,6 +17,16 @@ export const mentorRateLimit = redis
     })
   : null;
 
+// Elite tier gets 200 messages/day (priority mentor)
+export const eliteMentorRateLimit = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.tokenBucket(200, "1 d", 200),
+      analytics: true,
+      prefix: "mentor:elite",
+    })
+  : null;
+
 export const apiRateLimit = redis
   ? new Ratelimit({
       redis,

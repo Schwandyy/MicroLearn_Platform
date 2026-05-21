@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-type Plan = "PRO_MONTHLY" | "PRO_YEARLY" | "INSTITUTION";
+type Plan = "PRO_MONTHLY" | "PRO_YEARLY" | "ELITE_MONTHLY" | "ELITE_YEARLY" | "INSTITUTION";
 type Currency = "EUR" | "CHF";
 
 export function CheckoutButton({

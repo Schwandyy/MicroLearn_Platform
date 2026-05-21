@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Award, ExternalLink, Sparkles } from "lucide-react";
+import { Award, ExternalLink, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tier = "FREE" | "PRO" | "INSTITUTION";
+type Tier = "FREE" | "PRO" | "ELITE" | "INSTITUTION";
 type Status =
   | "ACTIVE"
   | "TRIALING"
@@ -37,9 +37,11 @@ export function SubscriptionPanel({
   const tierLabel = t(
     tier === "PRO"
       ? "subTierPro"
-      : tier === "INSTITUTION"
-        ? "subTierInstitution"
-        : "subTierFree",
+      : tier === "ELITE"
+        ? "subTierElite"
+        : tier === "INSTITUTION"
+          ? "subTierInstitution"
+          : "subTierFree",
   );
 
   const statusLabel = status
@@ -84,11 +86,15 @@ export function SubscriptionPanel({
               ? "border-muted bg-muted/50"
               : tier === "PRO"
                 ? "border-primary/40 bg-primary/10 text-primary"
-                : "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200",
+                : tier === "ELITE"
+                  ? "border-violet-400 bg-violet-100 text-violet-900 dark:border-violet-600 dark:bg-violet-900/30 dark:text-violet-200"
+                  : "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200",
           )}
         >
           {tier === "INSTITUTION" ? (
             <Award className="h-4 w-4" />
+          ) : tier === "ELITE" ? (
+            <Zap className="h-4 w-4" />
           ) : tier === "PRO" ? (
             <Sparkles className="h-4 w-4" />
           ) : null}
@@ -120,7 +126,7 @@ export function SubscriptionPanel({
             {t("manage")}
           </Button>
         )}
-        {tier === "FREE" && (
+        {(tier === "FREE" || tier === "PRO") && (
           <Button asChild size="sm">
             <Link href="/pricing">
               <Sparkles className="mr-2 h-4 w-4" />

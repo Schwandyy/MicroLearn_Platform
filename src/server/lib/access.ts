@@ -1,12 +1,13 @@
 import { prisma } from "@/server/db/prisma";
 
-export type Entitlement = "free" | "pro" | "institution";
+export type Entitlement = "free" | "pro" | "elite" | "institution";
 
 export async function getUserEntitlement(userId: string): Promise<Entitlement> {
-  // 1) Eigene User-Subscription (B2C-Pro oder eigenes Institution-Abo)
+  // 1) Eigene User-Subscription (B2C-Pro/Elite oder eigenes Institution-Abo)
   const sub = await prisma.subscription.findUnique({ where: { userId } });
   if (sub && (sub.status === "ACTIVE" || sub.status === "TRIALING")) {
     if (sub.tier === "INSTITUTION") return "institution";
+    if (sub.tier === "ELITE") return "elite";
     if (sub.tier === "PRO") return "pro";
   }
 
@@ -67,4 +68,27 @@ export function canAccessLesson(opts: {
   if (opts.freeProjectsConsumed >= 2)
     return { allowed: false, reason: "FREE_LIMIT" };
   return { allowed: true };
+}
+
+/** True for Pro, Elite, and Institution (any paid tier). */
+export function isPaidEntitlement(e: Entitlement): boolean {
+  return e === "pro" || e === "elite" || e === "institution";
+}
+
+/** True only for Elite and Institution (premium tiers). */
+export function isPremiumEntitlement(e: Entitlement): boolean {
+  return e === "elite" || e === "institution";
+}
+
+/** Feature flags that depend on ELITE or above. */
+export function getFeatureFlags(e: Entitlement) {
+  const isEliteOrAbove = e === "elite" || e === "institution";
+  return {
+    // ELITE+ can access the marketplace early
+    MARKETPLACE_EARLY_ACCESS: isEliteOrAbove,
+    // ELITE+ photo recognition: /api/ai/identify-components
+    PHOTO_RECOGNITION: isEliteOrAbove,
+    // ELITE+ priority AI mentor (200/day cap vs 50/day for Pro)
+    PRIORITY_MENTOR: isEliteOrAbove,
+  };
 }

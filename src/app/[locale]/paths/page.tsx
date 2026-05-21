@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { Clock, BookOpen, Sparkles, GraduationCap } from "lucide-react";
+import { Clock, BookOpen, Sparkles, GraduationCap, Zap } from "lucide-react";
 import { pickLocalized } from "@/lib/i18n-content";
 import type { Locale } from "@/lib/utils";
 import { auth } from "@/server/auth";
+import { getUserEntitlement } from "@/server/lib/access";
 import {
   isPathOutOfReach,
   sortPathsByRelevance,
@@ -47,6 +48,10 @@ export default async function PathsPage({
       : null;
 
   const session = await auth();
+  const entitlement = session?.user?.id
+    ? await getUserEntitlement(session.user.id)
+    : "free";
+  const isEliteOrAbove = entitlement === "elite" || entitlement === "institution";
 
   const [pathsRaw, profile, allStandards, matchPathIds] = await Promise.all([
     prisma.learningPath.findMany({
@@ -157,6 +162,12 @@ export default async function PathsPage({
                     {LEVEL_LABEL[p.level]?.[l] ?? p.level}
                   </div>
                   <div className="flex flex-wrap items-center gap-1">
+                    {p.isEliteOnly && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                        <Zap className="h-3 w-3" />
+                        Elite
+                      </span>
+                    )}
                     {matches && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
                         <GraduationCap className="h-3 w-3" />
@@ -196,13 +207,19 @@ export default async function PathsPage({
                     {t("outOfReachHint")}
                   </p>
                 )}
-                <Button
-                  asChild
-                  variant={isRecommended ? "default" : "outline"}
-                  className="w-full"
-                >
-                  <Link href={`/paths/${p.slug}`}>{t("startPath")}</Link>
-                </Button>
+                {p.isEliteOnly && !isEliteOrAbove ? (
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/pricing">{t("eliteOnlyHint")}</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    variant={isRecommended ? "default" : "outline"}
+                    className="w-full"
+                  >
+                    <Link href={`/paths/${p.slug}`}>{t("startPath")}</Link>
+                  </Button>
+                )}
               </CardContent>
             </Card>
           );

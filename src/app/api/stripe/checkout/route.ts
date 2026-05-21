@@ -6,7 +6,7 @@ import { requireStripe, getStripePriceId } from "@/server/lib/stripe";
 import { detectCurrency } from "@/server/lib/currency";
 
 const schema = z.object({
-  plan: z.enum(["PRO_MONTHLY", "PRO_YEARLY", "INSTITUTION"]),
+  plan: z.enum(["PRO_MONTHLY", "PRO_YEARLY", "ELITE_MONTHLY", "ELITE_YEARLY", "INSTITUTION"]),
   currency: z.enum(["EUR", "CHF"]).optional(),
 });
 

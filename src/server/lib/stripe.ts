@@ -18,7 +18,12 @@ export function requireStripe(): Stripe {
   return stripe;
 }
 
-export type CheckoutPlan = "PRO_MONTHLY" | "PRO_YEARLY" | "INSTITUTION";
+export type CheckoutPlan =
+  | "PRO_MONTHLY"
+  | "PRO_YEARLY"
+  | "ELITE_MONTHLY"
+  | "ELITE_YEARLY"
+  | "INSTITUTION";
 export type Currency = "EUR" | "CHF";
 
 const PRICE_MATRIX: Record<CheckoutPlan, Record<Currency, string | undefined>> =
@@ -30,6 +35,14 @@ const PRICE_MATRIX: Record<CheckoutPlan, Record<Currency, string | undefined>> =
     PRO_YEARLY: {
       EUR: process.env.STRIPE_PRICE_PRO_YEARLY,
       CHF: process.env.STRIPE_PRICE_PRO_YEARLY_CHF,
+    },
+    ELITE_MONTHLY: {
+      EUR: process.env.STRIPE_PRICE_ELITE_MONTHLY_EUR,
+      CHF: process.env.STRIPE_PRICE_ELITE_MONTHLY_CHF,
+    },
+    ELITE_YEARLY: {
+      EUR: process.env.STRIPE_PRICE_ELITE_YEARLY_EUR,
+      CHF: process.env.STRIPE_PRICE_ELITE_YEARLY_CHF,
     },
     INSTITUTION: {
       EUR: process.env.STRIPE_PRICE_INSTITUTION,
@@ -53,12 +66,14 @@ export function getStripePriceId(
 export const STRIPE_PRICES = {
   PRO_MONTHLY: PRICE_MATRIX.PRO_MONTHLY.EUR,
   PRO_YEARLY: PRICE_MATRIX.PRO_YEARLY.EUR,
+  ELITE_MONTHLY: PRICE_MATRIX.ELITE_MONTHLY.EUR,
+  ELITE_YEARLY: PRICE_MATRIX.ELITE_YEARLY.EUR,
   INSTITUTION: PRICE_MATRIX.INSTITUTION.EUR,
 } as const;
 
 export function priceToTier(
   priceId: string | null | undefined,
-): "PRO" | "INSTITUTION" | "FREE" {
+): "PRO" | "ELITE" | "INSTITUTION" | "FREE" {
   if (!priceId) return "FREE";
   const proIds = [
     PRICE_MATRIX.PRO_MONTHLY.EUR,
@@ -67,6 +82,13 @@ export function priceToTier(
     PRICE_MATRIX.PRO_YEARLY.CHF,
   ].filter(Boolean) as string[];
   if (proIds.includes(priceId)) return "PRO";
+  const eliteIds = [
+    PRICE_MATRIX.ELITE_MONTHLY.EUR,
+    PRICE_MATRIX.ELITE_MONTHLY.CHF,
+    PRICE_MATRIX.ELITE_YEARLY.EUR,
+    PRICE_MATRIX.ELITE_YEARLY.CHF,
+  ].filter(Boolean) as string[];
+  if (eliteIds.includes(priceId)) return "ELITE";
   const instIds = [
     PRICE_MATRIX.INSTITUTION.EUR,
     PRICE_MATRIX.INSTITUTION.CHF,

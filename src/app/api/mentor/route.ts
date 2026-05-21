@@ -4,7 +4,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/server/auth";
 import { prisma } from "@/server/db/prisma";
 import { requireAnthropic, ANTHROPIC_MODEL } from "@/server/lib/anthropic";
-import { mentorRateLimit, inMemoryDailyLimit } from "@/server/lib/ratelimit";
+import { mentorRateLimit, eliteMentorRateLimit, inMemoryDailyLimit } from "@/server/lib/ratelimit";
 import { getUserEntitlement } from "@/server/lib/access";
 
 export const runtime = "nodejs";
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
-  // Pro / Institution only
+  // Pro / Elite / Institution only
   const entitlement = await getUserEntitlement(session.user.id);
   if (entitlement === "free") {
     return NextResponse.json(
@@ -99,9 +99,21 @@ export async function POST(req: Request) {
     );
   }
 
-  // Rate limit: 50 msgs/day
+  // ELITE and Institution get 200 msg/day (priority mentor); Pro gets 50/day.
+  const isEliteOrAbove = entitlement === "elite" || entitlement === "institution";
+  const dailyCap = isEliteOrAbove ? 200 : 50;
+
   let remaining = -1;
-  if (mentorRateLimit) {
+  if (isEliteOrAbove && eliteMentorRateLimit) {
+    const rl = await eliteMentorRateLimit.limit(session.user.id);
+    remaining = rl.remaining;
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Tageslimit erreicht.", remaining: 0 },
+        { status: 429 },
+      );
+    }
+  } else if (!isEliteOrAbove && mentorRateLimit) {
     const rl = await mentorRateLimit.limit(session.user.id);
     remaining = rl.remaining;
     if (!rl.success) {
@@ -111,7 +123,7 @@ export async function POST(req: Request) {
       );
     }
   } else {
-    const rl = inMemoryDailyLimit(`mentor:${session.user.id}`, 50);
+    const rl = inMemoryDailyLimit(`mentor:${session.user.id}`, dailyCap);
     remaining = rl.remaining;
     if (!rl.success) {
       return NextResponse.json(

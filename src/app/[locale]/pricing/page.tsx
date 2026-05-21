@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, Zap } from "lucide-react";
 import { CheckoutButton } from "@/components/pricing/checkout-button";
 import { ManageSubscriptionButton } from "@/components/pricing/manage-button";
 import { Link } from "@/i18n/routing";
@@ -39,11 +39,11 @@ export default async function PricingPage({
     : null;
   const tier = subscription?.tier ?? "FREE";
 
-  const priceFor = (k: "freePrice" | "proPriceMonthly" | "proPriceYearly" | "institutionPrice") =>
-    currency === "CHF" ? t(`${k}CHF`) : t(k);
+  const priceFor = (k: string) =>
+    currency === "CHF" ? t(`${k}CHF` as Parameters<typeof t>[0]) : t(k as Parameters<typeof t>[0]);
 
-  const features = (key: "freeFeatures" | "proFeatures" | "institutionFeatures") =>
-    (t.raw(key) as string[]) ?? [];
+  const features = (key: string) =>
+    (t.raw(key as Parameters<typeof t.raw>[0]) as string[]) ?? [];
 
   return (
     <div className="container py-12 md:py-16">
@@ -76,7 +76,8 @@ export default async function PricingPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* Free */}
         <PlanCard
           name={t("free")}
           price={priceFor("freePrice")}
@@ -96,6 +97,7 @@ export default async function PricingPage({
           }
         />
 
+        {/* Pro */}
         <PlanCard
           name={t("pro")}
           price={priceFor("proPriceMonthly")}
@@ -133,6 +135,45 @@ export default async function PricingPage({
           }
         />
 
+        {/* Elite */}
+        <PlanCard
+          name={t("elite")}
+          price={priceFor("elitePriceMonthly")}
+          interval={`/ ${t("month")}`}
+          subline={`${priceFor("elitePriceYearly")} ${t("billedYearly")}`}
+          features={features("eliteFeatures")}
+          highlighted={tier === "ELITE"}
+          eliteAccent
+          cta={
+            tier === "ELITE" ? (
+              <ManageSubscriptionButton />
+            ) : (
+              <div className="grid gap-2">
+                <CheckoutButton plan="ELITE_MONTHLY" currency={currency} variant="default">
+                  {t("eliteCta")} — {priceFor("elitePriceMonthly")}/{t("month")}
+                </CheckoutButton>
+                <div className="relative">
+                  <span className="absolute -top-2 right-3 z-10 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                    {t("annualSave")}
+                  </span>
+                  <CheckoutButton
+                    plan="ELITE_YEARLY"
+                    currency={currency}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {priceFor("elitePriceYearly")}/{t("year")}
+                  </CheckoutButton>
+                </div>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  {t("annualSaveHint")}
+                </p>
+              </div>
+            )
+          }
+        />
+
+        {/* Institution */}
         <PlanCard
           name={t("institution")}
           price={priceFor("institutionPrice")}
@@ -175,6 +216,7 @@ function PlanCard({
   features,
   cta,
   accent,
+  eliteAccent,
   highlighted,
 }: {
   name: string;
@@ -184,6 +226,7 @@ function PlanCard({
   features: string[];
   cta: React.ReactNode;
   accent?: boolean;
+  eliteAccent?: boolean;
   highlighted?: boolean;
 }) {
   return (
@@ -191,11 +234,17 @@ function PlanCard({
       className={cn(
         "relative flex flex-col",
         accent && "border-primary shadow-lg",
+        eliteAccent && "border-violet-500 shadow-lg shadow-violet-500/10",
       )}
     >
       {accent && (
         <div className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
           <Sparkles className="h-3 w-3" /> Most popular
+        </div>
+      )}
+      {eliteAccent && (
+        <div className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-violet-600 px-3 py-1 text-xs font-medium text-white">
+          <Zap className="h-3 w-3" /> Elite
         </div>
       )}
       <CardHeader>
