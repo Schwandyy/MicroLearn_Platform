@@ -419,7 +419,8 @@
     "progressPercent": "{percent} % bis zum Zertifikat",
     "certEarned": "Zertifikat verdient",
     "viewCertificate": "Zertifikat ansehen",
-    "progressEmpty": "Starte mit der ersten Lektion."
+    "progressEmpty": "Starte mit der ersten Lektion.",
+    "eliteOnlyHint": "Elite-Pfad — Upgrade für Zugang"
   },
   "firstRun": {
     "skip": "Überspringen",
@@ -547,7 +548,22 @@
     "pilotCta": "30 Tage kostenlos testen",
     "pilotHint": "Keine Kreditkarte, kein Risiko — nach dem Pilot entscheidest du.",
     "managePortal": "Abo verwalten",
-    "stripeUnavailable": "Stripe nicht erreichbar"
+    "stripeUnavailable": "Stripe nicht erreichbar",
+    "elite": "Elite",
+    "elitePriceMonthly": "19,99 €",
+    "elitePriceYearly": "179 €",
+    "elitePriceMonthlyC HF": "21.99 CHF",
+    "elitePriceMonthlyCHF": "21.99 CHF",
+    "elitePriceYearlyCHF": "189 CHF",
+    "eliteFeatures": [
+      "Alles aus Pro",
+      "KI-Mentor mit Priorität (200/Tag statt 50)",
+      "Foto-Erkennung: Bauteile per Kamerafoto identifizieren",
+      "Kuratierte Expertenprojekte (Elite-exklusiv)",
+      "Frühzugang zum Marktplatz",
+      "Keine Werbung, maximale KI-Unterstützung"
+    ],
+    "eliteCta": "Elite werden"
   },
   "mentor": {
     "title": "KI-Mentor",
@@ -818,7 +834,8 @@
     "pushBlocked": "Vom Browser blockiert",
     "pushBlockedHint": "Bitte erlaube Benachrichtigungen in den Browser-Einstellungen für diese Seite.",
     "pushUnsupported": "Dein Browser unterstützt Push-Benachrichtigungen nicht.",
-    "pushNotConfigured": "Push noch nicht konfiguriert. Kontakt: Admin."
+    "pushNotConfigured": "Push noch nicht konfiguriert. Kontakt: Admin.",
+    "subTierElite": "Elite"
   },
   "notifications": {
     "ariaLabel": "Benachrichtigungen öffnen",
@@ -1033,5 +1050,28 @@
     "suggestAdded": "✓ markiert",
     "suggestEmpty": "Kein klarer Treffer — manuell wählen.",
     "suggestError": "Vorschlag fehlgeschlagen."
+  },
+  "waitlist": {
+    "metaTitle": "Warteliste — MicroLearn",
+    "metaDescription": "Trag dich auf die MicroLearn-Warteliste ein und erfahre als Erstes, wenn wir live gehen.",
+    "badge": "Bald verfügbar",
+    "headline": "Mikroelektronik lernen — strukturiert.",
+    "subheadline": "ESP32, Arduino, Pi Pico — Lernpfade, KI-Mentor, Simulator. Trag dich auf die Warteliste ein und sei dabei, wenn wir starten.",
+    "emailPlaceholder": "deine@email.de",
+    "cta": "Platz sichern",
+    "submitting": "Wird gesendet…",
+    "noSpam": "Kein Spam. Nur eine Mail, wenn es losgeht.",
+    "feature1": "4 strukturierte Lernpfade",
+    "feature2": "KI-Mentor kennt deinen Code",
+    "feature3": "Wokwi-Simulator integriert",
+    "pendingTitle": "Check deine Inbox!",
+    "pendingBody": "Wir haben dir einen Bestätigungslink geschickt. Klick ihn an, um deinen Platz zu sichern.",
+    "confirmedTitle": "Du bist dabei!",
+    "confirmedBody": "Deine E-Mail wurde bestätigt. Wir melden uns, sobald MicroLearn live ist.",
+    "invalidTitle": "Ungültiger Link",
+    "invalidBody": "Dieser Bestätigungslink ist ungültig. Trag dich nochmal ein, um einen neuen Link zu erhalten.",
+    "expiredBody": "Dieser Link ist abgelaufen. Trag dich nochmal ein, um einen neuen Link zu erhalten.",
+    "errorTooMany": "Zu viele Anfragen. Bitte versuche es später nochmal.",
+    "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es nochmal."
   }
 }

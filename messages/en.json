@@ -419,7 +419,8 @@
     "progressPercent": "{percent}% to your certificate",
     "certEarned": "Certificate earned",
     "viewCertificate": "View certificate",
-    "progressEmpty": "Start with the first lesson."
+    "progressEmpty": "Start with the first lesson.",
+    "eliteOnlyHint": "Elite path — upgrade for access"
   },
   "firstRun": {
     "skip": "Skip",
@@ -547,7 +548,21 @@
     "pilotCta": "Start 30-day pilot",
     "pilotHint": "No credit card, no risk — you decide after the pilot.",
     "managePortal": "Manage subscription",
-    "stripeUnavailable": "Stripe is unreachable"
+    "stripeUnavailable": "Stripe is unreachable",
+    "elite": "Elite",
+    "elitePriceMonthly": "€19.99",
+    "elitePriceYearly": "€179",
+    "elitePriceMonthlyCHF": "CHF 21.99",
+    "elitePriceYearlyCHF": "CHF 189",
+    "eliteFeatures": [
+      "Everything in Pro",
+      "Priority AI mentor (200/day vs 50)",
+      "Photo recognition: identify components by camera",
+      "Curated expert project list (Elite-exclusive)",
+      "Marketplace early access",
+      "No ads, maximum AI support"
+    ],
+    "eliteCta": "Go Elite"
   },
   "mentor": {
     "title": "AI Mentor",
@@ -818,7 +833,8 @@
     "pushBlocked": "Blocked by browser",
     "pushBlockedHint": "Please allow notifications in your browser settings for this site.",
     "pushUnsupported": "Your browser doesn't support push notifications.",
-    "pushNotConfigured": "Push not configured yet. Contact admin."
+    "pushNotConfigured": "Push not configured yet. Contact admin.",
+    "subTierElite": "Elite"
   },
   "notifications": {
     "ariaLabel": "Open notifications",
@@ -1033,5 +1049,28 @@
     "suggestAdded": "✓ added",
     "suggestEmpty": "No confident match — please pick manually.",
     "suggestError": "Suggestion failed."
+  },
+  "waitlist": {
+    "metaTitle": "Waitlist — MicroLearn",
+    "metaDescription": "Join the MicroLearn waitlist and be the first to know when we launch.",
+    "badge": "Coming soon",
+    "headline": "Learn microelectronics, structured.",
+    "subheadline": "ESP32, Arduino, Pi Pico — learning paths, AI mentor, simulator. Join the waitlist and be there when we launch.",
+    "emailPlaceholder": "your@email.com",
+    "cta": "Secure my spot",
+    "submitting": "Sending…",
+    "noSpam": "No spam. One email when we go live.",
+    "feature1": "4 structured learning paths",
+    "feature2": "AI mentor knows your code",
+    "feature3": "Wokwi simulator built-in",
+    "pendingTitle": "Check your inbox!",
+    "pendingBody": "We sent you a confirmation link. Click it to secure your spot.",
+    "confirmedTitle": "You're in!",
+    "confirmedBody": "Your email is confirmed. We'll reach out as soon as MicroLearn goes live.",
+    "invalidTitle": "Invalid link",
+    "invalidBody": "This confirmation link is invalid. Sign up again to get a new one.",
+    "expiredBody": "This link has expired. Sign up again to get a new one.",
+    "errorTooMany": "Too many requests. Please try again later.",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }
